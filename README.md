@@ -47,3 +47,5 @@ dependencies {
 In addition to tests, the `test` subproject contains various experiments that I perform
 to test the limits of reflection and decide if something should be added to reflect.
 Some of them are irrelevant but I keep them anyway.
+
+Relevant tests are in `ReflectTest`.
