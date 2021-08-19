@@ -17,9 +17,9 @@ repositories {
 }
 
 dependencies {
-    // Use "latest.integration" for the latest version or see
-    // https://auoeke.jfrog.io/artifactory/maven/net/gudenau/lib/unsafe and
-    // https://auoeke.jfrog.io/artifactory/maven/net/auoeke/reflect
+    /* Use "latest.integration" for the latest version or pick from
+    https://auoeke.jfrog.io/artifactory/maven/net/gudenau/lib/unsafe and
+    https://auoeke.jfrog.io/artifactory/maven/net/auoeke/reflect. */
     api("net.gudenau.lib:unsafe:latest.integration")
     api("net.auoeke:reflect:latest.integration")
 }
