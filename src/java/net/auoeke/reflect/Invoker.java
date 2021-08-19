@@ -3,6 +3,7 @@ package net.auoeke.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -301,6 +302,30 @@ public class Invoker {
     public static MethodHandle unreflectSetter(Class<?> klass, String name) {
         try {
             return trustedLookup.unreflectSetter(Fields.field(klass, name));
+        } catch (IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static VarHandle findStaticVarHandle(Class<?> owner, String name, Class<?> type) {
+        try {
+            return trustedLookup.findStaticVarHandle(owner, name, type);
+        } catch (NoSuchFieldException | IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static VarHandle findVarHandle(Class<?> owner, String name, Class<?> type) {
+        try {
+            return trustedLookup.findVarHandle(owner, name, type);
+        } catch (NoSuchFieldException | IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static VarHandle unreflectVarHandle(Field field) {
+        try {
+            return trustedLookup.unreflectVarHandle(field);
         } catch (IllegalAccessException exception) {
             throw Unsafe.throwException(exception);
         }

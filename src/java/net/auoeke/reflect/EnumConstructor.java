@@ -9,9 +9,7 @@ import java.util.HashMap;
 import net.gudenau.lib.unsafe.Unsafe;
 
 public class EnumConstructor<E extends Enum<E>> {
-    private static final int ENUM_ARRAY = Modifier.PRIVATE | Modifier.STATIC | 1 << 12 /*synthetic*/ | Modifier.FINAL;
-
-    private static final Object notFound = null;
+    private static final int ENUM_ARRAY = Modifier.PRIVATE | Modifier.STATIC | 0x1000 /*synthetic*/ | Modifier.FINAL;
 
     private static final HashMap<Class<?>, Pointer> arrayFields = new HashMap<>();
     private static final HashMap<Class<?>, EnumConstructor<?>> constructors = new HashMap<>();
@@ -171,7 +169,7 @@ public class EnumConstructor<E extends Enum<E>> {
             }
         }
 
-        return (Pointer) notFound;
+        return (Pointer) Reflect.nul;
     }
 
     public static boolean isArrayField(Field field) {

@@ -401,4 +401,25 @@ public class ReflectTest {
         Object[] objects = new Object[0];
         assert Types.box(objects) == objects;
     }
+
+    @Test
+    void unbox() {
+        Integer[] ints = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).toArray(Integer[]::new);
+        assert Arrays.equals(Stream.of(ints).mapToInt(i -> i).toArray(), Types.unbox(ints));
+
+        Double[] doubles = Stream.iterate(0D, d -> d < 100, d -> d + 1).toArray(Double[]::new);
+        assert Arrays.equals(Stream.of(doubles).mapToDouble(d -> d).toArray(), Types.unbox(doubles));
+
+        Byte[] box = {1, 2, 3, 4, 5};
+        byte[] bytes = Types.unbox(box);
+
+        assert bytes[0] == box[0]
+            && bytes[1] == box[1]
+            && bytes[2] == box[2]
+            && bytes[3] == box[3]
+            && bytes[4] == box[4];
+
+        assert Types.unbox(bytes) == bytes;
+        assert Types.unbox(new Object[0]) == null;
+    }
 }

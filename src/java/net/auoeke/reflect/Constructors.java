@@ -12,8 +12,6 @@ import net.gudenau.lib.unsafe.Unsafe;
 public class Constructors {
     private static final MethodHandle getDeclaredConstructors;
 
-    private static final Object notFound = null;
-
     public static <T> T instantiate(Class<T> klass) {
         Constructor<T> constructor = constructor(klass);
 
@@ -43,7 +41,7 @@ public class Constructors {
             }
         }
 
-        return (Constructor<T>) notFound;
+        return (Constructor<T>) Reflect.nul;
     }
 
     public static <T> Constructor<T> constructor(boolean unbox, Class<T> klass, Object... arguments) {

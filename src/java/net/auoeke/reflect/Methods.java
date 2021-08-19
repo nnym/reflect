@@ -15,8 +15,6 @@ public class Methods {
 
     private static final HashMap<Class<?>, Method[]> methodCache = new HashMap<>();
 
-    private static final Object notFound = null;
-
     public static <T extends Executable> T find(T[] methods, Class<?>... parameterTypes) {
         for (T method : methods) {
             if (Arrays.equals(method.getParameterTypes(), parameterTypes)) {
@@ -24,7 +22,7 @@ public class Methods {
             }
         }
 
-        return (T) notFound;
+        return (T) Reflect.nul;
     }
 
     public static <T extends Executable> T find(T[] methods, Object... arguments) {
@@ -46,7 +44,7 @@ public class Methods {
             }
         }
 
-        return (T) notFound;
+        return (T) Reflect.nul;
     }
 
     public static boolean argumentsMatchParameters(Executable executable, Object... arguments) {
@@ -103,7 +101,7 @@ public class Methods {
             klass = klass.getSuperclass();
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getMethod(Class<?> klass, String name) {
@@ -115,7 +113,7 @@ public class Methods {
             }
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getMethod(Object object, String name, Class<?>... parameterTypes) {
@@ -130,7 +128,7 @@ public class Methods {
             klass = klass.getSuperclass();
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getMethod(Class<?> klass, String name, Class<?>... parameterTypes) {
@@ -157,7 +155,7 @@ public class Methods {
             }
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getRawMethod(Object object, String name) {
@@ -172,7 +170,7 @@ public class Methods {
             klass = klass.getSuperclass();
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getRawMethod(Class<?> klass, String name) {
@@ -184,7 +182,7 @@ public class Methods {
             }
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getRawMethod(Object object, String name, Class<?>... parameterTypes) {
@@ -199,7 +197,7 @@ public class Methods {
             klass = klass.getSuperclass();
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method getRawMethod(Class<?> klass, String name, Class<?>... parameterTypes) {
@@ -226,7 +224,7 @@ public class Methods {
             }
         }
 
-        return (Method) notFound;
+        return (Method) Reflect.nul;
     }
 
     public static Method[] getMethods(Class<?> klass) {

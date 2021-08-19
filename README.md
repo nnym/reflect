@@ -1,17 +1,12 @@
 reflect is a Java reflection library that tries to overcome the restrictions on reflection
 and make it concise while achieving higher performance by utilizing `Unsafe`.
 
-Although reflect does not trigger the illegal access logger and provides facilities
-in order to avoid that, said logger can be disabled nonetheless.
-The security manager can be disabled too.
+Although reflect can disable the security manager, doing so is discouraged because [the security manager is deprecated for removal](https://openjdk.java.net/jeps/411).
 
 It reduces the usual verbosity of reflection by providing concise methods for most reflective operations (and more).
 **None of these methods declares thrown exceptions.**
 
-Currently, it should be compatible with Java versions 8 and above.
-However, since I made it primarily for use in Minecraft,
-due to maintenance burden and bloat, I intend to drop support for Java 8 soon
-for the JRE used for the latest versions in the official launcher has been updated.
+Supported Java versions are 16 and above.
 
 I try to keep this library mostly stable, although occasionally (with prior notice) I may break things.
 
@@ -37,20 +32,17 @@ dependencies {
 - `Constructors`: a collection of utilities for finding and invoking constructors
 - `EnumConstructor`: a class that constructs enum constants and adds them to the `values` array and a few other places;
   it can be used through static methods or directly as an object (more performant)
-- `Fields`: a set of utilities for enumerating class fields directly: without slow `Field` copying, security checks
-  or filters
-- `Invoker`: a static proxy for `IMPL_LOOKUP`, which should be able to access everything;
+- `Fields`: a set of utilities for enumerating class fields directly: without slow `Field` copying, security checks or filters
+- `Invoker`: a static proxy for `IMPL_LOOKUP`; which should be able to access everything;
   its methods do not declare thrown exceptions
 - `JavaLangAccess`: a partial proxy for `JavaLangAccess`
 - `Methods`: a collection of utilities for listing class methods and dealing with them
 - `Pointer`: a field reference that is similar to `Field` and does not force exceptions to be handled;
   intended for use with frequently accessed fields
-- `Reflect`: a container for useful state
-  and a set of methods that disable security manager and illegal access logger
-- `StackFrames` (Java 16+): a set of utility methods that assist in getting stack frames and callers
-  with support for `StackWalker` and the traditional `StackTraceElement[]`.
-- `Types`: a collection of methods for dealing with `Class`es
-  (mainly conversion between primitive and wrapper types)
+- `Reflect`: a container for useful state and a method that disables the security manager
+- `StackFrames`: a set of utility methods that assist in getting stack frames and callers
+  with support for `StackWalker` and the traditional `StackTraceElement[]`
+- `Types`: a collection of methods for dealing with `Class`es; mainly conversion between primitive and wrapper types and array types
 
 In addition to tests, the `test` subproject contains various experiments that I perform
 to test the limits of reflection and decide if something should be added to reflect.

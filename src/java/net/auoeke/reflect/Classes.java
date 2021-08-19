@@ -47,8 +47,6 @@ public class Classes {
     private static final MethodHandle defineClass4;
     private static final MethodHandle defineClass5;
 
-    private static final Object notFound = null;
-
     /**
      * Change the class of <b>{@code object}</b> to that represented by <b>{@code T}</b> such that <b>{@code to.getClass() == T}</b>.
      *
@@ -237,7 +235,7 @@ public class Classes {
             klass = klass.getSuperclass();
         }
 
-        return (Field) notFound;
+        return (Field) Reflect.nul;
     }
 
     public static void load(String... classes) {
@@ -274,7 +272,7 @@ public class Classes {
         try {
             return (Class<T>) Class.forName(name, initialize, loader);
         } catch (ClassNotFoundException exception) {
-            return (Class<T>) notFound;
+            return (Class<T>) Reflect.nul;
         }
     }
 
@@ -417,7 +415,7 @@ public class Classes {
             }
         }
 
-        return (Class<?>) notFound;
+        return (Class<?>) Reflect.nul;
     }
 
     static {

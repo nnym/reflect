@@ -20,8 +20,6 @@ public class ConstantPool {
     private static final MethodHandle getStringAt = Invoker.findVirtual(Classes.ConstantPool, "getStringAt", String.class, int.class);
     private static final MethodHandle getUTF8At = Invoker.findVirtual(Classes.ConstantPool, "getUTF8At", String.class, int.class);
 
-    private static final Object notFound = null;
-
     private final Object constantPool;
 
     public ConstantPool(Class<?> klass) {
@@ -32,7 +30,7 @@ public class ConstantPool {
         try {
             return (Integer) getSize.invoke(this.constantPool);
         } catch (Throwable throwable) {
-            return (Integer) notFound;
+            return (Integer) Reflect.nul;
         }
     }
 
@@ -40,7 +38,7 @@ public class ConstantPool {
         try {
             return (Class<?>) getClassAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Class<?>) notFound;
+            return (Class<?>) Reflect.nul;
         }
     }
 
@@ -48,7 +46,7 @@ public class ConstantPool {
         try {
             return (Class<?>) getClassAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Class<?>) notFound;
+            return (Class<?>) Reflect.nul;
         }
     }
 
@@ -56,7 +54,7 @@ public class ConstantPool {
         try {
             return (Member) getMethodAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Member) notFound;
+            return (Member) Reflect.nul;
         }
     }
 
@@ -64,7 +62,7 @@ public class ConstantPool {
         try {
             return (Member) getMethodAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Member) notFound;
+            return (Member) Reflect.nul;
         }
     }
 
@@ -72,7 +70,7 @@ public class ConstantPool {
         try {
             return (Field) getFieldAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Field) notFound;
+            return (Field) Reflect.nul;
         }
     }
 
@@ -80,7 +78,7 @@ public class ConstantPool {
         try {
             return (Field) getFieldAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Field) notFound;
+            return (Field) Reflect.nul;
         }
     }
 
@@ -88,7 +86,7 @@ public class ConstantPool {
         try {
             return (String) getMemberRefInfoAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) notFound;
+            return (String) Reflect.nul;
         }
     }
 
@@ -96,7 +94,7 @@ public class ConstantPool {
         try {
             return (Integer) getIntAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Integer) notFound;
+            return (Integer) Reflect.nul;
         }
     }
 
@@ -104,7 +102,7 @@ public class ConstantPool {
         try {
             return (Long) getLongAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Long) notFound;
+            return (Long) Reflect.nul;
         }
     }
 
@@ -112,7 +110,7 @@ public class ConstantPool {
         try {
             return (Float) getFloatAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Float) notFound;
+            return (Float) Reflect.nul;
         }
     }
 
@@ -120,7 +118,7 @@ public class ConstantPool {
         try {
             return (Double) getDoubleAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Double) notFound;
+            return (Double) Reflect.nul;
         }
     }
 
@@ -128,7 +126,7 @@ public class ConstantPool {
         try {
             return (String) getStringAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) notFound;
+            return (String) Reflect.nul;
         }
     }
 
@@ -136,7 +134,7 @@ public class ConstantPool {
         try {
             return (String) getUTF8At.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) notFound;
+            return (String) Reflect.nul;
         }
     }
 }

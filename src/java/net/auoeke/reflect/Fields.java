@@ -24,8 +24,6 @@ public class Fields {
     private static final IdentityHashMap<Class<?>, ArrayList<Field>> instanceFieldCache = new IdentityHashMap<>();
     private static final HashMap<String, Field> nameToField = new HashMap<>();
 
-    private static final Field notFound = null;
-
     public static Field anyField(String klass, String name) {
         return anyField(Classes.load(klass), name);
     }
@@ -49,7 +47,7 @@ public class Fields {
             type = type.getSuperclass();
         }
 
-        return notFound;
+        return (Field) Reflect.nul;
     }
 
     public static Field field(Class<?> type, String name) {
@@ -84,7 +82,7 @@ public class Fields {
             type = type.getSuperclass();
         }
 
-        return notFound;
+        return (Field) Reflect.nul;
     }
 
     public static Field rawField(Object object, String name) {
@@ -102,7 +100,7 @@ public class Fields {
             }
         }
 
-        return notFound;
+        return (Field) Reflect.nul;
     }
 
     public static List<Field> all(Object object) {
