@@ -63,7 +63,7 @@ class AccessorBuilder extends TestBuilder {
     );
 
     public AccessorBuilder() {
-        super("user11681.reflect", "Accessor");
+        super("net.auoeke.reflect", "Accessor");
 
         this.pub();
     }

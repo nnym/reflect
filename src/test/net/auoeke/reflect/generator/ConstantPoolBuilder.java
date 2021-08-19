@@ -12,7 +12,7 @@ import net.auoeke.reflect.generator.base.method.expression.GetField;
 @Testable
 public class ConstantPoolBuilder extends TestBuilder {
     private ConstantPoolBuilder() {
-        super("user11681.reflect.ConstantPool");
+        super("net.auoeke.reflect.ConstantPool");
 
         this.pub();
     }

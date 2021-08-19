@@ -12,7 +12,7 @@ import net.auoeke.reflect.generator.base.method.expression.Invocation;
 
 public class UnsafeBuilder extends TestBuilder {
     public UnsafeBuilder() {
-        super("user11681.unsafe.Unsafe");
+        super("net.auoeke.unsafe.Unsafe");
 
         this.pub();
     }

@@ -15,7 +15,7 @@ for the JRE used for the latest versions in the official launcher has been updat
 
 I try to keep this library mostly stable, although occasionally (with prior notice) I may break things.
 
-reflect is hosted on Artifactory. It depends on [my fork](https://github.com/user11681/unsafe) of [gudenau/java-unsafe](https://github.com/gudenau/java-unsafe).
+reflect is hosted on Artifactory. It depends on [my fork](https://git.auoeke.net/unsafe) of [gudenau/java-unsafe](https://github.com/gudenau/java-unsafe).
 ```groovy
 repositories {
     maven {url = "https://auoeke.jfrog.io/artifactory/maven"}
@@ -23,10 +23,10 @@ repositories {
 
 dependencies {
     // Use "latest.integration" for the latest version or see
-    // https://auoeke.jfrog.io/artifactory/maven/{net/gudenau/lib/unsafe and
-    // https://auoeke.jfrog.io/artifactory/maven/user11681/reflect
+    // https://auoeke.jfrog.io/artifactory/maven/net/gudenau/lib/unsafe and
+    // https://auoeke.jfrog.io/artifactory/maven/net/auoeke/reflect
     api("net.gudenau.lib:unsafe:latest.integration")
-    api("user11681:reflect:latest.integration")
+    api("net.auoeke:reflect:latest.integration")
 }
 ```
 

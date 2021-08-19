@@ -1,7 +1,5 @@
 package net.auoeke.reflect.test;
 
-import net.auoeke.reflect.experimental.generics.Generics;
-import net.auoeke.reflect.experimental.generics.TypeArgument;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
@@ -11,13 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import net.bytebuddy.agent.ByteBuddyAgent;
-import net.gudenau.lib.unsafe.Unsafe;
-import org.junit.jupiter.api.Test;
-import org.objectweb.asm.Opcodes;
-import org.openjdk.jol.info.ClassData;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Invoker;
@@ -25,10 +17,17 @@ import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.ReflectTest;
 import net.auoeke.reflect.asm.ClassNode2;
 import net.auoeke.reflect.experimental.Classes2;
+import net.auoeke.reflect.experimental.generics.Generics;
+import net.auoeke.reflect.experimental.generics.TypeArgument;
 import net.auoeke.reflect.generics.GenericTypeAware;
 import net.auoeke.reflect.generics.GenericTypeAwareTest;
 import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Util;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import net.gudenau.lib.unsafe.Unsafe;
+import org.junit.jupiter.api.Test;
+import org.objectweb.asm.Opcodes;
+import org.openjdk.jol.info.ClassData;
 import user11681.uncheck.ThrowingFunction;
 
 public class IrrelevantTest {
@@ -105,13 +104,13 @@ public class IrrelevantTest {
     @Test
     void ensureJava8() throws Throwable {
          Files.list(Path.of(System.getProperty("user.dir")).getParent().resolve("build").resolve("libs"))
-            .filter((Path jar) -> jar.getFileName().toString().matches("reflect-\\d+\\.\\d+\\.\\d+\\.jar"))
-            .map((ThrowingFunction<Path, JarFile>) (Path jar) -> new JarFile(jar.toFile()))
-            .forEach((JarFile artifact) -> {
+            .filter(jar -> jar.getFileName().toString().matches("reflect-\\d+\\.\\d+\\.\\d+\\.jar"))
+            .map((ThrowingFunction<Path, JarFile>) jar -> new JarFile(jar.toFile()))
+            .forEach(artifact -> {
                 assert artifact.stream()
-                    .filter((JarEntry entry) -> entry.getName().endsWith(".class"))
-                    .map((JarEntry entry) -> new ClassNode2().reader(artifact, entry).read())
-                    .allMatch((ClassNode2 klass) -> klass.version == Opcodes.V1_8);
+                    .filter(entry -> entry.getName().endsWith(".class"))
+                    .map(entry -> new ClassNode2().reader(artifact, entry).read())
+                    .allMatch(klass -> klass.version == Opcodes.V1_8);
             });
 
         throw new AssertionError("class version");

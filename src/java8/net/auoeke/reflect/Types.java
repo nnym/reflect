@@ -1,5 +1,7 @@
 package net.auoeke.reflect;
 
+import java.lang.reflect.Array;
+
 public class Types {
     public static boolean equals(Class<?> klass, Class<?> other) {
         return klass == other || klass != null && (primitive(klass) == other || primitive(other) == klass);
@@ -55,5 +57,22 @@ public class Types {
         }
 
         return null;
+    }
+
+    public static <T> T[] box(Object array) {
+        Class<?> type = array.getClass();
+        Class<?> componentType = type.getComponentType();
+
+        if (componentType.isPrimitive()) {
+            T[] result = (T[]) Array.newInstance(wrapper(componentType), Array.getLength(array));
+
+            for (int index = 0, length = result.length; index < length; index++) {
+                Array.set(result, index, Array.get(array, index));
+            }
+
+            return result;
+        }
+
+        return (T[]) array;
     }
 }

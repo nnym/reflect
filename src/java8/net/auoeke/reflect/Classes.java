@@ -471,7 +471,7 @@ public class Classes {
             longClassPointer = true;
             addressFactor = 1;
         } else {
-            throw new Error("unsupported field offset; report to https://github.com/user11681/reflect/issues.");
+            throw new Error("unsupported field offset; report to https://git.auoeke.net/reflect/issues.");
         }
 
         systemClassPath = classPath(systemClassLoader);

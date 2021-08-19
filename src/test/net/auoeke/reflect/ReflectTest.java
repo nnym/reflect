@@ -1,11 +1,5 @@
 package net.auoeke.reflect;
 
-import net.auoeke.reflect.misc.A;
-import net.auoeke.reflect.misc.C;
-import net.auoeke.reflect.misc.Enumeration;
-import net.auoeke.reflect.misc.TestObject;
-import net.auoeke.reflect.util.Logger;
-import net.auoeke.reflect.util.Util;
 import java.io.File;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandle;
@@ -20,6 +14,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import net.auoeke.reflect.misc.A;
+import net.auoeke.reflect.misc.C;
+import net.auoeke.reflect.misc.Enumeration;
+import net.auoeke.reflect.misc.TestObject;
+import net.auoeke.reflect.util.Logger;
+import net.auoeke.reflect.util.Util;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -30,7 +33,7 @@ import user11681.uncheck.Uncheck;
 public class ReflectTest {
     @Test
     public void changeLoader() {
-        Class<?> PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "user11681/reflect/misc/PackagePrivate");
+        Class<?> PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
         assert PackagePrivate.getClassLoader() == null;
 
         Accessor.putObject((Object) PackagePrivate, "classLoader", Reflect.defaultClassLoader);
@@ -374,5 +377,28 @@ public class ReflectTest {
        assert StackFrames.trace()[0].getClassName().equals(ReflectTest.class.getName());
        assert StackFrames.traceFrame().getMethodName().equals("stack");
        assert StackFrames.traceFrame(0).getMethodName().equals("stack");
+    }
+
+    @Test
+    void box() {
+        int[] ints = IntStream.range(0, 10000).toArray();
+        assert Arrays.equals(ints, Stream.of(Types.box(ints)).mapToInt(i -> (int) i).toArray());
+
+        double[] doubles = DoubleStream.iterate(0, d -> d < 100, d -> d + 1).toArray();
+        assert Arrays.equals(doubles, Stream.of(Types.box(doubles)).mapToDouble(d -> (double) d).toArray());
+
+        byte[] bytes = {1, 2, 3, 4, 5};
+        Byte[] box = Types.box(bytes);
+
+        assert box[0] == bytes[0]
+            && box[1] == bytes[1]
+            && box[2] == bytes[2]
+            && box[3] == bytes[3]
+            && box[4] == bytes[4];
+
+        assert Types.box(box) == box;
+
+        Object[] objects = new Object[0];
+        assert Types.box(objects) == objects;
     }
 }

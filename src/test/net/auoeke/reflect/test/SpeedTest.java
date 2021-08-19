@@ -1,5 +1,7 @@
 package net.auoeke.reflect.test;
 
+import java.util.stream.IntStream;
+import net.auoeke.reflect.Types;
 import net.auoeke.reflect.experimental.Lists;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandle;
@@ -314,12 +316,19 @@ public class SpeedTest {
         mean("enum", Util.voidify(() -> r.type() == Type.DOUBLE));
     }
 
+    @Test
+    void box() {
+        int[] array = IntStream.range(0, 1000).toArray();
+
+        Types.box(array);
+        time(() -> Types.box(array));
+    }
+
     static {
         double time = time(false, Reflect.class::getProtectionDomain);
 
-        try (Stream<Path> classStream = Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("user11681/reflect"))) {
-            time += classStream.map((Path klass) -> time(false, () -> Class.forName("user11681.reflect." + klass.getFileName().toString().replace(".class", "")))).reduce(0L, Long::sum);
-
+        try (Stream<Path> classStream = Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect"))) {
+            time += classStream.map(klass -> time(false, () -> Class.forName("net.auoeke.reflect." + klass.getFileName().toString().replace(".class", "")))).reduce(0L, Long::sum);
             Logger.log("initialized in %s ms%n", time / 1000000D);
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
