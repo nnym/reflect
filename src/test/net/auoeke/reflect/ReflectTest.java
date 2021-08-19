@@ -422,4 +422,8 @@ public class ReflectTest {
         assert Types.unbox(bytes) == bytes;
         assert Types.unbox(new Object[0]) == null;
     }
+
+    static {
+        Util.load();
+    }
 }

@@ -1,13 +1,13 @@
 package net.auoeke.reflect;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -44,8 +44,6 @@ public class Classes {
     private static final MethodHandle defineClass1;
     private static final MethodHandle defineClass2;
     private static final MethodHandle defineClass3;
-    private static final MethodHandle defineClass4;
-    private static final MethodHandle defineClass5;
 
     /**
      * Change the class of <b>{@code object}</b> to that represented by <b>{@code T}</b> such that <b>{@code to.getClass() == T}</b>.
@@ -281,30 +279,24 @@ public class Classes {
     @SuppressWarnings("ConstantConditions")
     public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
         try {
-            URL url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-            InputStream stream = url.openStream();
-            byte[] bytecode = new byte[stream.available()];
-
-            while (stream.read(bytecode) != -1) {}
+            var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+            var bytecode = Files.readAllBytes(Path.of(url.toURI()));
 
             return Unsafe.defineClass(name, bytecode, 0, bytecode.length, null, new ProtectionDomain(new CodeSource(url, (CodeSigner[]) null), null, null, null));
-        } catch (IOException exception) {
-            throw Unsafe.throwException(exception);
+        } catch (Throwable throwable) {
+            throw Unsafe.throwException(throwable);
         }
     }
 
     @SuppressWarnings("ConstantConditions")
     public static <T> Class<T> defineSystemClass(ClassLoader resourceLoader, String name) {
         try {
-            URL url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-            InputStream stream = url.openStream();
-            byte[] bytecode = new byte[stream.available()];
-
-            while (stream.read(bytecode) != -1) {}
+            var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+            var bytecode = Files.readAllBytes(Path.of(url.toURI()));
 
             return defineClass(systemClassLoader, name, bytecode, 0, bytecode.length, new CodeSource(url, (CodeSigner[]) null));
-        } catch (IOException exception) {
-            throw Unsafe.throwException(exception);
+        } catch (Throwable throwable) {
+            throw Unsafe.throwException(throwable);
         }
     }
 
@@ -315,23 +307,16 @@ public class Classes {
     @SuppressWarnings("ConstantConditions")
     public static <T> Class<T> defineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name, ProtectionDomain protectionDomain) {
         try {
-            InputStream stream = resourceLoader.getResourceAsStream(name.replace('.', '/') + ".class");
-            byte[] bytecode = new byte[stream.available()];
-
-            while (stream.read(bytecode) != -1) {}
+            var bytecode = Files.readAllBytes(Path.of(resourceLoader.getResource(name.replace('.', '/') + ".class").toURI()));
 
             return defineClass(classLoader, name, bytecode, 0, bytecode.length, protectionDomain);
-        } catch (IOException exception) {
-            throw Unsafe.throwException(exception);
+        } catch (Throwable throwable) {
+            throw Unsafe.throwException(throwable);
         }
     }
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, byte[] bytecode, int offset, int length) {
-        try {
-            return (Class<T>) defineClass0.invokeExact(classLoader, bytecode, offset, length);
-        } catch (Throwable throwable) {
-            throw Unsafe.throwException(throwable);
-        }
+        return defineClass(classLoader, null, bytecode, offset, length, null);
     }
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode) {
@@ -339,11 +324,7 @@ public class Classes {
     }
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length) {
-        try {
-            return (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, offset, length);
-        } catch (Throwable throwable) {
-            throw Unsafe.throwException(throwable);
-        }
+        return defineClass(classLoader, name, bytecode, offset, length, null);
     }
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, ProtectionDomain protectionDomain) {
@@ -352,7 +333,7 @@ public class Classes {
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
         try {
-            return (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain);
+            return (Class<T>) defineClass0.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain);
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
         }
@@ -360,7 +341,7 @@ public class Classes {
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
         try {
-            return (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, protectionDomain);
+            return (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, protectionDomain);
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
         }
@@ -368,7 +349,7 @@ public class Classes {
 
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
         try {
-            return (Class<T>) defineClass4.invokeExact(classLoader, name, bytecode, offset, length, codeSource);
+            return (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, codeSource);
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
         }
@@ -376,7 +357,7 @@ public class Classes {
 
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, ByteBuffer bytecode, CodeSource codeSource) {
         try {
-            return (Class<T>) defineClass5.invokeExact(classLoader, name, bytecode, codeSource);
+            return (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, codeSource);
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
         }
@@ -385,7 +366,7 @@ public class Classes {
     // todo: end of mess
 
     public static List<Class<?>> supertypes(Class<?> type) {
-        List<Class<?>> supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
+        var supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
         type = type.getSuperclass();
 
         if (type != null) {
@@ -396,8 +377,8 @@ public class Classes {
     }
 
     public static List<Type> genericSupertypes(Class<?> type) {
-        List<Type> supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
-        Type superclass = type.getGenericSuperclass();
+        var supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
+        var superclass = type.getGenericSuperclass();
 
         if (superclass != null) {
             supertypes.add(superclass);
@@ -407,8 +388,8 @@ public class Classes {
     }
 
     private static Class<?> tryLoad(String... classes) {
-        for (String name : classes) {
-            Class<?> klass = load(name);
+        for (var name : classes) {
+            var klass = load(name);
 
             if (klass != null) {
                 return klass;
@@ -434,15 +415,13 @@ public class Classes {
             URLClassLoader$addURL = Invoker.findVirtual(URLClassLoader.class, "addURL", void.class, URL.class);
             URLClassLoader$getURLs = Invoker.findVirtual(URLClassPath, "getURLs", URL[].class);
 
-            defineClass0 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, byte[].class, int.class, int.class);
-            defineClass1 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class);
-            defineClass2 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-            defineClass3 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class);
-            defineClass4 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, CodeSource.class);
-            defineClass5 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, CodeSource.class);
+            defineClass0 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
+            defineClass1 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class);
+            defineClass2 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, CodeSource.class);
+            defineClass3 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, CodeSource.class);
 
-            byte[] byteArray = new byte[0];
-            short[] shortArray = new short[0];
+            var byteArray = new byte[0];
+            var shortArray = new short[0];
 
             long offset = 0;
 
@@ -469,7 +448,7 @@ public class Classes {
             longClassPointer = true;
             addressFactor = 1;
         } else {
-            throw new Error("unsupported field offset; report to https://git.auoeke.net/reflect/issues.");
+            throw new Error("unsupported field offset %d; report to https://git.auoeke.net/reflect/issues.".formatted(fieldOffset));
         }
 
         systemClassPath = classPath(systemClassLoader);

@@ -3,16 +3,17 @@ package net.auoeke.reflect.experimental;
 import java.lang.invoke.MethodHandle;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
-import user11681.uncheck.Uncheck;
+import net.gudenau.lib.unsafe.Unsafe;
 
 public class Modules {
     private static final MethodHandle implAddOpensToAllUnnamed = Invoker.findVirtual(Module.class, "implAddOpensToAllUnnamed", void.class, String.class);
-    private static final MethodHandle implAddExportsToAllUnnamed = Invoker.findVirtual(Module.class, "implAddExportsToAllUnnamed", void.class, String.class);
 
-    public static void open(String klass) {
-        Class<?> klas = Classes.load(klass);
+    public static void open(String type) {
+        open(Classes.load(type));
+    }
 
-        open(klas.getPackageName(), klas.getModule());
+    public static void open(Class<?> type) {
+        open(type.getPackageName(), type.getModule());
     }
 
     public static void open(String pkg, String klass) {
@@ -20,20 +21,10 @@ public class Modules {
     }
 
     public static void open(String pkg, Module module) {
-        Uncheck.handle(() -> implAddOpensToAllUnnamed.invokeExact(module, pkg));
-    }
-
-    public static void export(String klass) {
-        Class<?> klas = Classes.load(klass);
-
-        export(klas.getPackageName(), klas.getModule());
-    }
-
-    public static void export(String pkg, String klass) {
-        export(pkg, Classes.load(pkg + "." + klass).getModule());
-    }
-
-    public static void export(String pkg, Module module) {
-        Uncheck.handle(() -> implAddExportsToAllUnnamed.invokeExact(module, pkg));
+        try {
+            implAddOpensToAllUnnamed.invokeExact(module, pkg);
+        } catch (Throwable throwable) {
+            throw Unsafe.throwException(throwable);
+        }
     }
 }

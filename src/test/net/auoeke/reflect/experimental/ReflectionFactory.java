@@ -28,7 +28,6 @@ public class ReflectionFactory {
 
     static {
         MethodHandle field$init = Invoker.unreflectConstructor(Constructors.constructors(Field.class)[0]);
-
         field = field$init.type().parameterCount() == 8 ? MethodHandles.insertArguments(field$init, 4, false) : field$init;
     }
 }

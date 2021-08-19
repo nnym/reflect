@@ -1,34 +1,29 @@
 package net.auoeke.reflect.test;
 
-import java.util.stream.IntStream;
-import net.auoeke.reflect.Types;
-import net.auoeke.reflect.experimental.Lists;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Stream;
-import net.gudenau.lib.unsafe.Unsafe;
-import org.junit.jupiter.api.Test;
+import java.util.stream.IntStream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
-import net.auoeke.reflect.Reflect;
 import net.auoeke.reflect.ReflectTest;
+import net.auoeke.reflect.Types;
+import net.auoeke.reflect.experimental.Lists;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.C;
 import net.auoeke.reflect.misc.TestObject;
 import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Util;
+import net.gudenau.lib.unsafe.Unsafe;
+import org.junit.jupiter.api.Test;
 import user11681.uncheck.ThrowingRunnable;
 import user11681.uncheck.Uncheck;
 
@@ -325,13 +320,6 @@ public class SpeedTest {
     }
 
     static {
-        double time = time(false, Reflect.class::getProtectionDomain);
-
-        try (Stream<Path> classStream = Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect"))) {
-            time += classStream.map(klass -> time(false, () -> Class.forName("net.auoeke.reflect." + klass.getFileName().toString().replace(".class", "")))).reduce(0L, Long::sum);
-            Logger.log("initialized in %s ms%n", time / 1000000D);
-        } catch (Throwable throwable) {
-            throw Unsafe.throwException(throwable);
-        }
+        Logger.log("initialized in %s ms%n", time(false, Util::load) / 1000000D);
     }
 }
