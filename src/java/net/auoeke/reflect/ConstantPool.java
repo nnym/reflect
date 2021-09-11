@@ -30,7 +30,7 @@ public class ConstantPool {
         try {
             return (Integer) getSize.invoke(this.constantPool);
         } catch (Throwable throwable) {
-            return (Integer) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -38,7 +38,7 @@ public class ConstantPool {
         try {
             return (Class<?>) getClassAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Class<?>) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -46,7 +46,7 @@ public class ConstantPool {
         try {
             return (Class<?>) getClassAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Class<?>) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -54,7 +54,7 @@ public class ConstantPool {
         try {
             return (Member) getMethodAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Member) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -62,7 +62,7 @@ public class ConstantPool {
         try {
             return (Member) getMethodAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Member) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -70,7 +70,7 @@ public class ConstantPool {
         try {
             return (Field) getFieldAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Field) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -78,7 +78,7 @@ public class ConstantPool {
         try {
             return (Field) getFieldAtIfLoaded.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Field) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -86,7 +86,7 @@ public class ConstantPool {
         try {
             return (String) getMemberRefInfoAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -94,7 +94,7 @@ public class ConstantPool {
         try {
             return (Integer) getIntAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Integer) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -102,7 +102,7 @@ public class ConstantPool {
         try {
             return (Long) getLongAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Long) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -110,7 +110,7 @@ public class ConstantPool {
         try {
             return (Float) getFloatAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Float) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -118,7 +118,7 @@ public class ConstantPool {
         try {
             return (Double) getDoubleAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (Double) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -126,7 +126,7 @@ public class ConstantPool {
         try {
             return (String) getStringAt.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -134,7 +134,7 @@ public class ConstantPool {
         try {
             return (String) getUTF8At.invoke(this.constantPool, index);
         } catch (Throwable throwable) {
-            return (String) Reflect.nul;
+            return Reflect.nul();
         }
     }
 }

@@ -169,7 +169,7 @@ public class EnumConstructor<E extends Enum<E>> {
             }
         }
 
-        return (Pointer) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static boolean isArrayField(Field field) {

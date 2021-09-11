@@ -22,7 +22,7 @@ public class Types {
         if (klass == Float.class) return float.class;
         if (klass == Double.class) return double.class;
 
-        return (Class<?>) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Class<?> wrapper(Class<?> klass) {
@@ -36,7 +36,7 @@ public class Types {
         if (klass == float.class) return Float.class;
         if (klass == double.class) return Double.class;
 
-        return (Class<?>) Reflect.nul;
+        return Reflect.nul();
     }
 
     /**
@@ -78,7 +78,7 @@ public class Types {
         var primitive = primitive(type);
 
         if (primitive == null) {
-            return (T) Reflect.nul;
+            return Reflect.nul();
         }
 
         var cast = (Object[]) array;

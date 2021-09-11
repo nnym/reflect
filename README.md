@@ -25,7 +25,7 @@ dependencies {
 }
 ```
 
-## a brief summary of classes
+## a brief summary of the classes
 - `Accessor`: a collection of methods for reading and mutating fields
 - `Classes`: a set of methods for working with classes (`defineClass`, change class of object)
 - `ConstantPool`: a proxy for the JDK's internal `ConstantPool` that reads constant pools

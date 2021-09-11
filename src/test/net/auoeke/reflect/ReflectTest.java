@@ -445,6 +445,19 @@ public class ReflectTest {
         var unsafe = theUnsafe.get(null);
     }
 
+    @Test
+    void unreflect() throws Throwable {
+        assert Invoker.unreflect(RetentionPolicy.class, "valueOf").invoke("RUNTIME") == RetentionPolicy.RUNTIME;
+
+        Integer four = 4;
+        assert Invoker.unreflect(four, "doubleValue").invoke() instanceof Double doubleObject && doubleObject == 4;
+
+        Function<String, String> stringTransformer = string -> string.charAt(0) + string.repeat(3) + string.charAt(string.length() - 1);
+        assert "aabcdabcdabcdd".equals(Invoker.unreflect(stringTransformer, "apply").invoke("abcd"));
+
+        Invoker.unreflect(new Object[0], "toString").invoke();
+    }
+
     static {
         Util.load();
     }

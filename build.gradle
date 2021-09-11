@@ -4,14 +4,10 @@ plugins {
 }
 
 group = "net.auoeke"
-version = "3.1.0"
+version = "3.2.0"
 
 sourceCompatibility = 16
 targetCompatibility = 16
-
-java {
-    withSourcesJar()
-}
 
 sourceSets {
     main {
@@ -21,6 +17,10 @@ sourceSets {
     test {
         java.srcDir("src/test")
     }
+}
+
+java {
+    withSourcesJar()
 }
 
 repositories {

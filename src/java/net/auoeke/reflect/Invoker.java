@@ -229,8 +229,32 @@ public class Invoker {
 
     public static MethodHandle unreflect(Class<?> klass, String name, Class<?>... parameterTypes) {
         try {
-            return trustedLookup.unreflect(klass.getDeclaredMethod(name, parameterTypes));
-        } catch (IllegalAccessException | NoSuchMethodException exception) {
+            return trustedLookup.unreflect(Methods.getMethod(klass, name, parameterTypes));
+        } catch (IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static MethodHandle unreflect(Class<?> klass, String name) {
+        try {
+            return trustedLookup.unreflect(Methods.getMethod(klass, name));
+        } catch (IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static MethodHandle unreflect(Object object, String name, Class<?>... parameterTypes) {
+        try {
+            return trustedLookup.unreflect(Methods.getMethod(object, name, parameterTypes)).bindTo(object);
+        } catch (IllegalAccessException exception) {
+            throw Unsafe.throwException(exception);
+        }
+    }
+
+    public static MethodHandle unreflect(Object object, String name) {
+        try {
+            return trustedLookup.unreflect(Methods.getMethod(object, name)).bindTo(object);
+        } catch (IllegalAccessException exception) {
             throw Unsafe.throwException(exception);
         }
     }
@@ -245,8 +269,8 @@ public class Invoker {
 
     public static MethodHandle unreflectConstructor(Class<?> klass, Class<?>... parameterTypes) {
         try {
-            return trustedLookup.unreflectConstructor(klass.getDeclaredConstructor(parameterTypes));
-        } catch (IllegalAccessException | NoSuchMethodException exception) {
+            return trustedLookup.unreflectConstructor(Constructors.constructor(klass, parameterTypes));
+        } catch (IllegalAccessException exception) {
             throw Unsafe.throwException(exception);
         }
     }
@@ -261,16 +285,16 @@ public class Invoker {
 
     public static MethodHandle unreflectSpecial(Class<?> klass, String name, Class<?>... parameterTypes) {
         try {
-            return trustedLookup.unreflectSpecial(klass.getDeclaredMethod(name, parameterTypes), klass);
-        } catch (IllegalAccessException | NoSuchMethodException exception) {
+            return trustedLookup.unreflectSpecial(Methods.getMethod(klass, name, parameterTypes), klass);
+        } catch (IllegalAccessException exception) {
             throw Unsafe.throwException(exception);
         }
     }
 
     public static MethodHandle unreflectSpecial(Class<?> specialCaller, Class<?> klass, String name, Class<?>... parameterTypes) {
         try {
-            return trustedLookup.unreflectSpecial(klass.getDeclaredMethod(name, parameterTypes), specialCaller);
-        } catch (IllegalAccessException | NoSuchMethodException exception) {
+            return trustedLookup.unreflectSpecial(Methods.getMethod(klass, name, parameterTypes), specialCaller);
+        } catch (IllegalAccessException exception) {
             throw Unsafe.throwException(exception);
         }
     }

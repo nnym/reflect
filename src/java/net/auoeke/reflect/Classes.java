@@ -233,7 +233,7 @@ public class Classes {
             klass = klass.getSuperclass();
         }
 
-        return (Field) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static void load(String... classes) {
@@ -270,7 +270,7 @@ public class Classes {
         try {
             return (Class<T>) Class.forName(name, initialize, loader);
         } catch (ClassNotFoundException exception) {
-            return (Class<T>) Reflect.nul;
+            return Reflect.nul();
         }
     }
 
@@ -396,7 +396,7 @@ public class Classes {
             }
         }
 
-        return (Class<?>) Reflect.nul;
+        return Reflect.nul();
     }
 
     static {

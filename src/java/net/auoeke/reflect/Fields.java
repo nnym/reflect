@@ -47,7 +47,7 @@ public class Fields {
             type = type.getSuperclass();
         }
 
-        return (Field) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Field field(Class<?> type, String name) {
@@ -82,7 +82,7 @@ public class Fields {
             type = type.getSuperclass();
         }
 
-        return (Field) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Field rawField(Object object, String name) {
@@ -100,7 +100,7 @@ public class Fields {
             }
         }
 
-        return (Field) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static List<Field> all(Object object) {

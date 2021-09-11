@@ -15,11 +15,8 @@ public class Constructors {
     public static <T> T instantiate(Class<T> klass) {
         Constructor<T> constructor = constructor(klass);
 
-        if (constructor == null) {
-            return Unsafe.allocateInstance(klass);
-        }
+        return constructor == null ? Unsafe.allocateInstance(klass) : Invoker.invoke(Invoker.unreflectConstructor(constructor));
 
-        return Invoker.invoke(Invoker.unreflectConstructor(constructor));
     }
 
     public static <T> T construct(Class<T> klass, Object... arguments) {
@@ -41,7 +38,7 @@ public class Constructors {
             }
         }
 
-        return (Constructor<T>) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static <T> Constructor<T> constructor(boolean unbox, Class<T> klass, Object... arguments) {

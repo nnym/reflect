@@ -6,8 +6,11 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import net.gudenau.lib.unsafe.Unsafe;
 
 public class Methods {
@@ -22,7 +25,7 @@ public class Methods {
             }
         }
 
-        return (T) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static <T extends Executable> T find(T[] methods, Object... arguments) {
@@ -38,13 +41,13 @@ public class Methods {
     }
 
     public static <T extends Executable> T find(boolean unbox, int offset, T[] methods, Object... arguments) {
-        for (Executable method : methods) {
+        for (T method : methods) {
             if (Methods.argumentsMatchParameters(unbox, offset, method, arguments)) {
-                return (T) method;
+                return method;
             }
         }
 
-        return (T) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static boolean argumentsMatchParameters(Executable executable, Object... arguments) {
@@ -91,44 +94,44 @@ public class Methods {
 
     public static Method getMethod(Object object, String name) {
         Class<?> klass = object.getClass();
-        Method method;
 
         while (klass != null) {
-            if ((method = getMethod(klass, name)) != null) {
+            var method = getMethod(klass, name);
+
+            if (method != null) {
                 return method;
             }
 
             klass = klass.getSuperclass();
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getMethod(Class<?> klass, String name) {
-        Method[] methods = getMethods(klass);
-
-        for (int i = 0, length = methods.length; i < length; i++) {
-            if (methods[i].getName().equals(name)) {
-                return methods[i];
+        for (var method : getMethods(klass)) {
+            if (method.getName().equals(name)) {
+                return method;
             }
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getMethod(Object object, String name, Class<?>... parameterTypes) {
         Class<?> klass = object.getClass();
-        Method method;
 
         while (klass != null) {
-            if ((method = getMethod(klass, name, parameterTypes)) != null) {
+            var method = getMethod(klass, name, parameterTypes);
+
+            if (method != null) {
                 return method;
             }
 
             klass = klass.getSuperclass();
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getMethod(Class<?> klass, String name, Class<?>... parameterTypes) {
@@ -155,7 +158,7 @@ public class Methods {
             }
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getRawMethod(Object object, String name) {
@@ -170,7 +173,7 @@ public class Methods {
             klass = klass.getSuperclass();
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getRawMethod(Class<?> klass, String name) {
@@ -182,49 +185,44 @@ public class Methods {
             }
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getRawMethod(Object object, String name, Class<?>... parameterTypes) {
         Class<?> klass = object.getClass();
-        Method method;
 
         while (klass != null) {
-            if ((method = getRawMethod(klass, name, parameterTypes)) != null) {
+            var method = getRawMethod(klass, name, parameterTypes);
+
+            if (method != null) {
                 return method;
             }
 
             klass = klass.getSuperclass();
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method getRawMethod(Class<?> klass, String name, Class<?>... parameterTypes) {
-        Method[] methods = getRawMethods(klass);
-        Class<?>[] parameterTypes1;
-        Method method;
-        int parameterCount;
-        int j;
-
         method:
-        for (int i = 0, length = methods.length; i < length; i++) {
-            if (methods[i].getName().equals(name)) {
-                method = methods[i];
+        for (var method : getRawMethods(klass)) {
+            if (method.getName().equals(name)) {
+                var actualParameterTypes = method.getParameterTypes();
 
-                if ((parameterCount = (parameterTypes1 = method.getParameterTypes()).length) == parameterTypes.length) {
-                    for (j = 0; j < parameterCount; j++) {
-                        if (parameterTypes1[j] != parameterTypes[j]) {
+                if (actualParameterTypes.length == parameterTypes.length) {
+                    for (int index = 0; index < actualParameterTypes.length; index++) {
+                        if (actualParameterTypes[index] != parameterTypes[index]) {
                             continue method;
                         }
                     }
 
-                    return methods[i];
+                    return method;
                 }
             }
         }
 
-        return (Method) Reflect.nul;
+        return Reflect.nul();
     }
 
     public static Method[] getMethods(Class<?> klass) {
@@ -248,6 +246,21 @@ public class Methods {
         } catch (Throwable throwable) {
             throw Unsafe.throwException(throwable);
         }
+    }
+
+    public static List<Method> all(Class<?> type) {
+        if (type == null) {
+            return null;
+        }
+
+        var methods = new ArrayList<Method>();
+
+        do {
+            Collections.addAll(methods, getMethods(type));
+            type = type.getSuperclass();
+        } while (type != null);
+
+        return methods;
     }
 
     static {

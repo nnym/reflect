@@ -13,7 +13,9 @@ public class Reflect {
     public static ClassLoader defaultClassLoader = Reflect.class.getClassLoader();
 
     /** Using this field instead of a literal `null` prevents redundant warnings. */
-    static final Object nul = null;
+    static <T> T nul() {
+        return null;
+    }
 
     public static void disableSecurity() {
         if (!securityDisabled) {
