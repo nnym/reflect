@@ -4,16 +4,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
-import net.auoeke.reflect.asm.ClassNode2;
 import net.auoeke.reflect.experimental.ReflectionFactory;
 import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Retainable;
 import net.auoeke.reflect.util.Util;
-import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import org.objectweb.asm.Opcodes;
 
+@SuppressWarnings({"ResultOfMethodCallIgnored", "RedundantSuppression"})
 @Testable
 public class ExperimentalTest {
     @Retainable
@@ -45,12 +43,5 @@ public class ExperimentalTest {
         assert test1 == 23;
 
         Util.bp();
-    }
-
-    @Test
-    void defineClass() throws Throwable {
-        var node = new ClassNode2(Opcodes.ACC_PUBLIC, "reflect/test123");
-        var type = Unsafe.trustedLookup.defineClass(node.bytecode());
-        var bp = true;
     }
 }

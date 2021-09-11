@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import user11681.uncheck.Uncheck;
 
-@SuppressWarnings({"AssertWithSideEffects", "FieldMayBeFinal"})
+@SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal"})
 @Testable
 public class ReflectTest {
     @Test
@@ -421,6 +421,28 @@ public class ReflectTest {
 
         assert Types.unbox(bytes) == bytes;
         assert Types.unbox(new Object[0]) == null;
+    }
+
+    @Test
+    void module() throws Throwable {
+        var jdkUnsafe = Classes.load("jdk.internal.misc.Unsafe");
+        var theUnsafe = jdkUnsafe.getDeclaredField("theUnsafe");
+        var assertionError = new AssertionError("jdk.internal.misc.Unsafe should be protected.");
+
+        try {
+            theUnsafe.trySetAccessible();
+            theUnsafe.get(null);
+
+            throw assertionError;
+        } catch (Throwable throwable) {
+            if (throwable == assertionError) {
+                throw Unsafe.throwException(throwable);
+            }
+        }
+
+        Modules.open(jdkUnsafe);
+        theUnsafe.trySetAccessible();
+        var unsafe = theUnsafe.get(null);
     }
 
     static {

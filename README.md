@@ -37,6 +37,7 @@ dependencies {
   its methods do not declare thrown exceptions
 - `JavaLangAccess`: a partial proxy for `JavaLangAccess`
 - `Methods`: a collection of utilities for listing class methods and dealing with them
+- `Modules`: a collection of methods for opening modules
 - `Pointer`: a field reference that is similar to `Field` and does not force exceptions to be handled;
   intended for use with frequently accessed fields
 - `Reflect`: a container for useful state and a method that disables the security manager

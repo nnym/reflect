@@ -3,8 +3,8 @@ plugins {
     id("java-library")
 }
 
-group("net.auoeke")
-version("3.0.0")
+group = "net.auoeke"
+version = "3.1.0"
 
 sourceCompatibility = 16
 targetCompatibility = 16
@@ -26,7 +26,7 @@ sourceSets {
 repositories {
     mavenCentral()
 
-    maven {url = "https://auoeke.jfrog.io/artifactory/maven"}
+    maven {url = "https://maven.auoeke.net"}
 }
 
 dependencies {
@@ -53,7 +53,7 @@ publishing {
         mavenLocal()
 
         maven {
-            url = "https://auoeke.jfrog.io/artifactory/maven"
+            url = "https://maven.auoeke.net"
 
             credentials {
                 username = System.properties["maven.username"]
