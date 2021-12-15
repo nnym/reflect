@@ -190,13 +190,13 @@ public class SpeedTest {
 
     @Test
     public void unreflect() throws Throwable {
-        var method = Methods.get(A.class, "privateMethod");
+        var method = Methods.of(A.class, "privateMethod");
         var declaredMethod = A.class.getDeclaredMethod("privateMethod");
         var methodHandle = Invoker.findStatic(A.class, "privateMethod", String.class);
         var unreflected = Invoker.unreflect(method);
 
-        mean("Method 0", () -> Methods.get(A.class, "privateMethod2", int.class));
-        mean("Method 1", () -> Methods.get(A.class, "privateMethod"));
+        mean("Method 0", () -> Methods.of(A.class, "privateMethod2", int.class));
+        mean("Method 1", () -> Methods.of(A.class, "privateMethod"));
 
         mean("Method 2", () -> {
             var method1 = A.class.getDeclaredMethod("privateMethod");
@@ -216,7 +216,7 @@ public class SpeedTest {
 
     @Test
     void method() {
-        mean(() -> Methods.get(TestObject.class));
+        mean(() -> Methods.of(TestObject.class));
         mean(ReflectTest.class::getDeclaredMethods);
     }
 

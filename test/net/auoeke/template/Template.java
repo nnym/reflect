@@ -15,7 +15,7 @@ public abstract class Template {
     private final ClassNode2 classNode = new ClassNode2().reader(this.getClass().getName()).read();
 
     public Template() {
-        Methods.get(this.getClass()).forEach(method -> {
+        Methods.of(this.getClass()).forEach(method -> {
             for (var annotations = Stream.of(method.getDeclaredAnnotations()).filter(annotation -> supportedAnnotations.contains(annotation.annotationType())).toList(); !annotations.isEmpty();) {
                 var node = this.node(method);
 

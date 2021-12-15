@@ -10,7 +10,7 @@ import net.gudenau.lib.unsafe.Unsafe;
 import static net.auoeke.reflect.Reflect.run;
 
 public class Constructors {
-    private static final MethodHandle getDeclaredConstructors = Methods.get(Class.class)
+    private static final MethodHandle getDeclaredConstructors = Methods.of(Class.class)
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Constructor[].class).findAny()
         .map(Invoker::unreflectSpecial)
         .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method).get();

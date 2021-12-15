@@ -4,15 +4,13 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
 import static net.auoeke.reflect.Reflect.run;
 
 public class Fields {
-    private static final MethodHandle getDeclaredFields = Methods.get(Class.class)
+    private static final MethodHandle getDeclaredFields = Methods.of(Class.class)
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class).findAny()
         .map(Invoker::unreflectSpecial)
         .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method).get();
@@ -20,7 +18,7 @@ public class Fields {
     private static final CacheMap<Class<?>, Field[]> fields = CacheMap.identity();
     private static final CacheMap<Class<?>, Field[]> staticFields = CacheMap.identity();
     private static final CacheMap<Class<?>, Field[]> instanceFields = CacheMap.identity();
-    private static final CacheMap<Class<?>, Map<String, Field>> fieldsByName = CacheMap.identity();
+    private static final CacheMap<Class<?>, CacheMap<String, Field>> fieldsByName = CacheMap.identity();
 
     public static final long modifiersOffset = of(Field.class).filter(field -> field.getName().equals("modifiers")).findAny().map(Unsafe::objectFieldOffset).get();
     public static final long overrideOffset = of(AccessibleObject.class).filter(field -> field.getName().equals("override")).findAny().map(Unsafe::objectFieldOffset).get();
@@ -54,7 +52,7 @@ public class Fields {
     }
 
     public static Field of(Class<?> type, String name) {
-        return fieldsByName.computeIfAbsent(type, type1 -> of(type1).collect(IdentityHashMap::new, (map, field) -> map.put(field.getName(), field), Map::putAll)).get(name);
+        return fieldsByName.computeIfAbsent(type, type1 -> of(type1).collect(CacheMap::hash, (map, field) -> map.put(field.getName(), field), CacheMap::putAll)).get(name);
     }
 
     public static Field of(Object object, String name) {

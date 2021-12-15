@@ -187,7 +187,7 @@ public class ReflectTest {
         var two = new TestObject();
         var fields = Fields.instanceOf(ReflectTest.class).toList();
 
-        Methods.get(Accessor.class).map(Method::getName).filter(name -> name.startsWith("copy")).forEach(name -> {
+        Methods.of(Accessor.class).map(Method::getName).filter(name -> name.startsWith("copy")).forEach(name -> {
             var typeName = name.substring(name.indexOf('y') + 1).toLowerCase();
 
             fields.forEach(field -> {
@@ -275,21 +275,21 @@ public class ReflectTest {
         assert Invoker.constructor(handle).equals(member);
 
         handle = Invoker.findVirtual(Object.class, "toString", String.class);
-        member = Methods.get(Object.class, "toString");
+        member = Methods.of(Object.class, "toString");
 
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
 
         handle = Invoker.findSpecial(String.class, "indexOfNonWhitespace", int.class);
-        member = Methods.get(String.class, "indexOfNonWhitespace");
+        member = Methods.of(String.class, "indexOfNonWhitespace");
 
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
 
         handle = Invoker.findStatic(String.class, "valueOf", String.class, boolean.class);
-        member = Methods.get(String.class, "valueOf", boolean.class);
+        member = Methods.of(String.class, "valueOf", boolean.class);
 
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);

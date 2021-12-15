@@ -24,7 +24,7 @@ public class UnsafeBuilder extends TestBuilder {
 
     @Test
     void generate() {
-        Methods.get(Classes.load("jdk.internal.misc.Unsafe")).filter(method -> Flags.isPublic(method) && Flags.isInstance(method)).forEach(unsafeMethod -> {
+        Methods.of(Classes.load("jdk.internal.misc.Unsafe")).filter(method -> Flags.isPublic(method) && Flags.isInstance(method)).forEach(unsafeMethod -> {
             this.method(method -> method.inherit(unsafeMethod));
 
             MethodHandle handle = Invoker.unreflectSpecial(unsafeMethod);

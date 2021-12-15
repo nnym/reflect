@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -21,7 +20,7 @@ public class Methods {
         .get();
 
     private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
-    private static final CacheMap<Class<?>, HashMap<String, Method[]>> methodsByName = CacheMap.identity();
+    private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
 
     public static <T extends Executable> T find(long flags, int offset, Stream<T> methods, Object... arguments) {
         return methods.filter(method -> Types.canCast(flags, offset, method, arguments)).findAny().orElse(null);
@@ -51,16 +50,16 @@ public class Methods {
         return run(() -> (Method[]) getDeclaredMethods.invokeExact(klass));
     }
 
-    public static Stream<Method> get(Class<?> type) {
+    public static Stream<Method> of(Class<?> type) {
         return Stream.of(methods.computeIfAbsent(type, type1 -> direct(type)));
     }
 
-    public static Method get(Class<?> type, String name) {
-        return get(type).filter(method -> method.getName().equals(name)).findAny().orElse(null);
+    public static Method of(Class<?> type, String name) {
+        return of(type).filter(method -> method.getName().equals(name)).findAny().orElse(null);
     }
 
-    public static Method get(Class<?> type, String name, Class<?>... parameterTypes) {
-        return get(type).filter(method -> {
+    public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
+        return of(type).filter(method -> {
             if (method.getName().equals(name)) {
                 for (var actualTypes = method.getParameterTypes();;) {
                     return actualTypes.length == parameterTypes.length && Arrays.equals(actualTypes, parameterTypes);
@@ -72,7 +71,7 @@ public class Methods {
     }
 
     public static Stream<Method> all(Class<?> start, Class<?> end) {
-        return Types.classes(start, end).flatMap(Methods::get);
+        return Types.classes(start, end).flatMap(Methods::of);
     }
 
     public static Stream<Method> all(Class<?> type) {
@@ -96,10 +95,10 @@ public class Methods {
     }
 
     public static Method any(Object object, String name, Class<?>... parameterTypes) {
-        return Types.classes(object.getClass()).map(type -> get(type, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
+        return Types.classes(object.getClass()).map(type -> of(type, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
     }
 
     public static <T> T defaultValue(Class<? extends Annotation> type, String name) {
-        return (T) get(type, name).getDefaultValue();
+        return (T) of(type, name).getDefaultValue();
     }
 }

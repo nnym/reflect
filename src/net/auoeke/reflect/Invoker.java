@@ -124,11 +124,11 @@ public class Invoker {
     }
 
     public static MethodHandle unreflect(Class<?> type, String name, Class<?>... parameterTypes) {
-        return unreflect(Methods.get(type, name, parameterTypes));
+        return unreflect(Methods.of(type, name, parameterTypes));
     }
 
     public static MethodHandle unreflect(Class<?> type, String name) {
-        return unreflect(Methods.get(type, name));
+        return unreflect(Methods.of(type, name));
     }
 
     public static MethodHandle unreflect(Object object, String name, Class<?>... parameterTypes) {
@@ -152,7 +152,7 @@ public class Invoker {
     }
 
     public static MethodHandle unreflectSpecial(Class<?> type, String name, Class<?>... parameterTypes) {
-        return unreflectSpecial(Methods.get(type, name, parameterTypes));
+        return unreflectSpecial(Methods.of(type, name, parameterTypes));
     }
 
     public static MethodHandle unreflectGetter(Field field) {

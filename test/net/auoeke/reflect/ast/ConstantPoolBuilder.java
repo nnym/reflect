@@ -26,7 +26,7 @@ public class ConstantPoolBuilder extends TestBuilder {
 
     @Test
     public void generate() {
-        Methods.get(Classes.ConstantPool).forEach(method -> {
+        Methods.of(Classes.ConstantPool).forEach(method -> {
             var returnType = method.getReturnType();
 
             if (returnType.getModule().isExported(returnType.getPackageName()) && !Flags.isNative(method)) {
