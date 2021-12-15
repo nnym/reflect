@@ -4,23 +4,27 @@ plugins {
 }
 
 group = "net.auoeke"
-version = "3.2.0"
+version = "4.0.0"
 
-sourceCompatibility = 16
-targetCompatibility = 16
+sourceCompatibility = 17
+targetCompatibility = 17
 
 sourceSets {
     main {
-        java.srcDir("src/java")
+        java.srcDir("src")
     }
 
     test {
-        java.srcDir("src/test")
+        java.srcDir("test")
     }
 }
 
 java {
     withSourcesJar()
+}
+
+compileTestJava {
+    options.compilerArgs.add("--enable-preview")
 }
 
 repositories {
@@ -32,14 +36,20 @@ repositories {
 dependencies {
     api("net.gudenau.lib:unsafe:latest.release")
 
-    testCompileOnly(compileOnly("org.jetbrains:annotations:latest.release"))
+    testCompileOnly(compileOnlyApi("org.jetbrains:annotations:latest.release"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
     testImplementation("org.ow2.asm:asm:9.0")
     testImplementation("org.ow2.asm:asm-tree:9.0")
     testImplementation("org.openjdk.jol:jol-core:latest.release")
     testImplementation("user11681:uncheck:latest.release")
     testImplementation("net.bytebuddy:byte-buddy-agent:latest.release")
+}
+
+test {
+    useJUnitPlatform()
 }
 
 publishing {

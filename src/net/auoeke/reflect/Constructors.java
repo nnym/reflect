@@ -1,0 +1,68 @@
+package net.auoeke.reflect;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
+import java.util.Optional;
+import java.util.stream.Stream;
+import net.gudenau.lib.unsafe.Unsafe;
+
+import static net.auoeke.reflect.Reflect.run;
+
+public class Constructors {
+    private static final MethodHandle getDeclaredConstructors = Methods.get(Class.class)
+        .filter(method -> Flags.isNative(method) && method.getReturnType() == Constructor[].class).findAny()
+        .map(Invoker::unreflectSpecial)
+        .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method).get();
+
+    private static final CacheMap<Class<?>, Constructor<?>[]> constructors = CacheMap.identity();
+
+    /**
+     @return {@code type}'s constructors without caching and wrapping it in a stream.
+     */
+    public static <T> Constructor<T>[] direct(Class<T> type) {
+        return run(() -> (Constructor<T>[]) getDeclaredConstructors.invokeExact(type));
+    }
+
+    public static <T> Stream<Constructor<T>> of(Class<T> type) {
+        return Stream.of((Constructor<T>[]) constructors.computeIfAbsent(type, Constructors::direct));
+    }
+
+    /**
+     Instantiate {@code type} via a constructor if it is available or fall back to {@link Unsafe#allocateInstance(Class)}.
+
+     @return the new instance.
+     @throws InstantiationException if {@code type} is abstract.
+     */
+    public static <T> T instantiate(Class<T> type) {
+        return Optional.ofNullable(Invoker.findConstructor(type)).map(Invoker::<T>invoke).orElseGet(() -> Unsafe.allocateInstance(type));
+    }
+
+    public static <T> T construct(Class<T> type, Object... arguments) {
+        return run(() -> (T) Invoker.unreflectConstructor(find(type, arguments)).invokeWithArguments(arguments));
+    }
+
+    public static <T> Constructor<T> find(long flags, int offset, Class<T> type, Object... arguments) {
+        return Methods.find(flags, offset, of(type), arguments);
+    }
+
+    public static <T> Constructor<T> find(long flags, Class<T> klass, Object... arguments) {
+        return Methods.find(flags, of(klass), arguments);
+    }
+
+    public static <T> Constructor<T> find(int offset, Class<T> klass, Object... arguments) {
+        return Methods.find(offset, of(klass), arguments);
+    }
+
+    public static <T> Constructor<T> find(int offset, Class<T> type, Class<?>... parameterTypes) {
+        return Methods.find(offset, of(type), parameterTypes);
+    }
+
+    public static <T> Constructor<T> find(Class<T> klass, Object... arguments) {
+        return find(Types.DEFAULT_CONVERSION, klass, arguments);
+    }
+
+    public static <T> Constructor<T> find(Class<T> type, Class<?>... parameterTypes) {
+        return Methods.find(of(type), parameterTypes);
+    }
+}

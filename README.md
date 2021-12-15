@@ -1,29 +1,26 @@
-reflect is a Java reflection library that tries to overcome the restrictions on reflection
-and make it concise while achieving higher performance by utilizing `Unsafe`.
-
-Although reflect can disable the security manager, doing so is discouraged because [the security manager is deprecated for removal](https://openjdk.java.net/jeps/411).
+reflect is a Java library whereby I try to overcome the restrictions on reflection and make it concise.
 
 It reduces the usual verbosity of reflection by providing concise methods for most reflective operations (and more).
-**None of these methods declares thrown exceptions.**
+**None of these methods (unlike every standard reflective method ever) declares checked exceptions.**
 
-Supported Java versions are 16 and above.
+Supported Java versions are 17 and above.
 
-I try to keep this library mostly stable, although occasionally (with prior notice) I may break things.
+I try to keep this library mostly stable, although occasionally (with prior notice or otherwise) I may break things.
 
-reflect is hosted on Artifactory. It depends on [my fork](https://git.auoeke.net/unsafe) of [gudenau/java-unsafe](https://github.com/gudenau/java-unsafe).
+reflect depends on [my fork](https://git.auoeke.net/unsafe) of [gudenau/java-unsafe](https://github.com/gudenau/java-unsafe).
+
+It is hosted at https://maven.auoeke.net as `net.auoeke:reflect`.
 ```groovy
 repositories {
-    maven {url = "https://auoeke.jfrog.io/artifactory/maven"}
+    maven {url = "https://maven.auoeke.net"}
 }
 
 dependencies {
-    /* Use "latest.integration" for the latest version or pick from
-    https://auoeke.jfrog.io/artifactory/maven/net/gudenau/lib/unsafe and
-    https://auoeke.jfrog.io/artifactory/maven/net/auoeke/reflect. */
-    api("net.gudenau.lib:unsafe:latest.integration")
-    api("net.auoeke:reflect:latest.integration")
+    implementation("net.auoeke:reflect:4.+")
 }
 ```
+
+Documentation is very scarce but I have taken to documenting my code recently.
 
 ## a brief summary of the classes
 - `Accessor`: a collection of methods for reading and mutating fields
@@ -37,7 +34,7 @@ dependencies {
   its methods do not declare thrown exceptions
 - `JavaLangAccess`: a partial proxy for `JavaLangAccess`
 - `Methods`: a collection of utilities for listing class methods and dealing with them
-- `Modules`: a collection of methods for opening modules
+- `Modules`: a collection of methods for getting and opening modules
 - `Pointer`: a field reference that is similar to `Field` and does not force exceptions to be handled;
   intended for use with frequently accessed fields
 - `Reflect`: a container for useful state and a method that disables the security manager

@@ -1,0 +1,37 @@
+package net.auoeke.reflect.ast;
+
+import net.auoeke.reflect.Classes;
+import net.auoeke.reflect.Flags;
+import net.auoeke.reflect.Methods;
+import net.auoeke.reflect.ast.base.method.expression.GetField;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.platform.commons.annotation.Testable;
+
+@Testable
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class ConstantPoolBuilder extends TestBuilder {
+    private ConstantPoolBuilder() {
+        super("net.auoeke.reflect.ConstantPool");
+
+        this.public$();
+    }
+
+    @Override
+    @AfterEach
+    protected void tearDown() {
+        super.tearDown();
+    }
+
+    @Test
+    public void generate() {
+        Methods.get(Classes.ConstantPool).forEach(method -> {
+            var returnType = method.getReturnType();
+
+            if (returnType.getModule().isExported(returnType.getPackageName()) && !Flags.isNative(method)) {
+                this.methodHandle(new GetField().of(Classes.class).name("ConstantPool"), method);
+            }
+        });
+    }
+}
