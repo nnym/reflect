@@ -30,11 +30,11 @@ public class Pointer implements Cloneable {
     }
 
     public Pointer staticField(Class<?> klass, String name) {
-        return this.bind(klass).offset(Unsafe.staticFieldOffset(Fields.get(klass, name)));
+        return this.bind(klass).offset(Unsafe.staticFieldOffset(Fields.of(klass, name)));
     }
 
     public Pointer staticField(String name) {
-        return this.offset(Unsafe.staticFieldOffset(Fields.get((Class<?>) this.object, name)));
+        return this.offset(Unsafe.staticFieldOffset(Fields.of((Class<?>) this.object, name)));
     }
 
     public Pointer staticField(Field field) {
@@ -42,11 +42,11 @@ public class Pointer implements Cloneable {
     }
 
     public Pointer instanceField(Class<?> klass, String name) {
-        return this.offset(Unsafe.objectFieldOffset(Fields.get(klass, name)));
+        return this.offset(Unsafe.objectFieldOffset(Fields.of(klass, name)));
     }
 
     public Pointer instanceField(String name) {
-        return this.offset(Unsafe.objectFieldOffset(Fields.get(this.object, name)));
+        return this.offset(Unsafe.objectFieldOffset(Fields.of(this.object, name)));
     }
 
     public Pointer instanceField(Field field) {

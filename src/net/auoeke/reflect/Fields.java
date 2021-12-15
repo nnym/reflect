@@ -22,19 +22,19 @@ public class Fields {
     private static final CacheMap<Class<?>, Field[]> instanceFields = CacheMap.identity();
     private static final CacheMap<Class<?>, Map<String, Field>> fieldsByName = CacheMap.identity();
 
-    public static final long modifiersOffset = get(Field.class).filter(field -> field.getName().equals("modifiers")).findAny().map(Unsafe::objectFieldOffset).get();
-    public static final long overrideOffset = get(AccessibleObject.class).filter(field -> field.getName().equals("override")).findAny().map(Unsafe::objectFieldOffset).get();
+    public static final long modifiersOffset = of(Field.class).filter(field -> field.getName().equals("modifiers")).findAny().map(Unsafe::objectFieldOffset).get();
+    public static final long overrideOffset = of(AccessibleObject.class).filter(field -> field.getName().equals("override")).findAny().map(Unsafe::objectFieldOffset).get();
 
     public static Field[] direct(Class<?> klass) {
         return run(() -> (Field[]) getDeclaredFields.invokeExact(klass));
     }
 
-    public static Stream<Field> get(Class<?> type) {
+    public static Stream<Field> of(Class<?> type) {
         return Stream.of(fields.computeIfAbsent(type, Fields::direct));
     }
 
     public static Stream<Field> all(Class<?> begin, Class<?> end) {
-        return Types.classes(begin, end).flatMap(Fields::get);
+        return Types.classes(begin, end).flatMap(Fields::of);
     }
 
     public static Stream<Field> all(Class<?> begin) {
@@ -49,15 +49,15 @@ public class Fields {
         return all(object.getClass(), Object.class);
     }
 
-    public static Field get(String klass, String name) {
-        return get(Classes.load(klass), name);
+    public static Field of(String klass, String name) {
+        return of(Classes.load(klass), name);
     }
 
-    public static Field get(Class<?> type, String name) {
-        return fieldsByName.computeIfAbsent(type, type1 -> get(type1).collect(IdentityHashMap::new, (map, field) -> map.put(field.getName(), field), Map::putAll)).get(name);
+    public static Field of(Class<?> type, String name) {
+        return fieldsByName.computeIfAbsent(type, type1 -> of(type1).collect(IdentityHashMap::new, (map, field) -> map.put(field.getName(), field), Map::putAll)).get(name);
     }
 
-    public static Field get(Object object, String name) {
+    public static Field of(Object object, String name) {
         return any(object.getClass(), name);
     }
 
@@ -69,16 +69,16 @@ public class Fields {
         return any(Classes.load(klass), name);
     }
 
-    public static Stream<Field> getStatic(Class<?> type) {
-        return Stream.of(staticFields.computeIfAbsent(type, type1 -> get(type1).filter(Flags::isStatic).toArray(Field[]::new)));
+    public static Stream<Field> staticOf(Class<?> type) {
+        return Stream.of(staticFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isStatic).toArray(Field[]::new)));
     }
 
-    public static Stream<Field> getInstance(Object object) {
-        return getInstance(object.getClass());
+    public static Stream<Field> instanceOf(Object object) {
+        return instanceOf(object.getClass());
     }
 
-    public static Stream<Field> getInstance(Class<?> type) {
-        return Stream.of(instanceFields.computeIfAbsent(type, type1 -> get(type1).filter(Flags::isInstance).toArray(Field[]::new)));
+    public static Stream<Field> instanceOf(Class<?> type) {
+        return Stream.of(instanceFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isInstance).toArray(Field[]::new)));
     }
 
     public static Stream<Field> allInstance(Class<?> begin, Class<?> end) {

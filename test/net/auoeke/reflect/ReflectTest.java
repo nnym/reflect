@@ -29,7 +29,7 @@ import org.junit.platform.commons.annotation.Testable;
 @Testable
 public class ReflectTest {
     static void logFields(Object object) {
-        Reflect.run(() -> Fields.getInstance(object.getClass()).forEach(field ->
+        Reflect.run(() -> Fields.instanceOf(object.getClass()).forEach(field ->
             System.out.printf("%s: %s\n", field, Accessor.get(object, field))
         ));
     }
@@ -185,7 +185,7 @@ public class ReflectTest {
     public void testCopy() {
         var one = new TestObject();
         var two = new TestObject();
-        var fields = Fields.getInstance(ReflectTest.class).toList();
+        var fields = Fields.instanceOf(ReflectTest.class).toList();
 
         Methods.get(Accessor.class).map(Method::getName).filter(name -> name.startsWith("copy")).forEach(name -> {
             var typeName = name.substring(name.indexOf('y') + 1).toLowerCase();
@@ -262,7 +262,7 @@ public class ReflectTest {
     @Test
     void member() throws Throwable {
         MethodHandle handle = Invoker.findGetter(Integer.class, "value", int.class);
-        Member member = Fields.get(Integer.class, "value");
+        Member member = Fields.of(Integer.class, "value");
 
         assert Invoker.field(handle).equals(member);
         assert Invoker.member(handle).equals(member);

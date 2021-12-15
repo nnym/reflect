@@ -26,7 +26,7 @@ public class ExperimentalTest {
 
     @Test
     void trustedFinal() {
-        Logger.log(Accessor.get(Fields.get(String.class, "value"), "trustedFinal"));
+        Logger.log(Accessor.get(Fields.of(String.class, "value"), "trustedFinal"));
     }
 
     @Test

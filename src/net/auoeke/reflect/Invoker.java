@@ -160,7 +160,7 @@ public class Invoker {
     }
 
     public static MethodHandle unreflectGetter(Class<?> klass, String name) {
-        return unreflectGetter(Fields.get(klass, name));
+        return unreflectGetter(Fields.of(klass, name));
     }
 
     public static MethodHandle unreflectSetter(Field field) {
@@ -168,7 +168,7 @@ public class Invoker {
     }
 
     public static MethodHandle unreflectSetter(Class<?> klass, String name) {
-        return unreflectSetter(Fields.get(klass, name));
+        return unreflectSetter(Fields.of(klass, name));
     }
 
     public static VarHandle findStaticVarHandle(Class<?> owner, String name, Class<?> type) {
@@ -184,6 +184,6 @@ public class Invoker {
     }
 
     public static VarHandle unreflectVarHandle(Class<?> type, String name) {
-        return unreflectVarHandle(Fields.get(type, name));
+        return unreflectVarHandle(Fields.of(type, name));
     }
 }

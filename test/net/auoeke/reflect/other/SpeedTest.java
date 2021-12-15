@@ -150,7 +150,7 @@ public class SpeedTest {
             var field = TestObject.class.getDeclaredField("integer");
             field.setAccessible(true);
 
-            var modifiers = Fields.get(Field.class, "modifiers");
+            var modifiers = Fields.of(Field.class, "modifiers");
             Unsafe.putBoolean(modifiers, Fields.overrideOffset, true);
             modifiers.setInt(field, Flags.remove(field, Flags.FINAL));
         };
@@ -165,9 +165,9 @@ public class SpeedTest {
     @Test
     void reflectField() {
         Fields.direct(TestObject.class);
-        time("cache ", () -> Fields.get(TestObject.class));
+        time("cache ", () -> Fields.of(TestObject.class));
 
-        mean("cached", () -> Fields.get(TestObject.class).toList());
+        mean("cached", () -> Fields.of(TestObject.class).toList());
         mean("all   ", () -> Fields.all(TestObject.class).toList());
         mean("raw   ", () -> Fields.direct(TestObject.class));
     }
