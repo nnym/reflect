@@ -58,7 +58,6 @@ public class Classes {
      @param <T>    the desired new type.
      @return <b>{@code object}</b>.
      */
-    @SafeVarargs
     public static <T> T reinterpret(Object object, T... dummy) {
         return (T) reinterpret(object, Unsafe.allocateInstance(dummy.getClass().getComponentType()));
     }

@@ -5,7 +5,6 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.jetbrains.annotations.NotNull;
 
 public class Iteratorable<T> implements Iterator<T>, Iterable<T> {
     private final Iterator<T> iterator;
@@ -22,7 +21,6 @@ public class Iteratorable<T> implements Iterator<T>, Iterable<T> {
         return new Iteratorable<>(stream.iterator());
     }
 
-    @NotNull
     @Override
     public Iterator<T> iterator() {
         return this.iterator;

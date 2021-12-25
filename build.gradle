@@ -36,8 +36,6 @@ repositories {
 dependencies {
     api("net.gudenau.lib:unsafe:latest.release")
 
-    testCompileOnly(compileOnlyApi("org.jetbrains:annotations:latest.release"))
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 

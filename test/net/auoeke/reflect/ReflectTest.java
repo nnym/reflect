@@ -2,7 +2,6 @@ package net.auoeke.reflect;
 
 import java.io.File;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -258,7 +257,7 @@ public class ReflectTest {
 
     @Test
     void member() throws Throwable {
-        MethodHandle handle = Invoker.findGetter(Integer.class, "value", int.class);
+        var handle = Invoker.findGetter(Integer.class, "value", int.class);
         Member member = Fields.of(Integer.class, "value");
 
         assert Invoker.field(handle).equals(member);
