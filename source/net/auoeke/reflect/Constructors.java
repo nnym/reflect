@@ -18,21 +18,30 @@ public class Constructors {
     private static final CacheMap<Class<?>, Constructor<?>[]> constructors = CacheMap.identity();
 
     /**
-     @return {@code type}'s constructors without caching and wrapping it in a stream.
+     Get a type's declared constructors directly without caching them or wrapping them in a stream.
+
+     @param type a type
+     @return the array containing the type's declared methods
      */
     public static <T> Constructor<T>[] direct(Class<T> type) {
         return run(() -> (Constructor<T>[]) getDeclaredConstructors.invokeExact(type));
     }
 
+    /**
+     Get a type's declared constructors.
+
+     @param type a type
+     @return a stream containing the type's declared methods
+     */
     public static <T> Stream<Constructor<T>> of(Class<T> type) {
         return Stream.of((Constructor<T>[]) constructors.computeIfAbsent(type, Constructors::direct));
     }
 
     /**
-     Instantiate {@code type} via a constructor if it is available or fall back to {@link Unsafe#allocateInstance(Class)}.
+     Instantiate {@code type} through a constructor if it is available or fall back to {@link Unsafe#allocateInstance(Class)}.
 
-     @return the new instance.
-     @throws InstantiationException if {@code type} is abstract.
+     @return the new instance; never {@code null}
+     @throws InstantiationException if {@code type} is abstract
      */
     public static <T> T instantiate(Class<T> type) {
         return Optional.ofNullable(Invoker.findConstructor(type)).map(Invoker::<T>invoke).orElseGet(() -> Unsafe.allocateInstance(type));

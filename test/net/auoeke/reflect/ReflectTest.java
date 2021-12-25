@@ -32,7 +32,7 @@ public class ReflectTest {
 
     @Test
     public void changeLoader() {
-        Class<?> PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
+        var PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
         assert PackagePrivate.getClassLoader() == null;
 
         Accessor.putReference((Object) PackagePrivate, "classLoader", Reflect.defaultClassLoader);
