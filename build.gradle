@@ -1,22 +1,14 @@
 plugins {
     id("maven-publish")
     id("java-library")
+    id("gronk").version("latest.release")
 }
 
-group = "net.auoeke"
-version = "4.3.1"
+group("net.auoeke")
+version("4.3.1")
 
-sourceCompatibility = 17
-targetCompatibility = 17
-
-sourceSets {
-    main {
-        java.srcDir("source")
-    }
-
-    test {
-        java.srcDir("test")
-    }
+gronk {
+    javaVersion(17)
 }
 
 java {
@@ -29,21 +21,20 @@ compileTestJava {
 
 repositories {
     mavenCentral()
-
-    maven {url = "https://maven.auoeke.net"}
+    maven("https://maven.auoeke.net")
 }
 
 dependencies {
-    api("net.gudenau.lib:unsafe:latest.release")
+    api("net.gudenau.lib:unsafe")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-    testImplementation("org.ow2.asm:asm:latest.release")
-    testImplementation("org.ow2.asm:asm-tree:latest.release")
-    testImplementation("org.openjdk.jol:jol-core:latest.release")
-    testImplementation("net.auoeke:uncheck:latest.release")
-    testImplementation("net.bytebuddy:byte-buddy-agent:latest.release")
+    testImplementation("org.ow2.asm:asm")
+    testImplementation("org.ow2.asm:asm-tree")
+    testImplementation("org.openjdk.jol:jol-core")
+    testImplementation("net.auoeke:uncheck")
+    testImplementation("net.bytebuddy:byte-buddy-agent")
 }
 
 test {
@@ -51,18 +42,6 @@ test {
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-
-            versionMapping {
-                allVariants {
-                    fromResolutionResult()
-                }
-            }
-        }
-    }
-
     repositories {
         mavenLocal()
 
