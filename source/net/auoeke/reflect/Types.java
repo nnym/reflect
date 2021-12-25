@@ -21,44 +21,95 @@ public class Types {
     public static long UNBOX = 1 << 1;
 
     /**
-     Widen primitives and unbox wrappers.
+     {@linkplain #WIDEN Widen primitives} and {@linkplain #UNBOX unbox wrappers}.
      */
     public static long DEFAULT_CONVERSION = WIDEN | UNBOX;
 
+    /**
+     Get a class hierarchy starting at a class and ending at one of its superclasses.
+
+     @param begin the initial class
+     @param end   the highest superclass; may be null (exclusive)
+     @param <T>   the type of the initial class
+     @return the hierarchy as a {@link Stream}
+     */
     public static <T> Stream<Class<? super T>> classes(Class<T> begin, Class<?> end) {
         return Stream.iterate(begin, type -> type != end, Class::getSuperclass);
     }
 
+    /**
+     Get the hierarchy of a class.
+
+     @param begin the bottom of the hierarchy
+     @param <T>   the type of the lowest class
+     @return the hierarchy as a {@link Stream}
+     */
     public static <T> Stream<Class<? super T>> classes(Class<T> begin) {
         return classes(begin, null);
     }
 
+    /**
+     Get the size of a value of a type. Primitive wrapper types are treated as ordinary reference types.
+
+     @param type a type
+     @return the size of its values
+     */
     public static int size(Class<?> type) {
-        return TypeInfo.of(type).size;
+        return (type.isPrimitive() ? TypeInfo.of(type) : TypeInfo.REFERENCE).size;
     }
 
+    /**
+     Convert a primitive wrapper type to its primitive counterpart.
+
+     @param type a type
+     @return the type if it is primitive; the primitive counterpart of the type if it is a primitive wrapper; otherwise null
+     */
     public static Class<?> unbox(Class<?> type) {
         return type.isPrimitive() ? type : TypeInfo.of(type).primitive;
     }
 
+    /**
+     Convert a primitive type to its corresponding wrapper type.
+
+     @param type a type
+     @return the type's wrapper type if it is primitive; otherwise the type
+     */
     public static Class<?> box(Class<?> type) {
         return type.isPrimitive() ? TypeInfo.of(type).reference : type;
     }
 
+    /**
+     Check whether 2 types are the same or if one of them is a primitive and the other is its wrapper type.
+
+     @param type  a type
+     @param other another type
+     @return whether they are the some or one of them is a wrapper of the other
+     */
     public static boolean equals(Class<?> type, Class<?> other) {
         return type == other || type != null && other != null && (unbox(type) == other || unbox(other) == type);
     }
 
-    public static boolean isWrapper(Class<?> type) {
-        if (!type.isPrimitive()) {
-            var info = TypeInfo.of(type);
-            return info.primitive != null && info.primitive != type;
-        }
+    /**
+     Check whether a type is a primitive wrapper type.
 
-        return false;
+     @param type a type
+     @return whether it is a primitive wrapper type
+     */
+    public static boolean isWrapper(Class<?> type) {
+        return !type.isPrimitive() && unbox(type) != null;
     }
 
-    /** {@code left variable = right;} */
+    /**
+     Check whether an assignment is legal according to the given conversion flags.
+     <p>
+     {@code left variable = right;}
+
+     @param flags the conversion flags
+     @param left  the type to which to assign
+     @param right the type to assign
+     @see #WIDEN
+     @see #UNBOX
+     */
     public static boolean canCast(long flags, Class<?> left, Class<?> right) {
         if (left.isAssignableFrom(right)) {
             return true;
@@ -66,12 +117,17 @@ public class Types {
 
         if (left.isPrimitive()) {
             return Flags.all(flags, UNBOX) && unbox(right) == left
-                || Flags.all(flags, WIDEN) && (Flags.all(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
+                   || Flags.all(flags, WIDEN) && (Flags.all(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
         }
 
         return left == box(right);
     }
 
+    /**
+     Check whether an assignment is legal according to the {@linkplain #DEFAULT_CONVERSION default conversion flags}.
+
+     @return {@link #canCast(long, Class, Class)} with the default conversion flags.
+     */
     public static boolean canCast(Class<?> left, Class<?> right) {
         return canCast(DEFAULT_CONVERSION, left, right);
     }
@@ -79,7 +135,7 @@ public class Types {
     /**
      Test whether a sequence of types can be assigned from a parallel array of types with optional coercion.
 
-     @param flags see {@link #UNBOX} and {@link #WIDEN}
+     @param flags  see {@link #UNBOX} and {@link #WIDEN}
      @param offset offset of the first type in {@code left}
      @return whether the types in {@code left} can be assigned from the types in {@code right}
      */
@@ -89,7 +145,7 @@ public class Types {
                 return Arrays.equals(left, offset, left.length, right, 0, right.length);
             }
 
-            for (int i = offset, length = left.length; i != length; i++) {
+            for (var i = offset; i != left.length; i++) {
                 if (Flags.all(flags, UNBOX)) {
                     if (!canCast(flags, left[i], right[i - offset])) {
                         return false;

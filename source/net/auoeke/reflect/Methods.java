@@ -69,6 +69,13 @@ public class Methods {
         }).findAny().orElse(null);
     }
 
+    /**
+     Get all methods declared by all classes in a hierarchy starting at a given class and ending at one of its superclasses.
+
+     @param start the starting class
+     @param end the superclass at which to stop; may be null (exclusive)
+     @return all methods is the hierarchy
+     */
     public static Stream<Method> all(Class<?> start, Class<?> end) {
         return Types.classes(start, end).flatMap(Methods::of);
     }

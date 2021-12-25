@@ -8,6 +8,7 @@ import net.auoeke.reflect.Types;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.C;
 import org.junit.jupiter.api.Test;
+import sun.misc.Unsafe;
 
 class TypesTest extends Types {
     @Test
@@ -18,14 +19,15 @@ class TypesTest extends Types {
 
     @Test
     void sizeTest() {
-        assert size(boolean.class) == 8;
-        assert size(byte.class) == 8;
-        assert size(short.class) == 16;
-        assert size(char.class) == 16;
-        assert size(int.class) == 32;
-        assert size(float.class) == 32;
-        assert size(long.class) == 64;
-        assert size(double.class) == 64;
+        assert size(boolean.class) == Byte.SIZE;
+        assert size(byte.class) == Byte.SIZE;
+        assert size(short.class) == Short.SIZE;
+        assert size(char.class) == Character.SIZE;
+        assert size(int.class) == Integer.SIZE;
+        assert size(float.class) == Float.SIZE;
+        assert size(long.class) == Long.SIZE;
+        assert size(double.class) == Double.SIZE;
+        assert size(Object.class) == Unsafe.ADDRESS_SIZE * Byte.SIZE;
     }
 
     @Test
