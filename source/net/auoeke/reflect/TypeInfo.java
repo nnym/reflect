@@ -54,6 +54,10 @@ enum TypeInfo {
         return this == VOID;
     }
 
+    public boolean isPrimitive() {
+        return this.primitive != null && !this.isVoid();
+    }
+
     public boolean isBoolean() {
         return this == BOOLEAN;
     }

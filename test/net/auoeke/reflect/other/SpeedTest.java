@@ -14,12 +14,12 @@ import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.TestObject;
 import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Util;
+import net.auoeke.uncheck.ThrowingRunnable;
+import net.auoeke.uncheck.Uncheck;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import user11681.uncheck.ThrowingRunnable;
-import user11681.uncheck.Uncheck;
 
 @SuppressWarnings("ALL")
 @Disabled

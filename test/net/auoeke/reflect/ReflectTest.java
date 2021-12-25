@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.C;
 import net.auoeke.reflect.misc.Enumeration;
@@ -351,50 +348,6 @@ public class ReflectTest {
     }
 
     @Test
-    void box() {
-        var ints = IntStream.range(0, 10000).toArray();
-        assert Arrays.equals(ints, Stream.of(Types.box(ints)).mapToInt(i -> (int) i).toArray());
-
-        var doubles = DoubleStream.iterate(0, d -> d < 100, d -> d + 1).toArray();
-        assert Arrays.equals(doubles, Stream.of(Types.box(doubles)).mapToDouble(d -> (double) d).toArray());
-
-        byte[] bytes = {1, 2, 3, 4, 5};
-        var box = Types.<Byte>box(bytes);
-
-        assert box[0] == bytes[0]
-            && box[1] == bytes[1]
-            && box[2] == bytes[2]
-            && box[3] == bytes[3]
-            && box[4] == bytes[4];
-
-        assert Types.box(box) == box;
-
-        Object[] objects = new Object[0];
-        assert Types.box(objects) == objects;
-    }
-
-    @Test
-    void unbox() {
-        Integer[] ints = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).toArray(Integer[]::new);
-        assert Arrays.equals(Stream.of(ints).mapToInt(i -> i).toArray(), Types.unbox(ints));
-
-        Double[] doubles = Stream.iterate(0D, d -> d < 100, d -> d + 1).toArray(Double[]::new);
-        assert Arrays.equals(Stream.of(doubles).mapToDouble(d -> d).toArray(), Types.unbox(doubles));
-
-        Byte[] box = {1, 2, 3, 4, 5};
-        byte[] bytes = Types.unbox(box);
-
-        assert bytes[0] == box[0]
-            && bytes[1] == box[1]
-            && bytes[2] == box[2]
-            && bytes[3] == box[3]
-            && bytes[4] == box[4];
-
-        assert Types.unbox(bytes) == bytes;
-        assert Types.unbox(new Object[0]) == null;
-    }
-
-    @Test
     void unreflect() throws Throwable {
         assert Invoker.unreflect(RetentionPolicy.class, "valueOf").invoke("RUNTIME") == RetentionPolicy.RUNTIME;
 
@@ -405,28 +358,6 @@ public class ReflectTest {
         assert "aabcdabcdabcdd".equals(Invoker.unreflect(stringTransformer, "apply").invoke("abcd"));
 
         Invoker.unreflect(new Object[0], "toString").invoke();
-    }
-
-    @Test
-    void types() {
-        assert Types.canCast(Object.class, Object.class);
-        assert Types.canCast(Object.class, this.getClass());
-        assert !Types.canCast(this.getClass(), Object.class);
-        assert Types.canCast(Integer.class, int.class);
-        assert Types.canCast(int.class, Integer.class);
-        assert Types.canCast(new Class[]{Double.class, Long.class, long.class, this.getClass(), Object.class}, double.class, Long.class, Long.class, this.getClass(), this.getClass());
-        assert Types.canCast(new Class[]{Double.class, Long.class, long.class, this.getClass(), Object.class}, 0D, 0L, 0L, this, this);
-        assert !Types.canCast(Double.class, int.class);
-        assert !Types.canCast(Double.class, float.class);
-        assert !Types.canCast(Double.class, Float.class);
-        assert Types.canCast(double.class, float.class);
-        assert Types.canCast(long.class, int.class);
-        assert Types.canCast(long.class, short.class);
-        assert Types.canCast(int.class, char.class);
-        assert !Types.canCast(int.class, boolean.class);
-
-        assert Types.classes(C.class, A.class).count() == 2;
-        assert Types.classes(Object.class).count() == 1;
     }
 
     @Test

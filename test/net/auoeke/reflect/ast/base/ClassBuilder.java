@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import net.auoeke.reflect.ast.base.method.expression.literal.Literal;
 import net.auoeke.reflect.ast.base.method.expression.literal.TypeLiteral;
 import net.auoeke.reflect.ast.base.type.ConcreteType;
-import user11681.uncheck.Uncheck;
+import net.auoeke.uncheck.Uncheck;
 
 public class ClassBuilder extends MemberBuilder<ClassBuilder> {
     public final String pkg;

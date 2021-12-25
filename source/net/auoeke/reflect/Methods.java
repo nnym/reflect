@@ -61,9 +61,8 @@ public class Methods {
     public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
         return of(type).filter(method -> {
             if (method.getName().equals(name)) {
-                for (var actualTypes = method.getParameterTypes();;) {
-                    return actualTypes.length == parameterTypes.length && Arrays.equals(actualTypes, parameterTypes);
-                }
+                var actualTypes = method.getParameterTypes();
+                return actualTypes.length == parameterTypes.length && Arrays.equals(actualTypes, parameterTypes);
             }
 
             return false;

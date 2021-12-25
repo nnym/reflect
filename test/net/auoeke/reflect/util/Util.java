@@ -8,9 +8,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.auoeke.reflect.Reflect;
+import net.auoeke.uncheck.ThrowingConsumer;
+import net.auoeke.uncheck.ThrowingRunnable;
 import net.gudenau.lib.unsafe.Unsafe;
-import user11681.uncheck.ThrowingConsumer;
-import user11681.uncheck.ThrowingRunnable;
 
 public class Util {
     public static int repetitions = 10000;

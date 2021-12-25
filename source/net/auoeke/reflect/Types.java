@@ -2,6 +2,7 @@ package net.auoeke.reflect;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -9,12 +10,19 @@ import static net.auoeke.reflect.Reflect.nul;
 
 @SuppressWarnings("unused")
 public class Types {
-    /** Widen primitives. */
+    /**
+     Widen primitives according to the automatic widening in Java.
+     */
     public static long WIDEN = 1;
 
-    /** Unbox primitive wrappers. */
+    /**
+     Unbox primitive wrappers if they match the target primitive type.
+     */
     public static long UNBOX = 1 << 1;
 
+    /**
+     Widen primitives and unbox wrappers.
+     */
     public static long DEFAULT_CONVERSION = WIDEN | UNBOX;
 
     public static <T> Stream<Class<? super T>> classes(Class<T> begin, Class<?> end) {
@@ -30,29 +38,34 @@ public class Types {
     }
 
     public static Class<?> unbox(Class<?> type) {
-        return type.isPrimitive() ? nul() : TypeInfo.of(type).primitive;
+        return type.isPrimitive() ? type : TypeInfo.of(type).primitive;
     }
 
     public static Class<?> box(Class<?> type) {
-        return type.isPrimitive() ? TypeInfo.of(type).reference : nul();
+        return type.isPrimitive() ? TypeInfo.of(type).reference : type;
     }
 
     public static boolean equals(Class<?> type, Class<?> other) {
-        return type == other || type != null && (unbox(type) == other || unbox(other) == type);
+        return type == other || type != null && other != null && (unbox(type) == other || unbox(other) == type);
     }
 
     public static boolean isWrapper(Class<?> type) {
-        return unbox(type) != null;
+        if (!type.isPrimitive()) {
+            var info = TypeInfo.of(type);
+            return info.primitive != null && info.primitive != type;
+        }
+
+        return false;
     }
 
-    /** {@code left} var = {@code right}; */
+    /** {@code left variable = right;} */
     public static boolean canCast(long flags, Class<?> left, Class<?> right) {
         if (left.isAssignableFrom(right)) {
             return true;
         }
 
         if (left.isPrimitive()) {
-            return Flags.all(flags, UNBOX) && !right.isPrimitive() && left == TypeInfo.of(right).primitive
+            return Flags.all(flags, UNBOX) && unbox(right) == left
                 || Flags.all(flags, WIDEN) && (Flags.all(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
         }
 
@@ -64,15 +77,21 @@ public class Types {
     }
 
     /**
+     Test whether a sequence of types can be assigned from a parallel array of types with optional coercion.
+
      @param flags see {@link #UNBOX} and {@link #WIDEN}
      @param offset offset of the first type in {@code left}
-     @return whether {@code left} can be assigned to {@code right}
+     @return whether the types in {@code left} can be assigned from the types in {@code right}
      */
     public static boolean canCast(long flags, int offset, Class<?>[] left, Class<?>... right) {
         if (left.length == right.length + offset) {
+            if (flags == 0) {
+                return Arrays.equals(left, offset, left.length, right, 0, right.length);
+            }
+
             for (int i = offset, length = left.length; i != length; i++) {
                 if (Flags.all(flags, UNBOX)) {
-                    if (!canCast(left[i], right[i - offset])) {
+                    if (!canCast(flags, left[i], right[i - offset])) {
                         return false;
                     }
                 } else if (!left[i].isAssignableFrom(right[i - offset])) {
@@ -144,14 +163,14 @@ public class Types {
 
     /**
      @param array an array
-     @param <T>   a desired type for convenience casting
+     @param <T>   the type of the boxed array
      @return the boxed version of {@code array} if its component type is primitive; {@code array} otherwise
      */
     public static <T> T[] box(Object array) {
         var type = array.getClass().componentType();
         var wrapper = box(type);
 
-        if (wrapper == null) {
+        if (wrapper == type) {
             return (T[]) array;
         }
 
@@ -164,7 +183,7 @@ public class Types {
 
     /**
      @param array an array
-     @param <T>   a desired type for convenience casting
+     @param <T>   the type of the unboxed array
      @return the unboxed version of {@code array} if its component type is a primitive wrapper type; {@code array} if its component type is primitive; {@literal null} otherwise
      */
     public static <T> T unbox(Object array) {
@@ -176,7 +195,7 @@ public class Types {
 
         var primitive = unbox(type);
 
-        if (primitive == null) {
+        if (primitive == null || primitive == type) {
             return nul();
         }
 

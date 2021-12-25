@@ -4,14 +4,14 @@ plugins {
 }
 
 group = "net.auoeke"
-version = "4.2.0"
+version = "4.3.0"
 
 sourceCompatibility = 17
 targetCompatibility = 17
 
 sourceSets {
     main {
-        java.srcDir("src")
+        java.srcDir("source")
     }
 
     test {
@@ -41,10 +41,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-    testImplementation("org.ow2.asm:asm:9.0")
-    testImplementation("org.ow2.asm:asm-tree:9.0")
+    testImplementation("org.ow2.asm:asm:latest.release")
+    testImplementation("org.ow2.asm:asm-tree:latest.release")
     testImplementation("org.openjdk.jol:jol-core:latest.release")
-    testImplementation("user11681:uncheck:latest.release")
+    testImplementation("net.auoeke:uncheck:latest.release")
     testImplementation("net.bytebuddy:byte-buddy-agent:latest.release")
 }
 
@@ -56,6 +56,12 @@ publishing {
     publications {
         maven(MavenPublication) {
             from(components.java)
+
+            versionMapping {
+                allVariants {
+                    fromResolutionResult()
+                }
+            }
         }
     }
 

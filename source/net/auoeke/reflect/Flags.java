@@ -19,7 +19,6 @@ public class Flags {
     public static final int STATIC       = 1 << 3;
     public static final int FINAL        = 1 << 4;
     public static final int SYNCHRONIZED = 1 << 5;
-    public static final int SUPER        = 1 << 5;
     public static final int VOLATILE     = 1 << 6;
 
     /**
@@ -28,18 +27,38 @@ public class Flags {
      */
     public static final int BRIDGE       = 1 << 6;
     public static final int TRANSIENT    = 1 << 7;
+
+    /**
+     Denotes a method with a varargs parameter.
+     */
     public static final int VARARGS      = 1 << 7;
     public static final int NATIVE       = 1 << 8;
     public static final int INTERFACE    = 1 << 9;
     public static final int ABSTRACT     = 1 << 10;
+
+    /**
+     strictfp
+     */
     public static final int STRICT       = 1 << 11;
 
-    /** Compiler-generated. */
+    /**
+     Compiler-generated.
+     */
     public static final int SYNTHETIC    = 1 << 12;
+
+    /**
+     Denotes an annotation interface.
+     */
     public static final int ANNOTATION   = 1 << 13;
+
+    /**
+     Denotes an enum type or an enum constant field.
+     */
     public static final int ENUM         = 1 << 14;
 
-    /** Declared implicitly according to the specification of the language of the source code; not an implementation artifact. */
+    /**
+     Declared implicitly according to the specification of the language of the source code; implicit but not synthetic and not an implementation artifact.
+     */
     public static final int MANDATED     = 1 << 15;
     // @formatter:on
 
