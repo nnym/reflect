@@ -20,7 +20,8 @@ public class Methods {
         .get();
 
     private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
-    private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
+    // Todo: cache methods by name?
+    // private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
 
     public static <T extends Executable> T find(long flags, int offset, Stream<T> methods, Object... arguments) {
         return methods.filter(method -> Types.canCast(flags, offset, method, arguments)).findAny().orElse(null);
@@ -46,12 +47,24 @@ public class Methods {
         return find(0, methods, parameterTypes);
     }
 
-    public static Method[] direct(Class<?> klass) {
-        return run(() -> (Method[]) getDeclaredMethods.invokeExact(klass));
+    /**
+     Get a type's declared methods directly without {@linkplain jdk.internal.reflect.Reflection#filterMethods filtering} or caching them or wrapping them in a stream.
+
+     @param type a type
+     @return the array containing its declared methods
+     */
+    public static Method[] direct(Class<?> type) {
+        return run(() -> (Method[]) getDeclaredMethods.invokeExact(type));
     }
 
+    /**
+     Get a type's declared methods without {@linkplain jdk.internal.reflect.Reflection#filterMethods filtering}.
+
+     @param type a type
+     @return a stream containing its declared methods
+     */
     public static Stream<Method> of(Class<?> type) {
-        return Stream.of(methods.computeIfAbsent(type, type1 -> direct(type)));
+        return Stream.of(methods.computeIfAbsent(type, Methods::direct));
     }
 
     public static Method of(Class<?> type, String name) {
