@@ -11,25 +11,20 @@ gronk {
     javaVersion(17)
 }
 
-java {
-    withSourcesJar()
-}
-
 compileTestJava {
     options.compilerArgs.add("--enable-preview")
 }
 
 repositories {
     mavenCentral()
-    maven("https://maven.auoeke.net")
+    maven("maven.auoeke.net")
 }
 
 dependencies {
     api("net.gudenau.lib:unsafe")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.ow2.asm:asm")
     testImplementation("org.ow2.asm:asm-tree")
     testImplementation("org.openjdk.jol:jol-core")
