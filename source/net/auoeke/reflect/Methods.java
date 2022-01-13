@@ -8,8 +8,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static net.auoeke.reflect.Reflect.run;
+import lombok.SneakyThrows;
 
 public class Methods {
     private static final MethodHandle getDeclaredMethods = Stream.of(Class.class.getDeclaredMethods())
@@ -53,8 +52,9 @@ public class Methods {
      @param type a type
      @return the array containing the type's declared methods
      */
+    @SneakyThrows
     public static Method[] direct(Class<?> type) {
-        return run(() -> (Method[]) getDeclaredMethods.invokeExact(type));
+        return (Method[]) getDeclaredMethods.invokeExact(type);
     }
 
     /**

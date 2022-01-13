@@ -5,9 +5,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import net.gudenau.lib.unsafe.Unsafe;
-
-import static net.auoeke.reflect.Reflect.run;
 
 public class Fields {
     private static final MethodHandle getDeclaredFields = Methods.of(Class.class)
@@ -23,8 +22,9 @@ public class Fields {
     public static final long modifiersOffset = of(Field.class).filter(field -> field.getName().equals("modifiers")).findAny().map(Unsafe::objectFieldOffset).get();
     public static final long overrideOffset = of(AccessibleObject.class).filter(field -> field.getName().equals("override")).findAny().map(Unsafe::objectFieldOffset).get();
 
+    @SneakyThrows
     public static Field[] direct(Class<?> klass) {
-        return run(() -> (Field[]) getDeclaredFields.invokeExact(klass));
+        return (Field[]) getDeclaredFields.invokeExact(klass);
     }
 
     public static Stream<Field> of(Class<?> type) {

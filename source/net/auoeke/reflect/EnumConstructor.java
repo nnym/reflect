@@ -4,8 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-
-import static net.auoeke.reflect.Reflect.run;
+import lombok.SneakyThrows;
 
 public class EnumConstructor<E extends Enum<E>> {
     private static final int ENUM_VALUES = Flags.PRIVATE | Flags.STATIC | Flags.SYNTHETIC | Flags.FINAL;
@@ -101,13 +100,14 @@ public class EnumConstructor<E extends Enum<E>> {
         return get(flags, type, arguments).construct(ordinal, name, arguments);
     }
 
+    @SneakyThrows
     public static Pointer enumConstantDirectory(Class<?> type) {
-        return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : run(() -> getEnumVars.invoke(type)));
+        return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
     }
 
+    @SneakyThrows
     public static Pointer enumConstants(Class<?> type) {
-        return enumConstantPointer.clone().bind(getEnumVars == null ? type : run(() -> getEnumVars.invoke(type)));
-
+        return enumConstantPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
     }
 
     public static Pointer enumArray(Class<?> type) {
@@ -137,8 +137,9 @@ public class EnumConstructor<E extends Enum<E>> {
         return type.getEnumConstants().length;
     }
 
+    @SneakyThrows
     public E construct(int ordinal, String name, Object... arguments) {
-        return run(() -> (E) this.constructor.invoke(name, ordinal, arguments));
+        return (E) this.constructor.invoke(name, ordinal, arguments);
     }
 
     public E construct(String name, Object... arguments) {

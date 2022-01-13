@@ -9,8 +9,10 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import lombok.SneakyThrows;
+import lombok.val;
 
-import static net.auoeke.reflect.Reflect.run;
 import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 
 @SuppressWarnings("unused")
@@ -35,16 +37,19 @@ public class Invoker {
         return MethodHandles.reflectAs(Method.class, handle);
     }
 
+    @SneakyThrows
     public static <T> T invoke(MethodHandle handle) {
-        return run(() -> (T) handle.invoke());
+        return (T) handle.invoke();
     }
 
+    @SneakyThrows
     public static <T> T invoke(MethodHandle handle, Object... arguments) {
-        return run(() -> (T) handle.invokeWithArguments(arguments));
+        return (T) handle.invokeWithArguments(arguments);
     }
 
+    @SneakyThrows
     public static MethodHandle bind(Object receiver, String name, MethodType type) {
-        return run(() -> trustedLookup.bind(receiver, name, type));
+        return trustedLookup.bind(receiver, name, type);
     }
 
     public static MethodHandle bind(Object receiver, String name, Class<?> returnType) {
@@ -55,8 +60,9 @@ public class Invoker {
         return bind(receiver, name, MethodType.methodType(returnType, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle findConstructor(Class<?> refc, MethodType type) {
-        return run(() -> trustedLookup.findConstructor(refc, type));
+        return trustedLookup.findConstructor(refc, type);
     }
 
     public static MethodHandle findConstructor(Class<?> refc) {
@@ -67,16 +73,19 @@ public class Invoker {
         return findConstructor(refc, MethodType.methodType(void.class, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle findGetter(Class<?> refc, String name, Class<?> type) {
-        return run(() -> trustedLookup.findGetter(refc, name, type));
+        return trustedLookup.findGetter(refc, name, type);
     }
 
+    @SneakyThrows
     public static MethodHandle findSetter(Class<?> refc, String name, Class<?> type) {
-        return run(() -> trustedLookup.findSetter(refc, name, type));
+        return trustedLookup.findSetter(refc, name, type);
     }
 
+    @SneakyThrows
     public static MethodHandle findSpecial(Class<?> refc, String name, MethodType type) {
-        return run(() -> trustedLookup.findSpecial(refc, name, type, refc));
+        return trustedLookup.findSpecial(refc, name, type, refc);
     }
 
     public static MethodHandle findSpecial(Class<?> refc, String name, Class<?> returnType) {
@@ -87,8 +96,9 @@ public class Invoker {
         return findSpecial(refc, name, MethodType.methodType(returnType, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle findStatic(Class<?> refc, String name, MethodType type)  {
-        return run(() -> trustedLookup.findStatic(refc, name, type));
+        return trustedLookup.findStatic(refc, name, type);
     }
 
     public static MethodHandle findStatic(Class<?> refc, String name, Class<?> returnType)  {
@@ -99,16 +109,19 @@ public class Invoker {
         return findStatic(refc, name, MethodType.methodType(returnType, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle findStaticGetter(Class<?> refc, String name, Class<?> type) {
-        return run(() -> trustedLookup.findStaticGetter(refc, name, type));
+        return trustedLookup.findStaticGetter(refc, name, type);
     }
 
+    @SneakyThrows
     public static MethodHandle findStaticSetter(Class<?> refc, String name, Class<?> type) {
-        return run(() -> trustedLookup.findStaticSetter(refc, name, type));
+        return trustedLookup.findStaticSetter(refc, name, type);
     }
 
+    @SneakyThrows
     public static MethodHandle findVirtual(Class<?> refc, String name, MethodType type) {
-        return run(() -> trustedLookup.findVirtual(refc, name, type));
+        return trustedLookup.findVirtual(refc, name, type);
     }
 
     public static MethodHandle findVirtual(Class<?> type, String name, Class<?> returnType) {
@@ -119,8 +132,9 @@ public class Invoker {
         return findVirtual(type, name, MethodType.methodType(returnType, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle unreflect(Method method) {
-        return run(() -> trustedLookup.unreflect(method));
+        return trustedLookup.unreflect(method);
     }
 
     public static MethodHandle unreflect(Class<?> type, String name, Class<?>... parameterTypes) {
@@ -139,51 +153,103 @@ public class Invoker {
         return unreflect(Methods.any(object, name)).bindTo(object);
     }
 
+    @SneakyThrows
     public static MethodHandle unreflectConstructor(Constructor<?> constructor) {
-        return run(() -> trustedLookup.unreflectConstructor(constructor));
+        return trustedLookup.unreflectConstructor(constructor);
     }
 
     public static MethodHandle unreflectConstructor(Class<?> klass, Class<?>... parameterTypes) {
         return unreflectConstructor(Constructors.find(klass, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle unreflectSpecial(Method method) {
-        return run(() -> trustedLookup.unreflectSpecial(method, method.getDeclaringClass()));
+        return trustedLookup.unreflectSpecial(method, method.getDeclaringClass());
     }
 
     public static MethodHandle unreflectSpecial(Class<?> type, String name, Class<?>... parameterTypes) {
         return unreflectSpecial(Methods.of(type, name, parameterTypes));
     }
 
+    @SneakyThrows
     public static MethodHandle unreflectGetter(Field field) {
-        return run(() -> trustedLookup.unreflectGetter(field));
+        return trustedLookup.unreflectGetter(field);
     }
 
     public static MethodHandle unreflectGetter(Class<?> klass, String name) {
         return unreflectGetter(Fields.of(klass, name));
     }
 
+    @SneakyThrows
     public static MethodHandle unreflectSetter(Field field) {
-        return run(() -> trustedLookup.unreflectSetter(field));
+        return trustedLookup.unreflectSetter(field);
     }
 
     public static MethodHandle unreflectSetter(Class<?> klass, String name) {
         return unreflectSetter(Fields.of(klass, name));
     }
 
+    @SneakyThrows
     public static VarHandle findStaticVarHandle(Class<?> owner, String name, Class<?> type) {
-        return run(() -> trustedLookup.findStaticVarHandle(owner, name, type));
+        return trustedLookup.findStaticVarHandle(owner, name, type);
     }
 
+    @SneakyThrows
     public static VarHandle findVarHandle(Class<?> owner, String name, Class<?> type) {
-        return run(() -> trustedLookup.findVarHandle(owner, name, type));
+        return trustedLookup.findVarHandle(owner, name, type);
     }
 
+    @SneakyThrows
     public static VarHandle unreflectVarHandle(Field field) {
-        return run(() -> trustedLookup.unreflectVarHandle(field));
+        return trustedLookup.unreflectVarHandle(field);
     }
 
     public static VarHandle unreflectVarHandle(Class<?> type, String name) {
         return unreflectVarHandle(Fields.of(type, name));
+    }
+
+    /**
+     Produce a method handle of type {@code type} that invokes {@code handle} by reordering the resulting handle's parameters to match {@code handle}'s parameters by type.
+     <p>
+     If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
+
+     @param handle the method handle
+     @param type the method type whereto to adapt {@code handle}
+     @return the adapted handle
+     */
+    public static MethodHandle adapt(MethodHandle handle, MethodType type) {
+        val order = new int[handle.type().parameterCount()];
+        val outputTypes = new ArrayList<>(handle.type().parameterList());
+        val inputTypes = type.parameterArray();
+
+        target: for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
+            val inputType = inputTypes[inputIndex];
+            val outputIterator = outputTypes.listIterator();
+
+            while (outputIterator.hasNext()) {
+                val outputType = outputIterator.next();
+
+                if (outputType != null && outputType.isAssignableFrom(inputType)) {
+                    order[outputIterator.previousIndex()] = inputIndex;
+                    outputIterator.set(null);
+
+                    continue target;
+                }
+            }
+
+            throw new IllegalArgumentException("No matching parameter was found for input %s parameter at index %d.".formatted(inputType, inputIndex));
+        }
+
+        for (var index = 0; index < order.length; index++) {
+            if (order[index] != index) {
+                return MethodHandles.permuteArguments(handle, type, order);
+            }
+        }
+
+        return handle.asType(type);
+    }
+
+    public static MethodHandle adapt(MethodHandle handle, Class<?>... parameterTypes) {
+        return adapt(handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
     }
 }

@@ -3,14 +3,13 @@ package net.auoeke.reflect;
 import java.io.File;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import lombok.SneakyThrows;
+import lombok.val;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.C;
 import net.auoeke.reflect.misc.Enumeration;
@@ -24,15 +23,14 @@ import org.junit.platform.commons.annotation.Testable;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal"})
 @Testable
 public class ReflectTest {
+    @SneakyThrows
     static void logFields(Object object) {
-        Reflect.run(() -> Fields.instanceOf(object.getClass()).forEach(field ->
-            System.out.printf("%s: %s\n", field, Accessor.get(object, field))
-        ));
+        Fields.instanceOf(object.getClass()).forEach(field -> System.out.printf("%s: %s\n", field, Accessor.get(object, field)));
     }
 
     @Test
     public void changeLoader() {
-        var PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
+        val PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
         assert PackagePrivate.getClassLoader() == null;
 
         Accessor.putReference((Object) PackagePrivate, "classLoader", Reflect.defaultClassLoader);
@@ -40,25 +38,8 @@ public class ReflectTest {
     }
 
     @Test
-    public void constantPool() {
-        Function<Integer, Integer> lambda = i -> i;
-        var pool = new ConstantPool(lambda.getClass());
-        int size = pool.getSize();
-
-        Logger.log(size);
-
-        for (var i = 0; i < size; i++) {
-            var method = pool.getMethodAt(i);
-
-            if (method != null) {
-                Logger.log(method);
-            }
-        }
-    }
-
-    @Test
     public void invokeExact() throws Throwable {
-        var c = new C();
+        val c = new C();
         var handle = Invoker.findSpecial(A.class, "print", void.class);
 
         handle.invoke(c);
@@ -73,11 +54,11 @@ public class ReflectTest {
     @SuppressWarnings("WrapperTypeMayBePrimitive")
     @Test
     public void pointer() {
-        var a = new A();
+        val a = new A();
         a.yes = 446;
         Double yes = a.yes;
 
-        var pointer = new Pointer().bind(a).instanceField("yes");
+        val pointer = new Pointer().bind(a).instanceField("yes");
 
         Util.repeat(() -> {
             pointer.putDouble(pointer.getDouble() + 4);
@@ -89,18 +70,18 @@ public class ReflectTest {
 
     @Test
     public void enumeration() {
-        var retentionPolicyConstructor = EnumConstructor.constructor(0L, RetentionPolicy.class);
-        var enumerationConstructor = EnumConstructor.constructor(Enumeration.class, 0D);
+        val retentionPolicyConstructor = EnumConstructor.constructor(0L, RetentionPolicy.class);
+        val enumerationConstructor = EnumConstructor.constructor(Enumeration.class, 0D);
 
         assert EnumConstructor.construct(Enumeration.class, "TEST", 1).ordinal() == 0;
         assert EnumConstructor.construct(Enumeration.class, 0, "TEST", 553D).test == 553;
         assert EnumConstructor.construct(0L, Enumeration.class, "TEST", 4D).test == 4;
         assert EnumConstructor.construct(0L, Enumeration.class, 1, "TEST", 9023D).test == 9023;
 
-        var enumeration = EnumConstructor.construct(Enumeration.class, 2, "TEST", 2D);
+        val enumeration = EnumConstructor.construct(Enumeration.class, 2, "TEST", 2D);
         assert enumeration != null && enumeration.test == 2;
 
-        var expectedLength = new Object() {
+        val expectedLength = new Object() {
             int length = 0;
         };
 
@@ -125,7 +106,7 @@ public class ReflectTest {
         EnumConstructor.add(Enumeration.class, enumeration);
         verifySize.run();
 
-        var constructor = new EnumConstructor<>(RetentionPolicy.class);
+        val constructor = new EnumConstructor<>(RetentionPolicy.class);
         Util.repeat(() -> constructor.add("TEST"));
         Enumeration.valueOf("TEST");
     }
@@ -146,12 +127,6 @@ public class ReflectTest {
         System.out.println(Classes.reinterpret(loong, Double.class));
 
         Classes.reinterpret(A.class, (Object) Class.class);
-    }
-
-    @Test
-    public void invokerOverload() throws Throwable {
-        Logger.log(Invoker.unreflect(Boolean.class, "getBoolean", String.class).invoke("123"));
-        Logger.log(Invoker.unreflectConstructor(Boolean.class, boolean.class).invoke(true));
     }
 
     @Test
@@ -200,22 +175,17 @@ public class ReflectTest {
 
     @Test
     public void classPath() throws Throwable {
-        var classPath = Classes.classPath(ReflectTest.class.getClassLoader());
-        var file = new File("test");
+        val classPath = Classes.classPath(ReflectTest.class.getClassLoader());
+        val file = new File("test");
 
-        for (var url : Classes.urls(classPath)) {
-            Logger.log(url);
-        }
+        Arrays.stream(Classes.urls(classPath)).forEach(Logger::log);
 
         System.out.println();
         System.out.println();
         System.out.println();
 
         Classes.addURL(classPath, file.toURI().toURL());
-
-        for (var url : Classes.urls(classPath)) {
-            Logger.log(url);
-        }
+        Arrays.stream(Classes.urls(classPath)).forEach(Logger::log);
     }
 
     @SuppressWarnings("JavaReflectionMemberAccess")
@@ -229,9 +199,7 @@ public class ReflectTest {
             }
         }
 
-        var constructor = PrivateCtor.class.getDeclaredConstructor(ReflectTest.class, int.class);
-
-        assert Arrays.equals(Constructors.direct(PrivateCtor.class), new Constructor[]{constructor});
+        assert Arrays.equals(Constructors.direct(PrivateCtor.class), new Constructor[]{PrivateCtor.class.getDeclaredConstructor(ReflectTest.class, int.class)});
         assert Constructors.find(PrivateCtor.class, ReflectTest.class, int.class).newInstance(this, 4).test == 4;
         assert Constructors.construct(PrivateCtor.class, this, 27).test == 27;
     }
@@ -240,62 +208,6 @@ public class ReflectTest {
     void method() {
         assert Constructors.find(0L, Enumeration.class, "", 1, 4D) == null;
         assert Constructors.find(Enumeration.class, "", 1, 4D) != null;
-    }
-
-    @Test
-    void invoke() {
-        Runnable runnable = () -> {};
-        Function<Integer, String> function = String::valueOf;
-        IntFunction<Integer> intFunction = Integer::valueOf;
-
-        Invoker.invoke(Invoker.bind(runnable, "run", void.class));
-
-        assert Invoker.invoke(Invoker.bind(runnable, "run", void.class)) == null;
-        assert "123".equals(Invoker.invoke(Invoker.bind(function, "apply", Object.class, Object.class), 123));
-        assert (Integer) Invoker.invoke(Invoker.bind(intFunction, "apply", Object.class, int.class), 57) == 57;
-    }
-
-    @Test
-    void member() throws Throwable {
-        var handle = Invoker.findGetter(Integer.class, "value", int.class);
-        Member member = Fields.of(Integer.class, "value");
-
-        assert Invoker.field(handle).equals(member);
-        assert Invoker.member(handle).equals(member);
-
-        handle = Invoker.findConstructor(String.class, char[].class);
-        member = Constructors.find(String.class, char[].class);
-
-        assert Invoker.member(handle).equals(member);
-        assert Invoker.executable(handle).equals(member);
-        assert Invoker.constructor(handle).equals(member);
-
-        handle = Invoker.findVirtual(Object.class, "toString", String.class);
-        member = Methods.of(Object.class, "toString");
-
-        assert Invoker.member(handle).equals(member);
-        assert Invoker.executable(handle).equals(member);
-        assert Invoker.method(handle).equals(member);
-
-        handle = Invoker.findSpecial(String.class, "indexOfNonWhitespace", int.class);
-        member = Methods.of(String.class, "indexOfNonWhitespace");
-
-        assert Invoker.member(handle).equals(member);
-        assert Invoker.executable(handle).equals(member);
-        assert Invoker.method(handle).equals(member);
-
-        handle = Invoker.findStatic(String.class, "valueOf", String.class, boolean.class);
-        member = Methods.of(String.class, "valueOf", boolean.class);
-
-        assert Invoker.member(handle).equals(member);
-        assert Invoker.executable(handle).equals(member);
-        assert Invoker.method(handle).equals(member);
-
-        handle = Invoker.unreflect((Method) member);
-
-        assert Invoker.member(handle).equals(member);
-        assert Invoker.executable(handle).equals(member);
-        assert Invoker.method(handle).equals(member);
     }
 
     @Test
@@ -309,7 +221,7 @@ public class ReflectTest {
         assert Accessor.get(new A(), "end").equals((byte) 123);
         assert Accessor.getVolatile(new A(), "end").equals((byte) 123);
 
-        var obj = new Object() {
+        val obj = new Object() {
             int field = 22;
             String thing = "asd";
             Object object = new Object() {};
@@ -321,8 +233,7 @@ public class ReflectTest {
         obj.object = null;
         obj.things = new ArrayList<>();
 
-        var clone = Accessor.clone(obj);
-
+        val clone = Accessor.clone(obj);
         assert clone.field == 84;
         assert "hjk".equals(clone.thing);
         assert clone.object == null;
@@ -346,28 +257,7 @@ public class ReflectTest {
         assert StackFrames.traceFrame(0).getMethodName().equals("stack");
     }
 
-    @Test
-    void unreflect() throws Throwable {
-        assert Invoker.unreflect(RetentionPolicy.class, "valueOf").invoke("RUNTIME") == RetentionPolicy.RUNTIME;
-
-        Integer four = 4;
-        assert Invoker.unreflect(four, "doubleValue").invoke() instanceof Double doubleObject && doubleObject == 4;
-
-        Function<String, String> stringTransformer = string -> string.charAt(0) + string.repeat(3) + string.charAt(string.length() - 1);
-        assert "aabcdabcdabcdd".equals(Invoker.unreflect(stringTransformer, "apply").invoke("abcd"));
-
-        Invoker.unreflect(new Object[0], "toString").invoke();
-    }
-
-    @Test
-    void special() throws Throwable {
-        var handle = Invoker.findSpecial(Object.class, "toString", String.class);
-        var list = new ArrayList<>();
-
-        assert !list.toString().equals(handle.invoke(list));
-    }
-
     static {
-        Reflect.run(Util::load);
+        Util.load();
     }
 }

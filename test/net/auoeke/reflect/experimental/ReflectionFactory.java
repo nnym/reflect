@@ -3,7 +3,7 @@ package net.auoeke.reflect.experimental;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import net.gudenau.lib.unsafe.Unsafe;
+import lombok.SneakyThrows;
 import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Invoker;
 
@@ -18,12 +18,9 @@ public class ReflectionFactory {
         return field(declaringClass, name, type, modifiers, slot, null, null);
     }
 
+    @SneakyThrows
     public static Field field(Class<?> declaringClass, String name, Class<?> type, int modifiers, int slot, String signature, byte[] annotations) {
-        try {
-            return (Field) field.invokeExact(declaringClass, name, type, modifiers, slot, signature, annotations);
-        } catch (Throwable throwable) {
-            throw Unsafe.throwException(throwable);
-        }
+        return (Field) field.invokeExact(declaringClass, name, type, modifiers, slot, signature, annotations);
     }
 
     static {

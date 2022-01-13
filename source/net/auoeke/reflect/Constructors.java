@@ -5,9 +5,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import net.gudenau.lib.unsafe.Unsafe;
-
-import static net.auoeke.reflect.Reflect.run;
 
 public class Constructors {
     private static final MethodHandle getDeclaredConstructors = Methods.of(Class.class)
@@ -23,8 +22,9 @@ public class Constructors {
      @param type a type
      @return the array containing the type's declared methods
      */
+    @SneakyThrows
     public static <T> Constructor<T>[] direct(Class<T> type) {
-        return run(() -> (Constructor<T>[]) getDeclaredConstructors.invokeExact(type));
+        return (Constructor<T>[]) getDeclaredConstructors.invokeExact(type);
     }
 
     /**
@@ -47,8 +47,9 @@ public class Constructors {
         return Optional.ofNullable(Invoker.findConstructor(type)).map(Invoker::<T>invoke).orElseGet(() -> Unsafe.allocateInstance(type));
     }
 
+    @SneakyThrows
     public static <T> T construct(Class<T> type, Object... arguments) {
-        return run(() -> (T) Invoker.unreflectConstructor(find(type, arguments)).invokeWithArguments(arguments));
+        return (T) Invoker.unreflectConstructor(find(type, arguments)).invokeWithArguments(arguments);
     }
 
     public static <T> Constructor<T> find(long flags, int offset, Class<T> type, Object... arguments) {

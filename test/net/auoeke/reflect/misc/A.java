@@ -1,8 +1,8 @@
 package net.auoeke.reflect.misc;
 
-import net.auoeke.reflect.experimental.Copyable;
 import java.util.Random;
-import net.gudenau.lib.unsafe.Unsafe;
+import lombok.SneakyThrows;
+import net.auoeke.reflect.experimental.Copyable;
 
 public class A implements Cloneable, Copyable<A> {
     public static final String[] strings = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
@@ -30,13 +30,9 @@ public class A implements Cloneable, Copyable<A> {
         this.l = that.l;
     }
 
-    @Override
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException exception) {
-            throw Unsafe.throwException(exception);
-        }
+    @SneakyThrows
+    @Override public Object clone() {
+        return super.clone();
     }
 
     private static String privateMethod() {

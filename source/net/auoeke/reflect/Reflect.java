@@ -2,7 +2,7 @@ package net.auoeke.reflect;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
-import net.gudenau.lib.unsafe.Unsafe;
+import lombok.SneakyThrows;
 
 public class Reflect {
     public static boolean securityDisabled;
@@ -37,7 +37,7 @@ public class Reflect {
      Clears the reflection method filter map, preventing {@link Class#getMethods} and {@link Class#getDeclaredMethods} from filtering
      as defined in {@linkplain jdk.internal.reflect.Reflection Reflection}.
      <br>
-     This method can break (and has broken some part of Gson) code that relies on the aforementioned methods filtering methods.
+     @apiNote This method can break (and has broken some part of Gson) code that relies on the aforementioned methods filtering methods.
      */
     public static void clearMethodFilterMap() {
         Accessor.putReferenceVolatile(Classes.Reflection, "methodFilterMap", new HashMap<>());
@@ -48,37 +48,21 @@ public class Reflect {
         return null;
     }
 
-    static void run(ThrowingRunnable runnable) {
-        runnable.run();
-    }
-
-    static <T> T run(ThrowingSupplier<T> supplier) {
-        return supplier.get();
-    }
-
-    static <T> T run(T fallback, ThrowingSupplier<T> supplier) {
+    static <T> T runNull(ThrowingSupplier<T> supplier) {
         try {
             return supplier.execute();
         } catch (Throwable throwable) {
-            return fallback;
+            return null;
         }
-    }
-
-    static <T> T runNull(ThrowingSupplier<T> supplier) {
-        return run(null, supplier);
     }
 
     @FunctionalInterface
     interface ThrowingRunnable extends Runnable {
         void execute() throws Throwable;
 
-        @Override
-        default void run() {
-            try {
-                this.execute();
-            } catch (Throwable throwable) {
-                throw Unsafe.throwException(throwable);
-            }
+        @SneakyThrows
+        @Override default void run() {
+            this.execute();
         }
     }
 
@@ -86,13 +70,9 @@ public class Reflect {
     interface ThrowingSupplier<T> extends Supplier<T> {
         T execute() throws Throwable;
 
-        @Override
-        default T get() {
-            try {
-                return this.execute();
-            } catch (Throwable throwable) {
-                throw Unsafe.throwException(throwable);
-            }
+        @SneakyThrows
+        @Override default T get() {
+            return this.execute();
         }
     }
 }

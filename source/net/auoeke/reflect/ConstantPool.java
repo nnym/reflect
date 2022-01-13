@@ -3,8 +3,7 @@ package net.auoeke.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
-
-import static net.auoeke.reflect.Reflect.runNull;
+import lombok.SneakyThrows;
 
 public class ConstantPool {
     private static final MethodHandle getSize = Invoker.findVirtual(Classes.ConstantPool, "getSize", int.class);
@@ -28,59 +27,73 @@ public class ConstantPool {
         this.constantPool = JavaLangAccess.getConstantPool(klass);
     }
 
-    public Integer getSize() {
-        return runNull(() -> (int) getSize.invoke(this.constantPool));
+    @SneakyThrows
+    public int getSize() {
+        return (int) getSize.invoke(this.constantPool);
     }
 
+    @SneakyThrows
     public Class<?> getClassAt(int index) {
-        return runNull(() -> (Class<?>) getClassAt.invoke(this.constantPool, index));
+        return (Class<?>) getClassAt.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public Class<?> getClassAtIfLoaded(int index) {
-        return runNull(() -> (Class<?>) getClassAtIfLoaded.invoke(this.constantPool, index));
+        return (Class<?>) getClassAtIfLoaded.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public Member getMethodAt(int index) {
-        return runNull(() -> (Member) getMethodAt.invoke(this.constantPool, index));
+        return (Member) getMethodAt.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public Member getMethodAtIfLoaded(int index) {
-        return runNull(() -> (Member) getMethodAtIfLoaded.invoke(this.constantPool, index));
+        return (Member) getMethodAtIfLoaded.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public Field getFieldAt(int index) {
-        return runNull(() -> (Field) getFieldAt.invoke(this.constantPool, index));
+        return (Field) getFieldAt.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public Field getFieldAtIfLoaded(int index) {
-        return runNull(() -> (Field) getFieldAtIfLoaded.invoke(this.constantPool, index));
+        return (Field) getFieldAtIfLoaded.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public String getMemberRefInfoAt(int index) {
-        return runNull(() -> (String) getMemberRefInfoAt.invoke(this.constantPool, index));
+        return (String) getMemberRefInfoAt.invoke(this.constantPool, index);
     }
 
-    public Integer getIntAt(int index) {
-        return runNull(() -> (int) getIntAt.invoke(this.constantPool, index));
+    @SneakyThrows
+    public int getIntAt(int index) {
+        return (int) getIntAt.invoke(this.constantPool, index);
     }
 
-    public Long getLongAt(int index) {
-        return runNull(() -> (long) getLongAt.invoke(this.constantPool, index));
+    @SneakyThrows
+    public long getLongAt(int index) {
+        return (long) getLongAt.invoke(this.constantPool, index);
     }
 
-    public Float getFloatAt(int index) {
-        return runNull(() -> (float) getFloatAt.invoke(this.constantPool, index));
+    @SneakyThrows
+    public float getFloatAt(int index) {
+        return (float) getFloatAt.invoke(this.constantPool, index);
     }
 
-    public Double getDoubleAt(int index) {
-        return runNull(() -> (double) getDoubleAt.invoke(this.constantPool, index));
+    @SneakyThrows
+    public double getDoubleAt(int index) {
+        return (double) getDoubleAt.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public String getStringAt(int index) {
-        return runNull(() -> (String) getStringAt.invoke(this.constantPool, index));
+        return (String) getStringAt.invoke(this.constantPool, index);
     }
 
+    @SneakyThrows
     public String getUTF8At(int index) {
-        return runNull(() -> (String) getUTF8At.invoke(this.constantPool, index));
+        return (String) getUTF8At.invoke(this.constantPool, index);
     }
 }

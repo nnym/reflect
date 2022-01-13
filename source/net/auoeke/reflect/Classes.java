@@ -16,10 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
+import lombok.val;
 import net.gudenau.lib.unsafe.Unsafe;
-
-import static net.auoeke.reflect.Reflect.run;
-import static net.auoeke.reflect.Reflect.runNull;
 
 @SuppressWarnings("unused")
 public class Classes {
@@ -139,16 +138,18 @@ public class Classes {
         return (T) object;
     }
 
+    @SneakyThrows
     public static <T> Class<T> findLoadedClass(ClassLoader loader, String klass) {
-        return run(() -> (Class<T>) findLoadedClass.invokeExact(loader, klass));
+        return (Class<T>) findLoadedClass.invokeExact(loader, klass);
     }
 
     public static URL[] urls(ClassLoader classLoader) {
         return urls(classPath(classLoader));
     }
 
+    @SneakyThrows
     public static URL[] urls(Object classPath) {
-        return run(() -> (URL[]) URLClassPath$getURLs.invoke(classPath));
+        return (URL[]) URLClassPath$getURLs.invoke(classPath);
     }
 
     public static void addSystemURL(URL... url) {
@@ -159,26 +160,30 @@ public class Classes {
         addURL(systemClassPath, url);
     }
 
+    @SneakyThrows
     public static void addURL(ClassLoader classLoader, URL... urls) {
-        var classPath = classPath(classLoader);
+        val classPath = classPath(classLoader);
 
         for (var url : urls) {
-            run(() -> URLClassPath$addURL.invoke(classPath, url));
+            URLClassPath$addURL.invoke(classPath, url);
         }
     }
 
+    @SneakyThrows
     public static void addURL(ClassLoader classLoader, URL url) {
-        run(() -> URLClassPath$addURL.invoke(classPath(classLoader), url));
+        URLClassPath$addURL.invoke(classPath(classLoader), url);
     }
 
+    @SneakyThrows
     public static void addURL(Object classPath, URL... urls) {
-        for (var url : urls) {
-            run(() -> URLClassPath$addURL.invoke(classPath, url));
+        for (val url : urls) {
+            URLClassPath$addURL.invoke(classPath, url);
         }
     }
 
+    @SneakyThrows
     public static void addURL(Object classPath, URL url) {
-        run(() -> URLClassPath$addURL.invoke(classPath, url));
+        URLClassPath$addURL.invoke(classPath, url);
     }
 
     public static Object classPath(ClassLoader classLoader) {
@@ -219,24 +224,29 @@ public class Classes {
         return load(loader, true, name);
     }
 
+    @SneakyThrows
     public static <T> Class<T> load(ClassLoader loader, boolean initialize, String name) {
-        return runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
+        return Reflect.runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
     }
 
+    @SneakyThrows
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
-        return run(() -> (Class<T>) defineClass0.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain));
+        return (Class<T>) defineClass0.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain);
     }
 
+    @SneakyThrows
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
-        return run(() -> (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, protectionDomain));
+        return (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, protectionDomain);
     }
 
+    @SneakyThrows
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
-        return run(() -> (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, codeSource));
+        return (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, codeSource);
     }
 
+    @SneakyThrows
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, ByteBuffer bytecode, CodeSource codeSource) {
-        return run(() -> (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, codeSource));
+        return (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, codeSource);
     }
 
     public static <T> Class<T> defineClass(ClassLoader classLoader, byte[] bytecode, int offset, int length) {
@@ -259,32 +269,31 @@ public class Classes {
         return defineClass(classLoader, name, bytecode, 0, bytecode.length, codeSource);
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SneakyThrows
     public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name, ProtectionDomain protectionDomain) {
-        return run(() -> defineClass(classLoader, name, Files.readAllBytes(Path.of(resourceLoader.getResource(name.replace('.', '/') + ".class").toURI())), protectionDomain));
+        return defineClass(classLoader, name, Files.readAllBytes(Path.of(resourceLoader.getResource(name.replace('.', '/') + ".class").toURI())), protectionDomain);
     }
 
     public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name) {
         return crossDefineClass(resourceLoader, classLoader, name, null);
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SneakyThrows
     public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
-        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-        var bytecode = run(() -> Files.readAllBytes(Path.of(url.toURI())));
+        val url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+        val bytecode = Files.readAllBytes(Path.of(url.toURI()));
 
         return Unsafe.defineClass(name, bytecode, 0, bytecode.length, null, new ProtectionDomain(new CodeSource(url, (CodeSigner[]) null), null, null, null));
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SneakyThrows
     public static <T> Class<T> defineSystemClass(ClassLoader resourceLoader, String name) {
-        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-
-        return defineClass(systemClassLoader, name, run(() -> Files.readAllBytes(Path.of(url.toURI()))), new CodeSource(url, (CodeSigner[]) null));
+        val url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+        return defineClass(systemClassLoader, name, Files.readAllBytes(Path.of(url.toURI())), new CodeSource(url, (CodeSigner[]) null));
     }
 
     public static List<Class<?>> supertypes(Class<?> type) {
-        var supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
+        val supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
         type = type.getSuperclass();
 
         if (type != null) {
@@ -295,8 +304,8 @@ public class Classes {
     }
 
     public static List<Type> genericSupertypes(Class<?> type) {
-        var supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
-        var superclass = type.getGenericSuperclass();
+        val supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
+        val superclass = type.getGenericSuperclass();
 
         if (superclass != null) {
             supertypes.add(superclass);
@@ -310,9 +319,8 @@ public class Classes {
     }
 
     static {
-        var byteArray = new byte[0];
-        var shortArray = new short[0];
-
+        val byteArray = new byte[0];
+        val shortArray = new short[0];
         long offset = 0;
 
         while (Unsafe.getInt(byteArray, offset) == Unsafe.getInt(shortArray, offset)) {

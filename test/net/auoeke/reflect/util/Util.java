@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import net.auoeke.reflect.Reflect;
 import net.auoeke.uncheck.ThrowingConsumer;
 import net.auoeke.uncheck.ThrowingRunnable;
@@ -32,8 +33,8 @@ public class Util {
     }
 
     public static String unqualifiedName(Class<?> type) {
-        String name = type.getName();
-        int dimensions = name.lastIndexOf('[') + 1;
+        var name = type.getName();
+        var dimensions = name.lastIndexOf('[') + 1;
         name = name.substring(dimensions);
 
         if (name.charAt(name.length() - 1) == ';') {
@@ -52,12 +53,8 @@ public class Util {
     }
 
     public static void repeat(int repetitions, ThrowingRunnable test) {
-        for (int i = 0; i < repetitions; i++) {
-            try {
-                test.run();
-            } catch (Throwable throwable) {
-                throw Unsafe.throwException(throwable);
-            }
+        for (var i = 0; i < repetitions; i++) {
+            test.run();
         }
     }
 
@@ -76,7 +73,8 @@ public class Util {
         return buildString("", consumer);
     }
 
-    public static void load() throws Throwable {
+    @SneakyThrows
+    public static void load() {
         Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect")).forEach((ThrowingConsumer<Path>) klass -> Class.forName("net.auoeke.reflect." + klass.getFileName().toString().replace(".class", "")));
     }
 }

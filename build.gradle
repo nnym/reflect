@@ -2,10 +2,11 @@ plugins {
     id("maven-publish")
     id("java-library")
     id("gronk").version("latest.release")
+    id("io.freefair.lombok").version("6.3.0")
 }
 
 group("net.auoeke")
-version("4.3.1")
+version("4.4.0")
 
 gronk {
     javaVersion(17)
@@ -40,9 +41,7 @@ publishing {
     repositories {
         mavenLocal()
 
-        maven {
-            url = "https://maven.auoeke.net"
-
+        maven("maven.auoeke.net") {
             credentials {
                 username = System.properties["maven.username"]
                 password = System.properties["maven.password"]
