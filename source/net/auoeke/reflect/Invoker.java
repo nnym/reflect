@@ -210,6 +210,7 @@ public class Invoker {
 
     /**
      Produce a method handle of type {@code type} that invokes {@code handle} by reordering the resulting handle's parameters to match {@code handle}'s parameters by type.
+     Each input parameter (in {@code type}) is matched to the first {@linkplain Class#isAssignableFrom applicable} output parameter (in {@code handle}) with the smallest distance between their types.
      <p>
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 
@@ -225,19 +226,26 @@ public class Invoker {
         target: for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
             val inputType = inputTypes[inputIndex];
             val outputIterator = outputTypes.listIterator();
+            val scores = new int[outputTypes.size()];
+            var bestMatch = -1;
+            var deviation = Integer.MAX_VALUE;
 
             while (outputIterator.hasNext()) {
                 val outputType = outputIterator.next();
 
                 if (outputType != null && outputType.isAssignableFrom(inputType)) {
-                    order[outputIterator.previousIndex()] = inputIndex;
-                    outputIterator.set(null);
-
-                    continue target;
+                    if (deviation > (deviation = Math.min(deviation, (int) Types.classes(inputType, outputType).count()))) {
+                        bestMatch = outputIterator.previousIndex();
+                    }
                 }
             }
 
-            throw new IllegalArgumentException("No matching parameter was found for input %s parameter at index %d.".formatted(inputType, inputIndex));
+            if (bestMatch < 0) {
+                throw new IllegalArgumentException("No matching parameter was found for input %s parameter at index %d.".formatted(inputType, inputIndex));
+            }
+
+            order[bestMatch] = inputIndex;
+            outputTypes.set(bestMatch, null);
         }
 
         for (var index = 0; index < order.length; index++) {

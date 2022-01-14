@@ -5,6 +5,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import lombok.val;
@@ -12,7 +13,6 @@ import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
-import net.auoeke.reflect.util.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 
@@ -97,8 +97,8 @@ class InvokerTests extends Invoker {
 
     @Test
     public void invokerOverload() throws Throwable {
-        Logger.log(Invoker.unreflect(Boolean.class, "getBoolean", String.class).invoke("123"));
-        Logger.log(Invoker.unreflectConstructor(Boolean.class, boolean.class).invoke(true));
+        assert !(boolean) Invoker.unreflect(Boolean.class, "getBoolean", String.class).invoke(UUID.randomUUID().toString());
+        assert (Boolean) Invoker.unreflectConstructor(Boolean.class, boolean.class).invoke(true);
     }
 
     @Test
@@ -106,19 +106,23 @@ class InvokerTests extends Invoker {
         val type = MethodType.methodType(double.class, double.class, int.class);
         val adapt0 = adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), type);
         assert adapt0.type().equals(type) && (double) adapt0.invoke(3, 1) == 10;
+        assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
 
         val object = new Object();
-        val adapt1 = (Object[]) adapt(
+        var adapt1 = (Object[]) adapt(
             findStatic(cla$$, "adapt1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class),
             short.class, long.class, Object.class, Float.class, Invoker.class
         ).invokeWithArguments((short) 24, 57, object, 4F, null);
-
         assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
 
         val adapt2 = findStatic(cla$$, "adapt2", void.class);
         assert adapt(adapt2) == adapt2;
 
-        assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
+        adapt1 = (Object[]) adapt(
+            findStatic(cla$$, "adapt1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class),
+            Invoker.class, Float.class, long.class, short.class, Object.class
+        ).invokeWithArguments(null, 4F, 57, (short) 24, object);
+        assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
     }
 
     private static double adapt0(int a, double b) {

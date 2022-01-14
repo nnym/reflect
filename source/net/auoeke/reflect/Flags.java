@@ -22,8 +22,8 @@ public class Flags {
     public static final int VOLATILE     = 1 << 6;
 
     /**
-     (Of a method) generated as a result of an "overriding" method having a parameter or return type that does not match that of the original method.
-     The bridge method acts as a bridge from the original method to the "overriding" method by passing the arguments to it and returning its result.
+     Denotes a method generated as a result of an "overriding" method having a parameter or return type that does not match that of the original method.
+     The generated method acts as a bridge from the original method to the "overriding" method by passing the arguments to it and returning its result.
      */
     public static final int BRIDGE       = 1 << 6;
     public static final int TRANSIENT    = 1 << 7;
