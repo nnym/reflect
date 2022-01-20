@@ -3,6 +3,7 @@ package net.auoeke.reflect;
 import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.val;
@@ -85,18 +86,6 @@ public class Types {
     }
 
     /**
-     Return a stream of a type and its every base type up to and excluding an upper bound.
-
-     @param begin a type
-     @param end   an upper bound; may be {@code null}
-     @param <T>   {@code begin}
-     @return {@code begin} and its every base type below {@code end}
-     */
-    public static <T> Stream<Class<?>> hierarchy(Class<T> begin, Class<?> end) {
-        return classes(begin, end).flatMap(Types::supertypes).distinct();
-    }
-
-    /**
      Return a stream of a type and its every base type.
 
      @param type a type
@@ -105,7 +94,11 @@ public class Types {
      @see #hierarchy(Class, Class)
      */
     public static <T> Stream<Class<?>> hierarchy(Class<T> type) {
-        return hierarchy(type, null);
+        var hierarchy = new HashSet<Class<?>>();
+        hierarchy.add(type);
+        supertypes(type).flatMap(Types::hierarchy).forEach(hierarchy::add);
+
+        return hierarchy.stream();
     }
 
     /**

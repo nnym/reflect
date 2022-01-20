@@ -1,6 +1,8 @@
 package test;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -18,6 +20,14 @@ class TypesTests extends Types {
     void classesTest() {
         assert classes(C.class, A.class).count() == 2;
         assert classes(Object.class).count() == 1;
+    }
+
+    @Test
+    void hierarchyTest() {
+        Comparator<Class<?>> comparator = Comparator.comparing(Class::getName);
+        var hierarchy = hierarchy(Interface3.Impl.class).toList();
+        var test = List.of(Interface3.Impl.class, Interface3.class, Interface2.class, Interface1.class, Object.class);
+        assert test.containsAll(hierarchy) && hierarchy.containsAll(test);
     }
 
     // Must not depend on the standard library's hierarchy excessively.
