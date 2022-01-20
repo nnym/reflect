@@ -5,6 +5,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -43,40 +44,34 @@ class InvokerTests extends Invoker {
     void member() throws Throwable {
         var handle = Invoker.findGetter(Integer.class, "value", int.class);
         Member member = Fields.of(Integer.class, "value");
-
         assert Invoker.field(handle).equals(member);
         assert Invoker.member(handle).equals(member);
 
         handle = Invoker.findConstructor(String.class, char[].class);
         member = Constructors.find(String.class, char[].class);
-
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.constructor(handle).equals(member);
 
         handle = Invoker.findVirtual(Object.class, "toString", String.class);
         member = Methods.of(Object.class, "toString");
-
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
 
         handle = Invoker.findSpecial(String.class, "indexOfNonWhitespace", int.class);
         member = Methods.of(String.class, "indexOfNonWhitespace");
-
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
 
         handle = Invoker.findStatic(String.class, "valueOf", String.class, boolean.class);
         member = Methods.of(String.class, "valueOf", boolean.class);
-
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
 
         handle = Invoker.unreflect((Method) member);
-
         assert Invoker.member(handle).equals(member);
         assert Invoker.executable(handle).equals(member);
         assert Invoker.method(handle).equals(member);
@@ -107,6 +102,7 @@ class InvokerTests extends Invoker {
         val adapt0 = adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), type);
         assert adapt0.type().equals(type) && (double) adapt0.invoke(3, 1) == 10;
         assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
+        assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), List.of(int.class, double.class)).type() == MethodType.methodType(double.class, int.class, double.class);
 
         val object = new Object();
         var adapt1 = (Object[]) adapt(
