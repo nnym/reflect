@@ -25,15 +25,6 @@ import org.junit.platform.commons.annotation.Testable;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal", "JavaReflectionMemberAccess"})
 @Testable
 public class ReflectTest {
-    @Test
-    public void changeLoader() {
-        val PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
-        assert PackagePrivate.getClassLoader() == null;
-
-        Accessor.putReference((Object) PackagePrivate, "classLoader", Reflect.defaultClassLoader);
-        assert PackagePrivate.getClassLoader() == Reflect.defaultClassLoader;
-    }
-
     @SuppressWarnings("WrapperTypeMayBePrimitive")
     @Test
     public void pointer() {
@@ -162,10 +153,6 @@ public class ReflectTest {
         assert Arrays.equals(Constructors.direct(PrivateCtor.class), new Constructor[]{PrivateCtor.class.getDeclaredConstructor(ReflectTest.class, int.class)});
         assert Constructors.find(PrivateCtor.class, ReflectTest.class, int.class).newInstance(this, 4).test == 4;
         assert Constructors.construct(PrivateCtor.class, this, 27).test == 27;
-    }
-
-    @Test
-    void method() {
         assert Constructors.find(0L, Enumeration.class, "", 1, 4D) == null;
         assert Constructors.find(Enumeration.class, "", 1, 4D) != null;
     }
