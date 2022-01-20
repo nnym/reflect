@@ -93,6 +93,15 @@ public class Invoker {
         return (T) handle.invokeWithArguments(arguments);
     }
 
+    /**
+     Invokes {@link MethodHandles.Lookup#bind} on the trusted implementation lookup.
+
+     @param receiver the object on which to invoke the target method
+     @param name the target method's name
+     @param type the target method's type
+     @return a method handle corresponding to the target method and bound to {@code receiver}
+     @see MethodHandles.Lookup#bind
+     */
     @SneakyThrows
     public static MethodHandle bind(Object receiver, String name, MethodType type) {
         return trustedLookup.bind(receiver, name, type);
