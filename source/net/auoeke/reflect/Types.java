@@ -3,7 +3,6 @@ package net.auoeke.reflect;
 import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.val;
@@ -91,14 +90,12 @@ public class Types {
      @param type a type
      @param <T>  {@code type}
      @return {@code type} and its every base type
-     @see #hierarchy(Class, Class)
      */
     public static <T> Stream<Class<?>> hierarchy(Class<T> type) {
-        var hierarchy = new HashSet<Class<?>>();
-        hierarchy.add(type);
-        supertypes(type).flatMap(Types::hierarchy).forEach(hierarchy::add);
-
-        return hierarchy.stream();
+        return Stream.of(type).<Class<?>>mapMulti((t, add) -> {
+            add.accept(t);
+            supertypes(type).forEach(supertype -> hierarchy(supertype).forEach(add));
+        }).distinct();
     }
 
     /**
