@@ -72,7 +72,7 @@ public class Invoker {
      Invoke a method handle without arguments.
 
      @param handle a method handle
-     @param <T> the handle's return type
+     @param <T>    the handle's return type
      @return the result
      */
     @SneakyThrows
@@ -83,9 +83,9 @@ public class Invoker {
     /**
      Invoke a method handle with arguments.
 
-     @param handle a method handle
+     @param handle    a method handle
      @param arguments arguments wherewith to invoke the handle
-     @param <T> the handle's return type
+     @param <T>       the handle's return type
      @return the result
      */
     @SneakyThrows
@@ -97,8 +97,8 @@ public class Invoker {
      Invokes {@link MethodHandles.Lookup#bind} on the trusted implementation lookup.
 
      @param receiver the object on which to invoke the target method
-     @param name the target method's name
-     @param type the target method's type
+     @param name     the target method's name
+     @param type     the target method's type
      @return a method handle corresponding to the target method and bound to {@code receiver}
      @see MethodHandles.Lookup#bind
      */
@@ -152,15 +152,15 @@ public class Invoker {
     }
 
     @SneakyThrows
-    public static MethodHandle findStatic(Class<?> refc, String name, MethodType type)  {
+    public static MethodHandle findStatic(Class<?> refc, String name, MethodType type) {
         return trustedLookup.findStatic(refc, name, type);
     }
 
-    public static MethodHandle findStatic(Class<?> refc, String name, Class<?> returnType)  {
+    public static MethodHandle findStatic(Class<?> refc, String name, Class<?> returnType) {
         return findStatic(refc, name, MethodType.methodType(returnType));
     }
 
-    public static MethodHandle findStatic(Class<?> refc, String name, Class<?> returnType, Class<?>... parameterTypes)  {
+    public static MethodHandle findStatic(Class<?> refc, String name, Class<?> returnType, Class<?>... parameterTypes) {
         return findStatic(refc, name, MethodType.methodType(returnType, parameterTypes));
     }
 
@@ -271,7 +271,7 @@ public class Invoker {
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 
      @param handle the method handle
-     @param type the method type whereto to adapt {@code handle}
+     @param type   the method type whereto to adapt {@code handle}
      @return the adapted method handle
      @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
@@ -284,7 +284,8 @@ public class Invoker {
         val outputTypes = new ArrayList<>(handle.type().parameterList());
         val inputTypes = type.parameterArray();
 
-        target: for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
+        target:
+        for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
             val inputType = inputTypes[inputIndex];
             val outputIterator = outputTypes.listIterator();
             val scores = new int[outputTypes.size()];
@@ -321,7 +322,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle the method handle
+     @param handle         the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
@@ -333,7 +334,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle the method handle
+     @param handle         the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
