@@ -210,7 +210,8 @@ public class Invoker {
 
     /**
      Produce a method handle of type {@code type} that invokes {@code handle} by reordering the resulting handle's parameters to match {@code handle}'s parameters by type.
-     Each input parameter (in {@code type}) is matched to the first {@linkplain Class#isAssignableFrom applicable} output parameter (in {@code handle}) with the smallest distance between their types.
+     Each input parameter (in {@code type}) is matched to the first {@linkplain Class#isAssignableFrom applicable} output parameter (in {@code handle})
+     with the smallest {@linkplain Types#difference generation gap} between their types.
      <p>
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 

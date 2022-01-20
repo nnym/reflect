@@ -140,7 +140,10 @@ public class Types {
 
     /**
      Count the generation gap between 2 types. The gap is positive if {@code a} is more derived than {@code b} or negative if {@code b} is more derived than {@code a}.
+     <p>
      If the types are unrelated, then return {@link Integer#MAX_VALUE}.
+     <p>
+     If a or b is an interface, then count the interface generation gap.
 
      @param a a type
      @param b a type

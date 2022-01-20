@@ -34,10 +34,19 @@ class TypesTests extends Types {
         Assert.equal(1, depth(Interface1.class), depth(Interface1.class, true));
         Assert.equal(2, depth(Interface2.class), depth(Interface2.class, true));
         Assert.equal(3, depth(Interface3.class), depth(Interface3.class, true));
+    }
 
+    @Test
+    void differenceTest() {
         assert difference(Object.class, null) == 1;
         assert difference(null, Object.class) == -1;
         assert difference(TypesTests.class, Integer.class) == Integer.MAX_VALUE;
+        Assert.equal(0, difference(null, null), difference(Object.class, Object.class), difference(Interface2.class, Interface2.class));
+        assert difference(Interface3.class, Interface1.class) == 2;
+        assert difference(Interface3.class, null) == 3;
+        assert difference(Interface1.class, Interface2.class) == -1;
+        assert difference(Interface1.Impl.class, Interface1.class) == 1;
+        assert difference(Interface1.class, Interface1.Impl.class) == -1;
     }
 
     @Test
