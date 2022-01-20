@@ -74,6 +74,12 @@ public class Types {
         return classes(begin, null);
     }
 
+    /**
+     Get a type's all inherited or declared interfaces.
+
+     @param type a type
+     @return all of its inherited or declared interfaces
+     */
     public static Stream<Class<?>> allInterfaces(Class<?> type) {
         return classes(type).flatMap(Types::interfaces).distinct();
     }
@@ -96,13 +102,15 @@ public class Types {
      @param type a type
      @param <T>  {@code type}
      @return {@code type} and its every base type
+     @see #hierarchy(Class, Class)
      */
     public static <T> Stream<Class<?>> hierarchy(Class<T> type) {
         return hierarchy(type, null);
     }
 
     /**
-     Count a type's class or interface depth.
+     Count a type's class or interface depth. A class' interface depth is 1 greater than the greatest interface depth of any of its declared or inherited interfaces.
+     If {@code type} is null, then return 0.
 
      @param type       a type
      @param interfaces whether to compute interface depth instead of class depth
@@ -119,6 +127,7 @@ public class Types {
 
      @param type a type
      @return the depth
+     @see #depth(Class, boolean)
      */
     public static int depth(Class<?> type) {
         return depth(type, type != null && type.isInterface());
@@ -148,6 +157,7 @@ public class Types {
      @param a a type
      @param b a type
      @return the generation gap between {@code a} and {@code b}
+     @see #difference(Class, Class, boolean)
      */
     public static int difference(Class<?> a, Class<?> b) {
         return difference(a, b, a != null && a.isInterface() || b != null && b.isInterface());
