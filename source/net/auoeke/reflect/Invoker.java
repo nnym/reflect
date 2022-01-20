@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -217,7 +218,7 @@ public class Invoker {
 
      @param handle the method handle
      @param type the method type whereto to adapt {@code handle}
-     @return the adapted handle
+     @return the adapted method handle
      @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
     public static MethodHandle adapt(MethodHandle handle, MethodType type) {
@@ -263,7 +264,27 @@ public class Invoker {
         return handle.asType(type);
     }
 
+    /**
+     Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
+
+     @param handle the method handle
+     @param parameterTypes the input parameter types
+     @return the adapted method handle
+     @see #adapt(MethodHandle, MethodType)
+     */
     public static MethodHandle adapt(MethodHandle handle, Class<?>... parameterTypes) {
+        return adapt(handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
+    }
+
+    /**
+     Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
+
+     @param handle the method handle
+     @param parameterTypes the input parameter types
+     @return the adapted method handle
+     @see #adapt(MethodHandle, MethodType)
+     */
+    public static MethodHandle adapt(MethodHandle handle, List<Class<?>> parameterTypes) {
         return adapt(handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
     }
 }
