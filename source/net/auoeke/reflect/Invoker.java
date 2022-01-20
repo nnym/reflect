@@ -18,31 +18,76 @@ import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 
 @SuppressWarnings("unused")
 public class Invoker {
+    /**
+     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
+
+     @param handle a method handle
+     @return the method handle reflected as a {@link Member}
+     */
     public static Member member(MethodHandle handle) {
         return MethodHandles.reflectAs(Member.class, handle);
     }
 
+    /**
+     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Field}.
+
+     @param handle a method handle
+     @return the method handle reflected as a {@link Field}
+     */
     public static Field field(MethodHandle handle) {
         return MethodHandles.reflectAs(Field.class, handle);
     }
 
+    /**
+     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as an {@link Executable}.
+
+     @param handle a method handle
+     @return the method handle reflected as an {@link Executable}
+     */
     public static Executable executable(MethodHandle handle) {
         return MethodHandles.reflectAs(Executable.class, handle);
     }
 
+    /**
+     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Constructor}.
+
+     @param handle a method handle
+     @return the method handle reflected as a {@link Constructor}
+     */
     public static <T> Constructor<T> constructor(MethodHandle handle) {
         return MethodHandles.reflectAs(Constructor.class, handle);
     }
 
+    /**
+     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Method}.
+
+     @param handle a method handle
+     @return the method handle reflected as a {@link Method}
+     */
     public static Method method(MethodHandle handle) {
         return MethodHandles.reflectAs(Method.class, handle);
     }
 
+    /**
+     Invoke a method handle without arguments.
+
+     @param handle a method handle
+     @param <T> the handle's return type
+     @return the result
+     */
     @SneakyThrows
     public static <T> T invoke(MethodHandle handle) {
         return (T) handle.invoke();
     }
 
+    /**
+     Invoke a method handle with arguments.
+
+     @param handle a method handle
+     @param arguments arguments wherewith to invoke the handle
+     @param <T> the handle's return type
+     @return the result
+     */
     @SneakyThrows
     public static <T> T invoke(MethodHandle handle, Object... arguments) {
         return (T) handle.invokeWithArguments(arguments);
