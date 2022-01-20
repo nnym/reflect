@@ -28,7 +28,7 @@ public class Modules {
 
     /**
      Make {@code module} unnamed, thereby opening it to all unnamed modules.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymize(Module module) {
         name.putReference(module, null);
@@ -36,7 +36,7 @@ public class Modules {
 
     /**
      Make the modules in {@code layer} unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymize(ModuleLayer layer) {
         layer.modules().forEach(Modules::anonymize);
@@ -44,7 +44,7 @@ public class Modules {
 
     /**
      Make the modules in {@code layer} and its parents unnamed recursively.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymizeAll(ModuleLayer layer) {
         anonymize(layer);
@@ -53,7 +53,7 @@ public class Modules {
 
     /**
      Make all modules defined to {@code loader} unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymize(ClassLoader loader) {
         layers(loader).forEach(Modules::anonymize);
@@ -61,7 +61,7 @@ public class Modules {
 
     /**
      Make all modules in module layers defined to {@code loader} and their parents unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymizeAll(ClassLoader loader) {
         layers(loader).forEach(Modules::anonymizeAll);
@@ -69,7 +69,7 @@ public class Modules {
 
     /**
      Make all modules in module layers defined to this class' loader and their parents unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with caution.
+     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
      */
     public static void anonymizeAll() {
         anonymizeAll(Modules.class.getClassLoader());

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
 import lombok.val;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.B;
@@ -26,11 +25,6 @@ import org.junit.platform.commons.annotation.Testable;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal", "JavaReflectionMemberAccess"})
 @Testable
 public class ReflectTest {
-    @SneakyThrows
-    static void logFields(Object object) {
-        Fields.instanceOf(object.getClass()).forEach(field -> System.out.printf("%s: %s\n", field, Accessor.get(object, field)));
-    }
-
     @Test
     public void changeLoader() {
         val PackagePrivate = Classes.defineBootstrapClass(ReflectTest.class.getClassLoader(), "net/auoeke/reflect/misc/PackagePrivate");
@@ -38,20 +32,6 @@ public class ReflectTest {
 
         Accessor.putReference((Object) PackagePrivate, "classLoader", Reflect.defaultClassLoader);
         assert PackagePrivate.getClassLoader() == Reflect.defaultClassLoader;
-    }
-
-    @Test
-    public void invokeExact() throws Throwable {
-        val c = new C();
-        var handle = Invoker.findSpecial(A.class, "print", void.class);
-
-        handle.invoke(c);
-        handle.invokeExact((A) c);
-
-        handle = handle.bindTo(c);
-
-        handle.invoke();
-        handle.invokeExact();
     }
 
     @SuppressWarnings("WrapperTypeMayBePrimitive")

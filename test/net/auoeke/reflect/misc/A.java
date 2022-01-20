@@ -46,8 +46,4 @@ public class A implements Cloneable, Copyable<A> {
     public String message() {
         return "a";
     }
-
-    public void print() {
-        System.out.print(this.message());
-    }
 }

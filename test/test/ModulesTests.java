@@ -4,11 +4,14 @@ import java.lang.invoke.MethodHandles;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Modules;
 import net.auoeke.uncheck.ThrowingRunnable;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 
+// Must not comtaminate other tests; especially ReflectTests::instrumentationTest.
+@Order(Integer.MAX_VALUE)
 @Testable
-class ModulesTests {
+public class ModulesTests {
     @Test
     void open() {
 
