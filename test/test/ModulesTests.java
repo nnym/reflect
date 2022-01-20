@@ -60,8 +60,8 @@ class ModulesTests {
             field.get(null);
         };
 
-        Assert.assertException("jdk.internal.misc.Unsafe should be inaccessible.", getUnsafe);
-        Assert.assertException("MethodHandles.Lookup#IMPL_LOOKUP should be inaccessible.", getIMPL_LOOKUP);
+        Assert.exception("jdk.internal.misc.Unsafe should be inaccessible.", getUnsafe);
+        Assert.exception("MethodHandles.Lookup#IMPL_LOOKUP should be inaccessible.", getIMPL_LOOKUP);
         Modules.anonymizeAll();
         getUnsafe.run();
         getIMPL_LOOKUP.run();

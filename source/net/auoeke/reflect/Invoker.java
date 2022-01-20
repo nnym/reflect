@@ -217,8 +217,13 @@ public class Invoker {
      @param handle the method handle
      @param type the method type whereto to adapt {@code handle}
      @return the adapted handle
+     @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
     public static MethodHandle adapt(MethodHandle handle, MethodType type) {
+        if (handle.type().parameterCount() != type.parameterCount()) {
+            throw new IllegalArgumentException("Handle's (%d) and target type's (%d) parameter count differ.".formatted(handle.type().parameterCount(), type.parameterCount()));
+        }
+
         val order = new int[handle.type().parameterCount()];
         val outputTypes = new ArrayList<>(handle.type().parameterList());
         val inputTypes = type.parameterArray();
@@ -234,7 +239,7 @@ public class Invoker {
                 val outputType = outputIterator.next();
 
                 if (outputType != null && outputType.isAssignableFrom(inputType)) {
-                    if (deviation > (deviation = Math.min(deviation, (int) Types.classes(inputType, outputType).count()))) {
+                    if (deviation > (deviation = Math.min(deviation, Types.difference(inputType, outputType)))) {
                         bestMatch = outputIterator.previousIndex();
                     }
                 }

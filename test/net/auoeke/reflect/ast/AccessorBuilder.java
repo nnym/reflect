@@ -18,6 +18,7 @@ import net.auoeke.reflect.ast.base.method.statement.Return;
 import net.auoeke.reflect.ast.base.type.Type;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.platform.commons.annotation.Testable;
 
+@Disabled
 @Testable
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

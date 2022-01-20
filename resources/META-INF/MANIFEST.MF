@@ -1,0 +1,5 @@
+Agent-Class: net.auoeke.reflect.Agent
+Premain-Class: net.auoeke.reflect.Agent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+Can-Set-Native-Method-Prefix: true

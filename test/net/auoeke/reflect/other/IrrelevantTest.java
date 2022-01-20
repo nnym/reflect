@@ -10,6 +10,7 @@ import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
+import net.auoeke.reflect.Reflect;
 import net.auoeke.reflect.ReflectTest;
 import net.auoeke.reflect.experimental.generics.Generics;
 import net.auoeke.reflect.experimental.generics.TypeArgument;
@@ -17,7 +18,6 @@ import net.auoeke.reflect.generics.GenericTypeAware;
 import net.auoeke.reflect.generics.GenericTypeAwareTest;
 import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Util;
-import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -70,7 +70,7 @@ public class IrrelevantTest {
             int pub = 0;
             int pri = 0;
 
-            for (var type : ByteBuddyAgent.install().getAllLoadedClasses()) {
+            for (var type : Reflect.instrumentation().getAllLoadedClasses()) {
                 for (var method : members.apply(type)) {
                     if (Flags.isPublic(method)) {
                         ++pub;

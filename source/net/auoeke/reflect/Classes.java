@@ -292,6 +292,7 @@ public class Classes {
         return defineClass(systemClassLoader, name, Files.readAllBytes(Path.of(url.toURI())), new CodeSource(url, (CodeSigner[]) null));
     }
 
+    @Deprecated(forRemoval = true) // Use Types::supertypes.
     public static List<Class<?>> supertypes(Class<?> type) {
         val supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
         type = type.getSuperclass();

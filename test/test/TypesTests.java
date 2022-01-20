@@ -7,14 +7,37 @@ import java.util.stream.Stream;
 import net.auoeke.reflect.Types;
 import net.auoeke.reflect.misc.A;
 import net.auoeke.reflect.misc.C;
+import net.auoeke.reflect.misc.Interface1;
+import net.auoeke.reflect.misc.Interface2;
+import net.auoeke.reflect.misc.Interface3;
 import org.junit.jupiter.api.Test;
 import sun.misc.Unsafe;
 
-class TypesTest extends Types {
+class TypesTests extends Types {
     @Test
     void classesTest() {
         assert classes(C.class, A.class).count() == 2;
         assert classes(Object.class).count() == 1;
+    }
+
+    // Must not depend on the standard library's hierarchy excessively.
+    @Test
+    void depthTest() {
+        // classes
+        Assert.equal(0, depth(null), depth(null, false));
+        Assert.equal(1, depth(Object.class), depth(Object.class, false));
+        Assert.equal(2, depth(Types.class), depth(Types.class, false));
+        Assert.equal(3, depth(TypesTests.class), depth(TypesTests.class, false));
+
+        // interfaces
+        assert depth(null, true) == 0;
+        Assert.equal(1, depth(Interface1.class), depth(Interface1.class, true));
+        Assert.equal(2, depth(Interface2.class), depth(Interface2.class, true));
+        Assert.equal(3, depth(Interface3.class), depth(Interface3.class, true));
+
+        assert difference(Object.class, null) == 1;
+        assert difference(null, Object.class) == -1;
+        assert difference(TypesTests.class, Integer.class) == Integer.MAX_VALUE;
     }
 
     @Test
@@ -58,7 +81,7 @@ class TypesTest extends Types {
         assert equals(Integer.class, int.class);
         assert equals(Double.class, double.class);
         assert !equals(Object.class, Integer.class);
-        assert !equals(Object.class, TypesTest.class);
+        assert !equals(Object.class, TypesTests.class);
         assert !equals(Object.class, null);
         assert equals(null, null);
         assert equals(Object.class, Object.class);
@@ -71,7 +94,7 @@ class TypesTest extends Types {
         assert !isWrapper(void.class);
         assert isWrapper(Void.class);
         assert isWrapper(Double.class);
-        assert !isWrapper(TypesTest.class);
+        assert !isWrapper(TypesTests.class);
         assert !isWrapper(Object.class);
         assert !isWrapper(int.class);
     }

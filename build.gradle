@@ -29,7 +29,6 @@ dependencies {
     testImplementation("org.ow2.asm:asm-tree")
     testImplementation("org.openjdk.jol:jol-core")
     testImplementation("net.auoeke:uncheck")
-    testImplementation("net.bytebuddy:byte-buddy-agent")
 }
 
 test {

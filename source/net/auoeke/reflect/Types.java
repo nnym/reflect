@@ -5,8 +5,7 @@ import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static net.auoeke.reflect.Reflect.nul;
+import lombok.val;
 
 @SuppressWarnings("unused")
 public class Types {
@@ -25,27 +24,130 @@ public class Types {
      */
     public static long DEFAULT_CONVERSION = WIDEN | UNBOX;
 
-    /**
-     Get a class hierarchy starting at a class and ending at one of its superclasses.
+    private static final CacheMap<Class<?>, Integer> classDepths = CacheMap.identity();
+    private static final CacheMap<Class<?>, Integer> interfaceDepths = CacheMap.identity();
 
-     @param begin the initial class
-     @param end   the highest superclass; may be null (exclusive)
-     @param <T>   the type of the initial class
-     @return the hierarchy as a {@link Stream}
+    /**
+     Return a stream of a type's interfaces.
+
+     @param type a type
+     @return the type's interfaces
      */
-    public static <T> Stream<Class<? super T>> classes(Class<T> begin, Class<?> end) {
+    public static Stream<Class<?>> interfaces(Class<?> type) {
+        return Stream.of(type.getInterfaces());
+    }
+
+    /**
+     Return a type's supertypes in declaration order.
+
+     @param type a type
+     @param <T>  {@code type}
+     @return {@code type}'s supertypes
+     @throws NullPointerException if {@code type} is {@code null}
+     */
+    public static Stream<Class<?>> supertypes(Class<?> type) {
+        val superclass = type.getSuperclass();
+        val interfaces = interfaces(type);
+        return superclass == null ? interfaces : Stream.concat(Stream.of(superclass), interfaces);
+    }
+
+    /**
+     Get a class hierarchy starting at a class and ending at one of its ancestors.
+
+     @param begin the most derived type
+     @param end   the oldest ancestor; may be {@code null} (exclusive)
+     @param <T>   the type of the initial class
+     @return the hierarchy
+     */
+    public static <T> Stream<Class<?>> classes(Class<T> begin, Class<?> end) {
         return Stream.iterate(begin, type -> type != end, Class::getSuperclass);
     }
 
     /**
      Get the hierarchy of a class.
 
-     @param begin the bottom of the hierarchy
-     @param <T>   the type of the lowest class
-     @return the hierarchy as a {@link Stream}
+     @param begin the most derived type
+     @param <T>   the most derived type
+     @return the hierarchy
      */
-    public static <T> Stream<Class<? super T>> classes(Class<T> begin) {
+    public static <T> Stream<Class<?>> classes(Class<T> begin) {
         return classes(begin, null);
+    }
+
+    public static Stream<Class<?>> allInterfaces(Class<?> type) {
+        return classes(type).flatMap(Types::interfaces).distinct();
+    }
+
+    /**
+     Return a stream of a type and its every base type up to and excluding an upper bound.
+
+     @param begin a type
+     @param end   an upper bound; may be {@code null}
+     @param <T>   {@code begin}
+     @return {@code begin} and its every base type below {@code end}
+     */
+    public static <T> Stream<Class<?>> hierarchy(Class<T> begin, Class<?> end) {
+        return classes(begin, end).flatMap(Types::supertypes).distinct();
+    }
+
+    /**
+     Return a stream of a type and its every base type.
+
+     @param type a type
+     @param <T>  {@code type}
+     @return {@code type} and its every base type
+     */
+    public static <T> Stream<Class<?>> hierarchy(Class<T> type) {
+        return hierarchy(type, null);
+    }
+
+    /**
+     Count a type's class or interface depth.
+
+     @param type       a type
+     @param interfaces whether to compute interface depth instead of class depth
+     @return the depth
+     */
+    public static int depth(Class<?> type, boolean interfaces) {
+        return type == null ? 0
+            : interfaces ? 1 + interfaceDepths.computeIfAbsent(type, t -> allInterfaces(t).mapToInt(t1 -> depth(t1, true)).max().orElse(0))
+            : classDepths.computeIfAbsent(type, t -> (int) classes(t).count());
+    }
+
+    /**
+     Count interface depth if {@code type} is an interface; else count class depth.
+
+     @param type a type
+     @return the depth
+     */
+    public static int depth(Class<?> type) {
+        return depth(type, type != null && type.isInterface());
+    }
+
+    /**
+     Compute the generation gap between 2 types. The gap is positive if {@code a} is more derived than {@code b} or negative if {@code b} is more derived than {@code a}.
+     If the types are unrelated, then return {@link Integer#MAX_VALUE}.
+
+     @param a          a type
+     @param b          a type
+     @param interfaces whether to compute the generation gap in terms of interface depth instead of class depth
+     @return the generation gap between {@code a} and {@code b}
+     */
+    public static int difference(Class<?> a, Class<?> b, boolean interfaces) {
+        return a == null || b == null || a.isAssignableFrom(b) || b.isAssignableFrom(a) ? depth(a, interfaces) - depth(b, interfaces) : Integer.MAX_VALUE;
+
+    }
+
+    /**
+     Count the generation gap between 2 types. The gap is positive if {@code a} is more derived than {@code b} or negative if {@code b} is more derived than {@code a}.
+     If the types are unrelated, then return {@link Integer#MAX_VALUE}.
+
+     @param a a type
+     @param b a type
+     @return the generation gap between {@code a} and {@code b}
+     */
+    public static int difference(Class<?> a, Class<?> b) {
+        return difference(a, b, a != null && a.isInterface() || b != null && b.isInterface());
     }
 
     /**
@@ -223,15 +325,15 @@ public class Types {
      @return the boxed version of {@code array} if its component type is primitive; {@code array} otherwise
      */
     public static <T> T[] box(Object array) {
-        var type = array.getClass().componentType();
-        var wrapper = box(type);
+        val type = array.getClass().componentType();
+        val wrapper = box(type);
 
         if (wrapper == type) {
             return (T[]) array;
         }
 
-        var length = Array.getLength(array);
-        var boxed = (T[]) Array.newInstance(wrapper, length);
+        val length = Array.getLength(array);
+        val boxed = (T[]) Array.newInstance(wrapper, length);
         IntStream.range(0, length).forEach(index -> Array.set(boxed, index, Array.get(array, index)));
 
         return boxed;
@@ -243,21 +345,21 @@ public class Types {
      @return the unboxed version of {@code array} if its component type is a primitive wrapper type; {@code array} if its component type is primitive; {@literal null} otherwise
      */
     public static <T> T unbox(Object array) {
-        var type = array.getClass().componentType();
+        val type = array.getClass().componentType();
 
         if (type.isPrimitive()) {
             return (T) array;
         }
 
-        var primitive = unbox(type);
+        val primitive = unbox(type);
 
         if (primitive == null || primitive == type) {
-            return nul();
+            return null;
         }
 
-        var cast = (Object[]) array;
-        var length = cast.length;
-        var unboxed = (T) Array.newInstance(primitive, length);
+        val cast = (Object[]) array;
+        val length = cast.length;
+        val unboxed = (T) Array.newInstance(primitive, length);
         IntStream.range(0, length).forEach(index -> Array.set(unboxed, index, cast[index]));
 
         return unboxed;

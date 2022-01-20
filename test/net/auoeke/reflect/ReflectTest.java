@@ -6,21 +6,24 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.auoeke.reflect.misc.A;
+import net.auoeke.reflect.misc.B;
 import net.auoeke.reflect.misc.C;
 import net.auoeke.reflect.misc.Enumeration;
 import net.auoeke.reflect.misc.TestObject;
-import net.auoeke.reflect.util.Logger;
 import net.auoeke.reflect.util.Util;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 
-@SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal"})
+@SuppressWarnings({"ResultOfMethodCallIgnored", "AssertWithSideEffects", "FieldMayBeFinal", "JavaReflectionMemberAccess"})
 @Testable
 public class ReflectTest {
     @SneakyThrows
@@ -88,7 +91,6 @@ public class ReflectTest {
         Runnable verifySize = () -> {
             assert Enumeration.values().length == expectedLength.length++;
         };
-
         verifySize.run();
 
         EnumConstructor.add(Enumeration.class, "TEST", 1D);
@@ -114,42 +116,27 @@ public class ReflectTest {
     @Test
     public void reinterpret() {
         var a = Classes.reinterpret(A.class, Integer.class);
-
-        System.out.println(a);
-        System.out.println(A.class.getClassLoader());
+        a.toString();
+        A.class.getClassLoader().toString();
 
         Double dubble = 0D;
         var loong = Classes.reinterpret(dubble, Long.class);
 
-        System.out.println(dubble);
         Accessor.putLong(loong, "value", 0xFFFFFFFFFFL);
-        System.out.println(loong);
-        System.out.println(Classes.reinterpret(loong, Double.class));
+        assert loong == 0xFFFFFFFFFFL;
 
+        Classes.reinterpret(loong, Double.class);
         Classes.reinterpret(A.class, (Object) Class.class);
+
+        var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ReflectTest.class);
+        assert object.getClass() == (object = Unsafe.allocateInstance(ReflectTest.class)).getClass();
+        assert object.getClass() == Classes.reinterpret(object, ReflectTest.class).getClass();
+        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ReflectTest()).getClass() == ReflectTest.class;
     }
 
     @Test
     public void allFields() {
-        Fields.all(C.class).forEach(Logger::log);
-    }
-
-    @Test
-    public void classPointer() {
-        var object = Unsafe.allocateInstance(Object.class);
-        System.out.println(object);
-        Classes.reinterpret(object, ReflectTest.class);
-        System.out.println(object);
-
-        object = Unsafe.allocateInstance(ReflectTest.class);
-        System.out.println(object);
-        Classes.reinterpret(object, ReflectTest.class);
-        System.out.println(object);
-
-        object = Unsafe.allocateInstance(Object.class);
-        System.out.println(object);
-        Classes.reinterpret(object, new ReflectTest());
-        System.out.println(object);
+        assert Stream.of(A.class, B.class, C.class).allMatch(Fields.all(C.class).collect(HashMap::new, (map, field) -> map.computeIfAbsent(field.getDeclaringClass(), type -> new HashMap<>()), Map::putAll)::containsKey);
     }
 
     @Test
@@ -177,18 +164,11 @@ public class ReflectTest {
     public void classPath() throws Throwable {
         val classPath = Classes.classPath(ReflectTest.class.getClassLoader());
         val file = new File("test");
-
-        Arrays.stream(Classes.urls(classPath)).forEach(Logger::log);
-
-        System.out.println();
-        System.out.println();
-        System.out.println();
-
-        Classes.addURL(classPath, file.toURI().toURL());
-        Arrays.stream(Classes.urls(classPath)).forEach(Logger::log);
+        val url = file.toURI().toURL();
+        Classes.addURL(classPath, url);
+        Arrays.asList(Classes.urls(classPath)).contains(url);
     }
 
-    @SuppressWarnings("JavaReflectionMemberAccess")
     @Test
     void constructor() throws Throwable {
         class PrivateCtor {

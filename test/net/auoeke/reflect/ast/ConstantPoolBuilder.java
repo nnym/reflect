@@ -5,10 +5,12 @@ import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.ast.base.method.expression.GetField;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.commons.annotation.Testable;
 
+@Disabled
 @Testable
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConstantPoolBuilder extends TestBuilder {
