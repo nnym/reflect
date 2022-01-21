@@ -49,7 +49,7 @@ public class Reflect {
             var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
             try {
-                var source = Agent.class.getProtectionDomain().getCodeSource().getLocation().toString();
+                var source = Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
                 if (!source.endsWith(".jar")) {
                     var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
