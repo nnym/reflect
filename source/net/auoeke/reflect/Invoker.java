@@ -339,7 +339,7 @@ public class Invoker {
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
      */
-    public static MethodHandle adapt(MethodHandle handle, List<Class<?>> parameterTypes) {
-        return adapt(handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
+    public static MethodHandle adapt(MethodHandle handle, List<? extends Class<?>> parameterTypes) {
+        return adapt(handle, MethodType.methodType(handle.type().returnType(), (List<Class<?>>) parameterTypes));
     }
 }
