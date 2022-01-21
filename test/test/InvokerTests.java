@@ -98,36 +98,36 @@ class InvokerTests extends Invoker {
 
     @Test
     void adaptTest() throws Throwable {
+        val test0 = findStatic(cla$$, "test0", double.class, int.class, double.class);
+        val test1 = findStatic(cla$$, "test1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class);
+        val test2 = findStatic(cla$$, "test2", void.class);
+
         val type = MethodType.methodType(double.class, double.class, int.class);
-        val adapt0 = adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), type);
+        val adapt0 = adapt(test0, type);
         assert adapt0.type().equals(type) && (double) adapt0.invoke(3, 1) == 10;
-        assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
-        assert adapt(findStatic(cla$$, "adapt0", double.class, int.class, double.class), List.of(int.class, double.class)).type() == MethodType.methodType(double.class, int.class, double.class);
+        assert adapt(test0, int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
+        assert adapt(test0, List.of(int.class, double.class)).type() == MethodType.methodType(double.class, int.class, double.class);
 
         val object = new Object();
-        var adapt1 = (Object[]) adapt(
-            findStatic(cla$$, "adapt1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class),
-            short.class, long.class, Object.class, Float.class, Invoker.class
-        ).invokeWithArguments((short) 24, 57, object, 4F, null);
+        var adapt1 = (Object[]) adapt(test1, short.class, long.class, Object.class, Float.class, Invoker.class).invokeWithArguments((short) 24, 57, object, 4F, null);
         assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
 
-        val adapt2 = findStatic(cla$$, "adapt2", void.class);
-        assert adapt(adapt2) == adapt2;
+        assert adapt(test2) == test2;
 
-        adapt1 = (Object[]) adapt(
-            findStatic(cla$$, "adapt1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class),
-            Invoker.class, Float.class, long.class, short.class, Object.class
-        ).invokeWithArguments(null, 4F, 57, (short) 24, object);
+        adapt1 = (Object[]) adapt(test1, Invoker.class, Float.class, long.class, short.class, Object.class).invokeWithArguments(null, 4F, 57, (short) 24, object);
+        assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
+
+        adapt1 = (Object[]) adapt(DISCARD_UNUSED, test1, Invoker.class, Float.class, long.class, short.class, Object.class, Class.class).invokeWithArguments(null, 4F, 57, (short) 24, object, Class.class);
         assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
     }
 
-    private static double adapt0(int a, double b) {
+    private static double test0(int a, double b) {
         return a + b * b;
     }
 
-    private static Object[] adapt1(Invoker i, Object o, long l, short s, Float f) {
+    private static Object[] test1(Invoker i, Object o, long l, short s, Float f) {
         return new Object[]{i, o, l, s, f};
     }
 
-    private static void adapt2() {}
+    private static void test2() {}
 }

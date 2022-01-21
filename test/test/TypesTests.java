@@ -1,7 +1,6 @@
 package test;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -24,7 +23,6 @@ class TypesTests extends Types {
 
     @Test
     void hierarchyTest() {
-        Comparator<Class<?>> comparator = Comparator.comparing(Class::getName);
         var hierarchy = hierarchy(Interface3.Impl.class).toList();
         var test = List.of(Interface3.Impl.class, Interface3.class, Interface2.class, Interface1.class, Object.class);
         assert test.containsAll(hierarchy) && hierarchy.containsAll(test);
@@ -137,6 +135,11 @@ class TypesTests extends Types {
         assert Types.canCast(long.class, short.class);
         assert Types.canCast(int.class, char.class);
         assert !Types.canCast(int.class, boolean.class);
+        assert Types.canCast(REWRAP, Double.class, Float.class);
+        assert Types.canCast(REWRAP, Long.class, Integer.class);
+        assert Types.canCast(REWRAP, Integer.class, Short.class);
+        assert Types.canCast(REWRAP, Long.class, Byte.class);
+        assert !Types.canCast(REWRAP, Integer.class, Long.class);
     }
 
     @Test
@@ -163,7 +166,7 @@ class TypesTests extends Types {
     }
 
     @Test
-    void unboxTest2() {
+    void unboxTest() {
         var ints = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).toArray(Integer[]::new);
         assert Arrays.equals(Stream.of(ints).mapToInt(i -> i).toArray(), Types.unbox(ints));
 

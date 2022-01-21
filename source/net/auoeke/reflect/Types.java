@@ -9,20 +9,32 @@ import lombok.val;
 
 @SuppressWarnings("unused")
 public class Types {
+    // @formatter:off
     /**
      Widen primitives according to the automatic widening in Java.
      */
-    public static long WIDEN = 1;
+    public static final long WIDEN  = 1;
 
     /**
      Unbox primitive wrappers if they match the target primitive type.
      */
-    public static long UNBOX = 1 << 1;
+    public static final long UNBOX  = 1 << 1;
+
+    /**
+     Box primitives in order to match their wrappers.
+     */
+    public static final long BOX    = 1 << 2;
+
+    /**
+     Rewrap wrappers in wider types.
+     */
+    public static final long REWRAP = 1 << 3;
+    // @formatter:on
 
     /**
      {@linkplain #WIDEN Widen primitives} and {@linkplain #UNBOX unbox wrappers}.
      */
-    public static long DEFAULT_CONVERSION = WIDEN | UNBOX;
+    public static final long DEFAULT_CONVERSION = WIDEN | UNBOX | BOX;
 
     private static final CacheMap<Class<?>, Integer> classDepths = CacheMap.identity();
     private static final CacheMap<Class<?>, Integer> interfaceDepths = CacheMap.identity();
@@ -212,8 +224,11 @@ public class Types {
      @param flags the conversion flags
      @param left  the type to which to assign
      @param right the type to assign
+     @throws NullPointerException if {@code left} or {@code right} is {@code null}
      @see #WIDEN
      @see #UNBOX
+     @see #BOX
+     @see #REWRAP
      */
     public static boolean canCast(long flags, Class<?> left, Class<?> right) {
         if (left.isAssignableFrom(right)) {
@@ -221,17 +236,20 @@ public class Types {
         }
 
         if (left.isPrimitive()) {
-            return Flags.all(flags, UNBOX) && unbox(right) == left
-                   || Flags.all(flags, WIDEN) && (Flags.all(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
+            return Flags.any(flags, UNBOX) && unbox(right) == left
+                   || Flags.any(flags, WIDEN) && (Flags.any(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
         }
 
-        return left == box(right);
+        return Flags.any(flags, BOX) && left == box(right)
+               || Flags.any(flags, REWRAP) && !right.isPrimitive() && TypeInfo.of(left).canWiden(TypeInfo.of(right));
     }
 
     /**
      Check whether an assignment is legal according to the {@linkplain #DEFAULT_CONVERSION default conversion flags}.
 
-     @return {@link #canCast(long, Class, Class)} with the default conversion flags.
+     @param left  the type to which assignment is to be tested
+     @param right the type from which assignment is to be tested
+     @return {@link #canCast(long, Class, Class)} with the default conversion flags
      */
     public static boolean canCast(Class<?> left, Class<?> right) {
         return canCast(DEFAULT_CONVERSION, left, right);
@@ -251,11 +269,7 @@ public class Types {
             }
 
             for (var i = offset; i != left.length; i++) {
-                if (Flags.all(flags, UNBOX)) {
-                    if (!canCast(flags, left[i], right[i - offset])) {
-                        return false;
-                    }
-                } else if (!left[i].isAssignableFrom(right[i - offset])) {
+                if (!canCast(flags, left[i], right[i - offset])) {
                     return false;
                 }
             }
@@ -270,10 +284,12 @@ public class Types {
         return canCast(flags, offset, left, Stream.of(right).map(Object::getClass).toArray(Class[]::new));
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(long flags, int offset, Executable executable, Class<?>... types) {
         return canCast(flags, offset, executable.getParameterTypes(), types);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(long flags, int offset, Executable executable, Object... arguments) {
         return canCast(flags, offset, executable.getParameterTypes(), arguments);
     }
@@ -286,10 +302,12 @@ public class Types {
         return canCast(flags, 0, left, right);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(long flags, Executable executable, Class<?>... types) {
         return canCast(flags, 0, executable.getParameterTypes(), types);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(long flags, Executable executable, Object... arguments) {
         return canCast(flags, 0, executable.getParameterTypes(), arguments);
     }
@@ -302,6 +320,7 @@ public class Types {
         return canCast(DEFAULT_CONVERSION, offset, left, right);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(int offset, Executable executable, Object... arguments) {
         return canCast(DEFAULT_CONVERSION, offset, executable.getParameterTypes(), arguments);
     }
@@ -314,10 +333,12 @@ public class Types {
         return canCast(DEFAULT_CONVERSION, 0, left, right);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(Executable executable, Class<?>... types) {
         return canCast(DEFAULT_CONVERSION, 0, executable.getParameterTypes(), types);
     }
 
+    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
     public static boolean canCast(Executable executable, Object... arguments) {
         return canCast(DEFAULT_CONVERSION, 0, executable.getParameterTypes(), arguments);
     }

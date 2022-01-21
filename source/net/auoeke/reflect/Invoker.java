@@ -19,6 +19,11 @@ import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 @SuppressWarnings("unused")
 public class Invoker {
     /**
+     Discard input parameters that did not match any output parameter.
+     */
+    public static final long DISCARD_UNUSED = 1L << 63;
+
+    /**
      {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
 
      @param handle a method handle
@@ -265,18 +270,21 @@ public class Invoker {
 
     /**
      Produce a method handle of type {@code type} that invokes {@code handle} by reordering the resulting handle's parameters to match {@code handle}'s parameters by type.
-     Each input parameter (in {@code type}) is matched to the first {@linkplain Class#isAssignableFrom applicable} output parameter (in {@code handle})
+     Each input parameter (in {@code type}) is matched to the first {@linkplain Types#canCast(long, Class, Class) applicable} output parameter (in {@code handle})
      with the smallest {@linkplain Types#difference generation gap} between their types.
      <p>
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 
+     @param flags  {@link #DISCARD_UNUSED}
      @param handle the method handle
      @param type   the method type whereto to adapt {@code handle}
      @return the adapted method handle
      @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
-    public static MethodHandle adapt(MethodHandle handle, MethodType type) {
-        if (handle.type().parameterCount() != type.parameterCount()) {
+    public static MethodHandle adapt(long flags, MethodHandle handle, MethodType type) {
+        val discardUnused = Flags.any(flags, DISCARD_UNUSED);
+
+        if (!discardUnused && handle.type().parameterCount() != type.parameterCount()) {
             throw new IllegalArgumentException("Handle's (%d) and target type's (%d) parameter count differ.".formatted(handle.type().parameterCount(), type.parameterCount()));
         }
 
@@ -284,7 +292,6 @@ public class Invoker {
         val outputTypes = new ArrayList<>(handle.type().parameterList());
         val inputTypes = type.parameterArray();
 
-        target:
         for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
             val inputType = inputTypes[inputIndex];
             val outputIterator = outputTypes.listIterator();
@@ -303,11 +310,23 @@ public class Invoker {
             }
 
             if (bestMatch < 0) {
-                throw new IllegalArgumentException("No matching parameter was found for input %s parameter at index %d.".formatted(inputType, inputIndex));
+                if (!discardUnused) {
+                    throw new IllegalArgumentException("No matching output parameter was found for input %s parameter at index %d.".formatted(inputType, inputIndex));
+                }
+            } else {
+                order[bestMatch] = inputIndex;
+                outputTypes.set(bestMatch, null);
             }
+        }
 
-            order[bestMatch] = inputIndex;
-            outputTypes.set(bestMatch, null);
+        val outputIterator = outputTypes.listIterator();
+
+        while (outputIterator.hasNext()) {
+            val parameterType = outputIterator.next();
+
+            if (parameterType != null) {
+                throw new IllegalArgumentException("No matching input parameter was found for output %s parameter at index %d.".formatted(parameterType, outputIterator.previousIndex()));
+            }
         }
 
         for (var index = 0; index < order.length; index++) {
@@ -327,8 +346,36 @@ public class Invoker {
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
      */
+    public static MethodHandle adapt(long flags, MethodHandle handle, Class<?>... parameterTypes) {
+        return adapt(flags, handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
+    }
+
+    /**
+     Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
+
+     @param handle         the method handle
+     @param parameterTypes the input parameter types
+     @return the adapted method handle
+     @see #adapt(MethodHandle, MethodType)
+     */
+    public static MethodHandle adapt(long flags, MethodHandle handle, List<? extends Class<?>> parameterTypes) {
+        return adapt(flags, handle, MethodType.methodType(handle.type().returnType(), (List<Class<?>>) parameterTypes));
+    }
+
+    public static MethodHandle adapt(MethodHandle handle, MethodType type) {
+        return adapt(0, handle, type);
+    }
+
+    /**
+     Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
+
+     @param handle         the method handle
+     @param parameterTypes the input parameter types
+     @return the adapted method handle
+     @see #adapt(MethodHandle, MethodType)
+     */
     public static MethodHandle adapt(MethodHandle handle, Class<?>... parameterTypes) {
-        return adapt(handle, MethodType.methodType(handle.type().returnType(), parameterTypes));
+        return adapt(0, handle, parameterTypes);
     }
 
     /**
@@ -340,6 +387,6 @@ public class Invoker {
      @see #adapt(MethodHandle, MethodType)
      */
     public static MethodHandle adapt(MethodHandle handle, List<? extends Class<?>> parameterTypes) {
-        return adapt(handle, MethodType.methodType(handle.type().returnType(), (List<Class<?>>) parameterTypes));
+        return adapt(0, handle, parameterTypes);
     }
 }
