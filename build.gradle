@@ -5,11 +5,9 @@ plugins {
 }
 
 group("net.auoeke")
-version("4.5.1")
+version("4.5.2")
 
-gronk {
-    javaVersion(17)
-}
+javaVersion(17)
 
 compileTestJava {
     options.compilerArgs.add("--enable-preview")
@@ -34,6 +32,10 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
+}
+
+jar {
+    manifest.from("resources/META-INF/MANIFEST.MF")
 }
 
 publishing {
