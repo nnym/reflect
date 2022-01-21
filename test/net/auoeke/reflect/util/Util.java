@@ -1,6 +1,7 @@
 package net.auoeke.reflect.util;
 
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -11,7 +12,6 @@ import lombok.SneakyThrows;
 import net.auoeke.reflect.Reflect;
 import net.auoeke.uncheck.ThrowingConsumer;
 import net.auoeke.uncheck.ThrowingRunnable;
-import net.gudenau.lib.unsafe.Unsafe;
 
 public class Util {
     public static int repetitions = 10000;
@@ -75,6 +75,8 @@ public class Util {
 
     @SneakyThrows
     public static void load() {
-        Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect")).forEach((ThrowingConsumer<Path>) klass -> Class.forName("net.auoeke.reflect." + klass.getFileName().toString().replace(".class", "")));
+        try {
+            Files.list(Paths.get(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect")).forEach((ThrowingConsumer<Path>) type -> Class.forName("net.auoeke.reflect." + type.getFileName().toString().replace(".class", "")));
+        } catch (NotDirectoryException exception) {}
     }
 }

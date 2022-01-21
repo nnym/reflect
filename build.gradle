@@ -14,7 +14,6 @@ compileTestJava {
 }
 
 repositories {
-    mavenCentral()
     maven("maven.auoeke.net")
 }
 
@@ -30,6 +29,8 @@ dependencies {
 }
 
 test {
+    dependsOn(cleanTest)
+
     useJUnitPlatform()
     systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
 }
@@ -38,13 +39,23 @@ jar {
     manifest.from("resources/META-INF/MANIFEST.MF")
 }
 
+// For Reflect::instrumentation.
+task testRelease(type: Test) {
+    group(LifecycleBasePlugin.VERIFICATION_GROUP)
+    dependsOn(cleanTestRelease, test, jar)
+
+    useJUnitPlatform()
+    systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
+    classpath = classpath - sourceSets.main.output + files(jar.archiveFile)
+}
+
 publishing {
     repositories {
         mavenLocal()
 
         maven("maven.auoeke.net") {
-            username(System.properties["maven.username"])
-            password(System.properties["maven.password"])
+            username(systemProperty("maven.username"))
+            password(systemProperty("maven.password"))
         }
     }
 }
