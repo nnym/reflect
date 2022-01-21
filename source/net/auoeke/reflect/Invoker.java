@@ -11,6 +11,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -329,10 +330,8 @@ public class Invoker {
             }
         }
 
-        for (var index = 0; index < order.length; index++) {
-            if (order[index] != index) {
-                return MethodHandles.permuteArguments(handle, type, order);
-            }
+        if (inputTypes.length != outputTypes.size() || IntStream.range(0, order.length).anyMatch(index -> order[index] != index)) {
+            return MethodHandles.permuteArguments(handle, type, order);
         }
 
         return handle.asType(type);
