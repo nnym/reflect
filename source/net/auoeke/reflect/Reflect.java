@@ -12,7 +12,6 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
-import lombok.SneakyThrows;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
@@ -63,7 +62,7 @@ public class Reflect {
                     var jar = new JarOutputStream(Files.newOutputStream(agent));
                     jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
                     jar.write(Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME)
-                        .filter(manifest -> run(() -> Agent.class.getName().equals(new Manifest(manifest.openStream()).getMainAttributes().getValue("Agent-Class"))))
+                        .filter(manifest -> Agent.class.getName().equals(new Manifest(manifest.openStream()).getMainAttributes().getValue("Agent-Class")))
                         .findAny().get().openStream().readAllBytes()
                     );
                     jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
@@ -114,11 +113,7 @@ public class Reflect {
         Accessor.putReferenceVolatile(Classes.Reflection, "methodFilterMap", new HashMap<>());
     }
 
-    static <T> T run(ThrowingSupplier<T> supplier) {
-        return supplier.get();
-    }
-
-    static boolean tryRun(ThrowingRunnable runnable) {
+    static boolean tryRun(Runnable runnable) {
         try {
             runnable.run();
         } catch (Throwable throwable) {
@@ -128,31 +123,11 @@ public class Reflect {
         return true;
     }
 
-    static <T> T runNull(ThrowingSupplier<T> supplier) {
+    static <T> T runNull(Supplier<T> supplier) {
         try {
-            return supplier.execute();
+            return supplier.get();
         } catch (Throwable throwable) {
             return null;
-        }
-    }
-
-    @FunctionalInterface
-    interface ThrowingSupplier<T> extends Supplier<T> {
-        T execute() throws Throwable;
-
-        @SneakyThrows
-        @Override default T get() {
-            return this.execute();
-        }
-    }
-
-    @FunctionalInterface
-    interface ThrowingRunnable extends Runnable {
-        void execute() throws Throwable;
-
-        @SneakyThrows
-        @Override default void run() {
-            this.execute();
         }
     }
 }

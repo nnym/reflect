@@ -5,7 +5,6 @@ import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import lombok.val;
 
 @SuppressWarnings("unused")
 public class Types {
@@ -58,8 +57,8 @@ public class Types {
      @throws NullPointerException if {@code type} is {@code null}
      */
     public static Stream<Class<?>> supertypes(Class<?> type) {
-        val superclass = type.getSuperclass();
-        val interfaces = interfaces(type);
+        var superclass = type.getSuperclass();
+        var interfaces = interfaces(type);
         return superclass == null ? interfaces : Stream.concat(Stream.of(superclass), interfaces);
     }
 
@@ -349,15 +348,15 @@ public class Types {
      @return the boxed version of {@code array} if its component type is primitive; {@code array} otherwise
      */
     public static <T> T[] box(Object array) {
-        val type = array.getClass().componentType();
-        val wrapper = box(type);
+        var type = array.getClass().componentType();
+        var wrapper = box(type);
 
         if (wrapper == type) {
             return (T[]) array;
         }
 
-        val length = Array.getLength(array);
-        val boxed = (T[]) Array.newInstance(wrapper, length);
+        var length = Array.getLength(array);
+        var boxed = (T[]) Array.newInstance(wrapper, length);
         IntStream.range(0, length).forEach(index -> Array.set(boxed, index, Array.get(array, index)));
 
         return boxed;
@@ -369,21 +368,21 @@ public class Types {
      @return the unboxed version of {@code array} if its component type is a primitive wrapper type; {@code array} if its component type is primitive; {@literal null} otherwise
      */
     public static <T> T unbox(Object array) {
-        val type = array.getClass().componentType();
+        var type = array.getClass().componentType();
 
         if (type.isPrimitive()) {
             return (T) array;
         }
 
-        val primitive = unbox(type);
+        var primitive = unbox(type);
 
         if (primitive == null || primitive == type) {
             return null;
         }
 
-        val cast = (Object[]) array;
-        val length = cast.length;
-        val unboxed = (T) Array.newInstance(primitive, length);
+        var cast = (Object[]) array;
+        var length = cast.length;
+        var unboxed = (T) Array.newInstance(primitive, length);
         IntStream.range(0, length).forEach(index -> Array.set(unboxed, index, cast[index]));
 
         return unboxed;

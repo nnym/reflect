@@ -12,8 +12,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
-import lombok.SneakyThrows;
-import lombok.val;
 
 import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 
@@ -81,7 +79,6 @@ public class Invoker {
      @param <T>    the handle's return type
      @return the result
      */
-    @SneakyThrows
     public static <T> T invoke(MethodHandle handle) {
         return (T) handle.invoke();
     }
@@ -94,7 +91,6 @@ public class Invoker {
      @param <T>       the handle's return type
      @return the result
      */
-    @SneakyThrows
     public static <T> T invoke(MethodHandle handle, Object... arguments) {
         return (T) handle.invokeWithArguments(arguments);
     }
@@ -108,7 +104,6 @@ public class Invoker {
      @return a method handle corresponding to the target method and bound to {@code receiver}
      @see MethodHandles.Lookup#bind
      */
-    @SneakyThrows
     public static MethodHandle bind(Object receiver, String name, MethodType type) {
         return trustedLookup.bind(receiver, name, type);
     }
@@ -121,7 +116,6 @@ public class Invoker {
         return bind(receiver, name, MethodType.methodType(returnType, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle findConstructor(Class<?> refc, MethodType type) {
         return trustedLookup.findConstructor(refc, type);
     }
@@ -134,17 +128,14 @@ public class Invoker {
         return findConstructor(refc, MethodType.methodType(void.class, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle findGetter(Class<?> refc, String name, Class<?> type) {
         return trustedLookup.findGetter(refc, name, type);
     }
 
-    @SneakyThrows
     public static MethodHandle findSetter(Class<?> refc, String name, Class<?> type) {
         return trustedLookup.findSetter(refc, name, type);
     }
 
-    @SneakyThrows
     public static MethodHandle findSpecial(Class<?> refc, String name, MethodType type) {
         return trustedLookup.findSpecial(refc, name, type, refc);
     }
@@ -157,7 +148,6 @@ public class Invoker {
         return findSpecial(refc, name, MethodType.methodType(returnType, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle findStatic(Class<?> refc, String name, MethodType type) {
         return trustedLookup.findStatic(refc, name, type);
     }
@@ -170,17 +160,14 @@ public class Invoker {
         return findStatic(refc, name, MethodType.methodType(returnType, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle findStaticGetter(Class<?> refc, String name, Class<?> type) {
         return trustedLookup.findStaticGetter(refc, name, type);
     }
 
-    @SneakyThrows
     public static MethodHandle findStaticSetter(Class<?> refc, String name, Class<?> type) {
         return trustedLookup.findStaticSetter(refc, name, type);
     }
 
-    @SneakyThrows
     public static MethodHandle findVirtual(Class<?> refc, String name, MethodType type) {
         return trustedLookup.findVirtual(refc, name, type);
     }
@@ -193,7 +180,6 @@ public class Invoker {
         return findVirtual(type, name, MethodType.methodType(returnType, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle unreflect(Method method) {
         return trustedLookup.unreflect(method);
     }
@@ -214,7 +200,6 @@ public class Invoker {
         return unreflect(Methods.any(object, name)).bindTo(object);
     }
 
-    @SneakyThrows
     public static MethodHandle unreflectConstructor(Constructor<?> constructor) {
         return trustedLookup.unreflectConstructor(constructor);
     }
@@ -223,7 +208,6 @@ public class Invoker {
         return unreflectConstructor(Constructors.find(klass, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle unreflectSpecial(Method method) {
         return trustedLookup.unreflectSpecial(method, method.getDeclaringClass());
     }
@@ -232,7 +216,6 @@ public class Invoker {
         return unreflectSpecial(Methods.of(type, name, parameterTypes));
     }
 
-    @SneakyThrows
     public static MethodHandle unreflectGetter(Field field) {
         return trustedLookup.unreflectGetter(field);
     }
@@ -241,7 +224,6 @@ public class Invoker {
         return unreflectGetter(Fields.of(klass, name));
     }
 
-    @SneakyThrows
     public static MethodHandle unreflectSetter(Field field) {
         return trustedLookup.unreflectSetter(field);
     }
@@ -250,17 +232,14 @@ public class Invoker {
         return unreflectSetter(Fields.of(klass, name));
     }
 
-    @SneakyThrows
     public static VarHandle findStaticVarHandle(Class<?> owner, String name, Class<?> type) {
         return trustedLookup.findStaticVarHandle(owner, name, type);
     }
 
-    @SneakyThrows
     public static VarHandle findVarHandle(Class<?> owner, String name, Class<?> type) {
         return trustedLookup.findVarHandle(owner, name, type);
     }
 
-    @SneakyThrows
     public static VarHandle unreflectVarHandle(Field field) {
         return trustedLookup.unreflectVarHandle(field);
     }
@@ -283,25 +262,25 @@ public class Invoker {
      @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
     public static MethodHandle adapt(long flags, MethodHandle handle, MethodType type) {
-        val discardUnused = Flags.any(flags, DISCARD_UNUSED);
+        var discardUnused = Flags.any(flags, DISCARD_UNUSED);
 
         if (!discardUnused && handle.type().parameterCount() != type.parameterCount()) {
             throw new IllegalArgumentException("Handle's (%d) and target type's (%d) parameter count differ.".formatted(handle.type().parameterCount(), type.parameterCount()));
         }
 
-        val order = new int[handle.type().parameterCount()];
-        val outputTypes = new ArrayList<>(handle.type().parameterList());
-        val inputTypes = type.parameterArray();
+        var order = new int[handle.type().parameterCount()];
+        var outputTypes = new ArrayList<>(handle.type().parameterList());
+        var inputTypes = type.parameterArray();
 
         for (var inputIndex = 0; inputIndex < inputTypes.length; inputIndex++) {
-            val inputType = inputTypes[inputIndex];
-            val outputIterator = outputTypes.listIterator();
-            val scores = new int[outputTypes.size()];
+            var inputType = inputTypes[inputIndex];
+            var outputIterator = outputTypes.listIterator();
+            var scores = new int[outputTypes.size()];
             var bestMatch = -1;
             var deviation = Integer.MAX_VALUE;
 
             while (outputIterator.hasNext()) {
-                val outputType = outputIterator.next();
+                var outputType = outputIterator.next();
 
                 if (outputType != null && outputType.isAssignableFrom(inputType)) {
                     if (deviation > (deviation = Math.min(deviation, Types.difference(inputType, outputType)))) {
@@ -320,10 +299,10 @@ public class Invoker {
             }
         }
 
-        val outputIterator = outputTypes.listIterator();
+        var outputIterator = outputTypes.listIterator();
 
         while (outputIterator.hasNext()) {
-            val parameterType = outputIterator.next();
+            var parameterType = outputIterator.next();
 
             if (parameterType != null) {
                 throw new IllegalArgumentException("No matching input parameter was found for output %s parameter at index %d.".formatted(parameterType, outputIterator.previousIndex()));

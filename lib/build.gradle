@@ -1,0 +1,55 @@
+plugins {
+    id("java")
+    id("gronk").version("latest.release")
+    id("com.github.johnrengelman.shadow").version("latest.release")
+}
+
+configurations {
+    reflect
+}
+
+repositories {
+    maven("maven.auoeke.net")
+}
+
+dependencies {
+    reflect("net.auoeke:reflect")
+
+    implementation("net.auoeke:uncheck:0.0.1") {
+        exclude(group: "net.auoeke")
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.reflect]
+    transform(ManifestMerger)
+}
+
+class ManifestMerger implements Transformer {
+    private Manifest manifest = null
+
+    boolean canTransformResource(FileTreeElement element) {
+        return element.relativePath.pathString == JarFile.MANIFEST_NAME
+    }
+
+    void transform(TransformerContext context) {
+        Manifest manifest = new Manifest().tap {read(context.is)}
+        this.manifest == null ? this.manifest = manifest : this.manifest.mainAttributes.putAll(manifest.mainAttributes)
+    }
+
+    boolean hasTransformedResource() {
+        return this.manifest
+    }
+
+    void modifyOutputStream(ZipOutputStream os, boolean preserveFileTimestamps) {
+        os.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME))
+        manifest.write(os)
+    }
+}
+
+import java.util.jar.JarFile
+import java.util.jar.Manifest
+import com.github.jengelman.gradle.plugins.shadow.transformers.Transformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.TransformerContext
+import shadow.org.apache.tools.zip.ZipEntry
+import shadow.org.apache.tools.zip.ZipOutputStream

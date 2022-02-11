@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import lombok.val;
 import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Invoker;
@@ -22,7 +21,7 @@ class InvokerTests extends Invoker {
     private static final Class<InvokerTests> cla$$ = InvokerTests.class;
 
     @Test
-    void unreflect() throws Throwable {
+    void unreflect() {
         assert Invoker.unreflect(RetentionPolicy.class, "valueOf").invoke("RUNTIME") == RetentionPolicy.RUNTIME;
 
         Integer four = 4;
@@ -35,13 +34,13 @@ class InvokerTests extends Invoker {
     }
 
     @Test
-    void special() throws Throwable {
-        val list = new ArrayList<>();
+    void special() {
+        var list = new ArrayList<>();
         assert !Invoker.findSpecial(Object.class, "toString", String.class).invoke(list).equals(list.toString());
     }
 
     @Test
-    void member() throws Throwable {
+    void member() {
         var handle = Invoker.findGetter(Integer.class, "value", int.class);
         Member member = Fields.of(Integer.class, "value");
         assert Invoker.field(handle).equals(member);
@@ -91,24 +90,24 @@ class InvokerTests extends Invoker {
     }
 
     @Test
-    public void invokerOverload() throws Throwable {
+    public void invokerOverload() {
         assert !(boolean) Invoker.unreflect(Boolean.class, "getBoolean", String.class).invoke(UUID.randomUUID().toString());
         assert (Boolean) Invoker.unreflectConstructor(Boolean.class, boolean.class).invoke(true);
     }
 
     @Test
-    void adaptTest() throws Throwable {
-        val test0 = findStatic(cla$$, "test0", double.class, int.class, double.class);
-        val test1 = findStatic(cla$$, "test1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class);
-        val test2 = findStatic(cla$$, "test2", void.class);
+    void adaptTest() {
+        var test0 = findStatic(cla$$, "test0", double.class, int.class, double.class);
+        var test1 = findStatic(cla$$, "test1", Object[].class, Invoker.class, Object.class, long.class, short.class, Float.class);
+        var test2 = findStatic(cla$$, "test2", void.class);
 
-        val type = MethodType.methodType(double.class, double.class, int.class);
-        val adapt0 = adapt(test0, type);
+        var type = MethodType.methodType(double.class, double.class, int.class);
+        var adapt0 = adapt(test0, type);
         assert adapt0.type().equals(type) && (double) adapt0.invoke(3, 1) == 10;
         assert adapt(test0, int.class, double.class).type() == MethodType.methodType(double.class, int.class, double.class);
         assert adapt(test0, List.of(int.class, double.class)).type() == MethodType.methodType(double.class, int.class, double.class);
 
-        val object = new Object();
+        var object = new Object();
         var adapt1 = (Object[]) adapt(test1, short.class, long.class, Object.class, Float.class, Invoker.class).invokeWithArguments((short) 24, 57, object, 4F, null);
         assert adapt1[0] == null && adapt1[1] == object && (long) adapt1[2] == 57 && (short) adapt1[3] == 24 && (float) adapt1[4] == 4;
 

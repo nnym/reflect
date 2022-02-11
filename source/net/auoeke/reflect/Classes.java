@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
-import lombok.val;
 import net.gudenau.lib.unsafe.Unsafe;
 
 @SuppressWarnings("unused")
@@ -138,7 +136,6 @@ public class Classes {
         return (T) object;
     }
 
-    @SneakyThrows
     public static <T> Class<T> findLoadedClass(ClassLoader loader, String klass) {
         return (Class<T>) findLoadedClass.invokeExact(loader, klass);
     }
@@ -147,7 +144,6 @@ public class Classes {
         return urls(classPath(classLoader));
     }
 
-    @SneakyThrows
     public static URL[] urls(Object classPath) {
         return (URL[]) URLClassPath$getURLs.invoke(classPath);
     }
@@ -160,28 +156,24 @@ public class Classes {
         addURL(systemClassPath, url);
     }
 
-    @SneakyThrows
     public static void addURL(ClassLoader classLoader, URL... urls) {
-        val classPath = classPath(classLoader);
+        var classPath = classPath(classLoader);
 
         for (var url : urls) {
             URLClassPath$addURL.invoke(classPath, url);
         }
     }
 
-    @SneakyThrows
     public static void addURL(ClassLoader classLoader, URL url) {
         URLClassPath$addURL.invoke(classPath(classLoader), url);
     }
 
-    @SneakyThrows
     public static void addURL(Object classPath, URL... urls) {
-        for (val url : urls) {
+        for (var url : urls) {
             URLClassPath$addURL.invoke(classPath, url);
         }
     }
 
-    @SneakyThrows
     public static void addURL(Object classPath, URL url) {
         URLClassPath$addURL.invoke(classPath, url);
     }
@@ -192,6 +184,19 @@ public class Classes {
 
     public static Field classPathField(Class<?> loaderClass) {
         return Fields.all(loaderClass).filter(field -> URLClassPath.isAssignableFrom(field.getType())).findAny().orElse(null);
+    }
+
+    /**
+     Load a class by name.
+
+     @param loader the class loader by which to load the class
+     @param initialize whether to initialize the class
+     @param name the name of the class
+     @param <T> the class
+     @return the class if it was loaded successfully or null if an error occurred
+     */
+    public static <T> Class<T> load(ClassLoader loader, boolean initialize, String name) {
+        return Reflect.runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
     }
 
     public static void load(String... classes) {
@@ -224,27 +229,18 @@ public class Classes {
         return load(loader, true, name);
     }
 
-    @SneakyThrows
-    public static <T> Class<T> load(ClassLoader loader, boolean initialize, String name) {
-        return Reflect.runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
-    }
-
-    @SneakyThrows
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
         return (Class<T>) defineClass0.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain);
     }
 
-    @SneakyThrows
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
         return (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, protectionDomain);
     }
 
-    @SneakyThrows
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
         return (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, codeSource);
     }
 
-    @SneakyThrows
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, ByteBuffer bytecode, CodeSource codeSource) {
         return (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, codeSource);
     }
@@ -269,7 +265,6 @@ public class Classes {
         return defineClass(classLoader, name, bytecode, 0, bytecode.length, codeSource);
     }
 
-    @SneakyThrows
     public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name, ProtectionDomain protectionDomain) {
         return defineClass(classLoader, name, Files.readAllBytes(Path.of(resourceLoader.getResource(name.replace('.', '/') + ".class").toURI())), protectionDomain);
     }
@@ -278,23 +273,21 @@ public class Classes {
         return crossDefineClass(resourceLoader, classLoader, name, null);
     }
 
-    @SneakyThrows
     public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
-        val url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-        val bytecode = Files.readAllBytes(Path.of(url.toURI()));
+        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+        var bytecode = Files.readAllBytes(Path.of(url.toURI()));
 
         return Unsafe.defineClass(name, bytecode, 0, bytecode.length, null, new ProtectionDomain(new CodeSource(url, (CodeSigner[]) null), null, null, null));
     }
 
-    @SneakyThrows
     public static <T> Class<T> defineSystemClass(ClassLoader resourceLoader, String name) {
-        val url = resourceLoader.getResource(name.replace('.', '/') + ".class");
+        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
         return defineClass(systemClassLoader, name, Files.readAllBytes(Path.of(url.toURI())), new CodeSource(url, (CodeSigner[]) null));
     }
 
     @Deprecated(forRemoval = true) // Use Types::supertypes.
     public static List<Class<?>> supertypes(Class<?> type) {
-        val supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
+        var supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
         type = type.getSuperclass();
 
         if (type != null) {
@@ -305,8 +298,8 @@ public class Classes {
     }
 
     public static List<Type> genericSupertypes(Class<?> type) {
-        val supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
-        val superclass = type.getGenericSuperclass();
+        var supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
+        var superclass = type.getGenericSuperclass();
 
         if (superclass != null) {
             supertypes.add(superclass);
@@ -320,8 +313,8 @@ public class Classes {
     }
 
     static {
-        val byteArray = new byte[0];
-        val shortArray = new short[0];
+        var byteArray = new byte[0];
+        var shortArray = new short[0];
         long offset = 0;
 
         while (Unsafe.getInt(byteArray, offset) == Unsafe.getInt(shortArray, offset)) {

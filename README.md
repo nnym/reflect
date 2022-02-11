@@ -7,8 +7,8 @@ Supported Java versions are 17 and above.
 
 I try to keep this library mostly stable; although occasionally (with prior notice or otherwise) I may break things.
 
-reflect depends on [my fork](https://git.auoeke.net/unsafe) of [gudenau/java-unsafe](https://github.com/gudenau/java-unsafe).
-It is hosted at https://maven.auoeke.net as `net.auoeke:reflect`.
+reflect depends on [unsafe](https://github.com/auoeke/unsafe)
+and is hosted at https://maven.auoeke.net as `net.auoeke:reflect`.
 ```groovy
 repositories {
     maven {url = "https://maven.auoeke.net"}
@@ -21,7 +21,7 @@ dependencies {
 
 Documentation is ~~very~~ scarce (500+ lines now) but I have taken to documenting my code recently.
 
-## a brief summary of the classes
+### A brief summary
 - `Accessor` reads, mutates and copies fields.
 - `Classes` is a set of methods for working with classes (`defineClass`, `reinterpret` (runtime `reinterpret_cast`)).
 - `ConstantPool` is a proxy for the JDK's internal `ConstantPool` that reads constant pools.
@@ -38,6 +38,8 @@ Documentation is ~~very~~ scarce (500+ lines now) but I have taken to documentin
 - `StackFrames` assists in getting stack frames and callers and supports `StackWalker` and the traditional `StackTraceElement[]`.
 - `Types` deals with `Class`es in many ways.
 
-Relevant tests are in [`ReflectTest`](test/net/auoeke/reflect/ReflectTest.java) and the [categorized test classes](test/test).
+### Developing
+[uncheck for IntelliJ IDEA](https://github.com/auoeke/uncheck#using-the-intellij-plugin) is recommended in order to suppress checked exception warnings.
 
-Some tests are irrelevant but I keep them anyway for now.
+Relevant tests are in [`ReflectTest`](test/reflect/ReflectTest.java) and the [categorized test classes](test/test).
+Other tests are irrelevant but I keep them anyway for now.

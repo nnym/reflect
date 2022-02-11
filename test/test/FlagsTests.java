@@ -8,7 +8,7 @@ import static net.auoeke.reflect.Flags.*;
 @Testable
 public final class FlagsTests {
     @Test
-    void flags() throws Throwable {
+    void flags() {
         Runnable runnable = () -> {};
 
         assert isPublic(Object.class);

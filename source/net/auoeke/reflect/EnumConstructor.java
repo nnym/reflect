@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import lombok.SneakyThrows;
 
 public class EnumConstructor<E extends Enum<E>> {
     private static final int ENUM_VALUES = Flags.PRIVATE | Flags.STATIC | Flags.SYNTHETIC | Flags.FINAL;
@@ -48,11 +47,13 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(Class<E> type) {
-        return (EnumConstructor<E>) constructors.computeIfAbsent(type, type1 -> new EnumConstructor<>(constructor(type)));
+        // The constructor invocation would be generified and `t` would thus require a cast (because it is a Class<?>) that is impossible in a method reference.
+        //noinspection Convert2MethodRef
+        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor(t));
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(Class<E> type, Class<?>... parameterTypes) {
-        return (EnumConstructor<E>) constructors.computeIfAbsent(type, type1 -> new EnumConstructor<>((Class<E>) type1, parameterTypes));
+        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor(t, parameterTypes));
     }
 
     public static <E extends Enum<E>> E add(Class<E> type, String name, Object... arguments) {
@@ -100,12 +101,10 @@ public class EnumConstructor<E extends Enum<E>> {
         return get(flags, type, arguments).construct(ordinal, name, arguments);
     }
 
-    @SneakyThrows
     public static Pointer enumConstantDirectory(Class<?> type) {
         return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
     }
 
-    @SneakyThrows
     public static Pointer enumConstants(Class<?> type) {
         return enumConstantPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
     }
@@ -137,7 +136,6 @@ public class EnumConstructor<E extends Enum<E>> {
         return type.getEnumConstants().length;
     }
 
-    @SneakyThrows
     public E construct(int ordinal, String name, Object... arguments) {
         return (E) this.constructor.invoke(name, ordinal, arguments);
     }

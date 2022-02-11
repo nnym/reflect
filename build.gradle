@@ -5,12 +5,14 @@ plugins {
 }
 
 group("net.auoeke")
-version("4.5.3")
+version("4.5.4")
 
 javaVersion(17)
 
-compileTestJava {
-    options.compilerArgs.add("--enable-preview")
+configurations {
+    testAnnotationProcessor {
+        extendsFrom(annotationProcessor)
+    }
 }
 
 repositories {
@@ -18,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor(project(":lib"), project(path: ":lib", configuration: "shadow"))
     api("net.gudenau.lib:unsafe")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -25,7 +28,10 @@ dependencies {
     testImplementation("org.ow2.asm:asm")
     testImplementation("org.ow2.asm:asm-tree")
     testImplementation("org.openjdk.jol:jol-core")
-    testImplementation("net.auoeke:uncheck")
+}
+
+compileTestJava {
+    options.compilerArgs << "--enable-preview"
 }
 
 test {

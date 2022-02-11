@@ -3,7 +3,6 @@ package net.auoeke.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
-import lombok.SneakyThrows;
 
 public class ConstantPool {
     private static final MethodHandle getSize = Invoker.findVirtual(Classes.ConstantPool, "getSize", int.class);
@@ -27,72 +26,58 @@ public class ConstantPool {
         this.constantPool = JavaLangAccess.getConstantPool(klass);
     }
 
-    @SneakyThrows
     public int getSize() {
         return (int) getSize.invoke(this.constantPool);
     }
 
-    @SneakyThrows
     public Class<?> getClassAt(int index) {
         return (Class<?>) getClassAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public Class<?> getClassAtIfLoaded(int index) {
         return (Class<?>) getClassAtIfLoaded.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public Member getMethodAt(int index) {
         return (Member) getMethodAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public Member getMethodAtIfLoaded(int index) {
         return (Member) getMethodAtIfLoaded.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public Field getFieldAt(int index) {
         return (Field) getFieldAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public Field getFieldAtIfLoaded(int index) {
         return (Field) getFieldAtIfLoaded.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public String getMemberRefInfoAt(int index) {
         return (String) getMemberRefInfoAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public int getIntAt(int index) {
         return (int) getIntAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public long getLongAt(int index) {
         return (long) getLongAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public float getFloatAt(int index) {
         return (float) getFloatAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public double getDoubleAt(int index) {
         return (double) getDoubleAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public String getStringAt(int index) {
         return (String) getStringAt.invoke(this.constantPool, index);
     }
 
-    @SneakyThrows
     public String getUTF8At(int index) {
         return (String) getUTF8At.invoke(this.constantPool, index);
     }

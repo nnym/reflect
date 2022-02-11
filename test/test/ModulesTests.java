@@ -3,7 +3,6 @@ package test;
 import java.lang.invoke.MethodHandles;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Modules;
-import net.auoeke.uncheck.ThrowingRunnable;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -50,14 +49,14 @@ public class ModulesTests {
     }
 
     @Test
-    void anonymizeAll2() throws Throwable {
-        ThrowingRunnable getUnsafe = () -> {
+    void anonymizeAll2() {
+        Runnable getUnsafe = () -> {
             var theUnsafe = Classes.load("jdk.internal.misc.Unsafe").getDeclaredField("theUnsafe");
             theUnsafe.trySetAccessible();
             theUnsafe.get(null);
         };
 
-        ThrowingRunnable getIMPL_LOOKUP = () -> {
+        Runnable getIMPL_LOOKUP = () -> {
             var field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             field.trySetAccessible();
             field.get(null);

@@ -6,11 +6,11 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.auoeke.reflect.Types;
-import net.auoeke.reflect.misc.A;
-import net.auoeke.reflect.misc.C;
-import net.auoeke.reflect.misc.Interface1;
-import net.auoeke.reflect.misc.Interface2;
-import net.auoeke.reflect.misc.Interface3;
+import reflect.misc.A;
+import reflect.misc.C;
+import reflect.misc.Interface1;
+import reflect.misc.Interface2;
+import reflect.misc.Interface3;
 import org.junit.jupiter.api.Test;
 import sun.misc.Unsafe;
 
