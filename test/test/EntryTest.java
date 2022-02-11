@@ -14,7 +14,9 @@ public class EntryTest {
     @Test
     void load() {
         try {
-            Files.list(Path.of(Reflect.class.getResource(".").toURI())).forEach(type -> Class.forName("net.auoeke.reflect." + type.getFileName().toString().replace(".class", "")));
+            Files.list(Path.of(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("net/auoeke/reflect")).forEach(type ->
+                Class.forName("net.auoeke.reflect." + type.getFileName().toString().replace(".class", ""))
+            );
         } catch (NotDirectoryException exception) {}
     }
 }
