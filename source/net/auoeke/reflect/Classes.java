@@ -309,7 +309,7 @@ public class Classes {
     }
 
     private static Class<?> tryLoad(String... classes) {
-        return Stream.of(classes).map(Classes::load).filter(Objects::nonNull).findAny().orElse(null);
+        return Stream.of(classes).map(Classes::load).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     static {
