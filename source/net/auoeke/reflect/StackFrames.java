@@ -59,7 +59,7 @@ public class StackFrames {
     }
 
     /**
-     Find the first stack frame that matches a predicate; starting at this method's caller.
+     Find the first stack frame that matches a predicate starting at this method's caller.
 
      @param predicate the stack frame predicate
      @return the first matching stack frame
