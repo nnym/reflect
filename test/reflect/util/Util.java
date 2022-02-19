@@ -62,4 +62,10 @@ public class Util {
     public static String buildString(Consumer<StringBuilder> consumer) {
         return buildString("", consumer);
     }
+
+    public static <T> void with(T value, T current, Consumer<? super T> set, Runnable action) {
+        set.accept(value);
+        action.run();
+        set.accept(current);
+    }
 }

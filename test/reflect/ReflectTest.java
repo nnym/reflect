@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Classes;
@@ -16,7 +15,6 @@ import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Pointer;
-import net.auoeke.reflect.StackFrames;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -26,7 +24,6 @@ import reflect.misc.C;
 import reflect.misc.Enumeration;
 import reflect.misc.TestObject;
 import reflect.util.Util;
-import test.Assert;
 
 @SuppressWarnings({"FieldMayBeFinal", "JavaReflectionMemberAccess"})
 @Testable
@@ -149,22 +146,5 @@ public class ReflectTest {
         assert "hjk".equals(clone.thing);
         assert clone.object == null;
         assert clone.things instanceof ArrayList<Object> things && things.isEmpty();
-    }
-
-    @Test
-    void stack() {
-        Supplier<Class<?>> lambda = StackFrames::caller;
-
-        Assert.equal(
-            StackFrames.caller(),
-            StackFrames.caller(0),
-            StackFrames.caller(frame -> true),
-            lambda.get(),
-            StackFrames.frames().get(1).getDeclaringClass()
-        );
-
-        Assert.equal(StackFrames.trace()[0].getClassName(), ReflectTest.class.getName());
-        Assert.equal(StackFrames.traceFrame().getMethodName(), "stack");
-        Assert.equal(StackFrames.traceFrame(0).getMethodName(), "stack");
     }
 }

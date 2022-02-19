@@ -8,23 +8,23 @@ import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
-import reflect.ReflectTest;
 import net.auoeke.reflect.Types;
-import reflect.misc.A;
-import reflect.misc.TestObject;
-import reflect.util.Logger;
-import reflect.util.Util;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import reflect.ReflectTest;
+import reflect.misc.A;
+import reflect.misc.TestObject;
+import reflect.util.Logger;
+import reflect.util.Util;
 
 @SuppressWarnings("ALL")
 @Disabled
 @Testable
 public class SpeedTest {
-    static final int iterations = 100;
     static final int tests = 1;
+    static int iterations = 100;
     static Runnable runnable0;
     static Runnable runnable1;
 
@@ -110,6 +110,10 @@ public class SpeedTest {
         }
 
         return time;
+    }
+
+    static void times(int iterations, Runnable action) {
+        Util.with(iterations, SpeedTest.iterations, i -> SpeedTest.iterations = i, action);
     }
 
     @Test
