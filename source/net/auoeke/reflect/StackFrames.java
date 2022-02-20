@@ -113,7 +113,8 @@ public class StackFrames {
      @return a stream of the thread's stack trace
      */
     public static Stream<StackTraceElement> traceStream(Thread thread) {
-        return Stream.of(thread.getStackTrace()).skip(2);
+        var trace = Stream.of(thread.getStackTrace());
+        return thread == Thread.currentThread() ? trace.skip(2) : trace;
     }
 
     /**
@@ -124,7 +125,7 @@ public class StackFrames {
      */
     public static StackTraceElement[] trace(Thread thread) {
         var trace = thread.getStackTrace();
-        return Arrays.copyOfRange(trace, 2, trace.length);
+        return thread == Thread.currentThread() ? Arrays.copyOfRange(trace, 2, trace.length) : trace;
     }
 
     /**

@@ -1,10 +1,12 @@
 package test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import net.auoeke.reflect.StackFrames;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import reflect.util.Box;
 
 @SuppressWarnings({"removal", "AccessStaticViaInstance"})
 @Testable
@@ -54,6 +56,32 @@ public class StackFramesTests extends StackFrames {
         Assert.equal(trace()[0].getClassName(), this.getClass().getName())
             .equal(traceFrame().getMethodName(), "traceTest")
             .equal(traceFrame(0).getMethodName(), "traceTest")
-            .arraysEqual(trace(), traceStream(Thread.currentThread()).toArray());
+            .arraysEqual(trace(), trace(Thread.currentThread()), traceStream(Thread.currentThread()).toArray());
+
+        var box = new Box<StackTraceElement[]>();
+        var thread = new Thread("traceTest") {
+            @Override public void run() {
+                synchronized (this) {
+                    this.notify();
+                    this.wait(); box.set(Thread.currentThread().getStackTrace()).set(trace -> Arrays.copyOfRange(trace, 1, trace.length));
+                    this.notify();
+                }
+            }
+        };
+
+        synchronized (thread) {
+            thread.start();
+            thread.wait();
+
+            var trace = trace(thread);
+            assert trace[0].getMethodName().equals("wait");
+            trace = traceStream(thread).dropWhile(e -> e.getMethodName().equals("wait")).toArray(StackTraceElement[]::new);
+            Assert.arraysEqual(trace(thread), traceStream(thread).toArray());
+            thread.notify();
+            thread.wait();
+
+            Assert.arraysEqual(trace, box.value);
+            Assert.arraysEqual(trace(thread), traceStream(thread).toArray());
+        }
     }
 }
