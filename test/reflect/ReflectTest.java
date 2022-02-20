@@ -1,7 +1,6 @@
 package reflect;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Classes;
-import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Pointer;
@@ -21,11 +19,10 @@ import org.junit.platform.commons.annotation.Testable;
 import reflect.misc.A;
 import reflect.misc.B;
 import reflect.misc.C;
-import reflect.misc.Enumeration;
 import reflect.misc.TestObject;
 import reflect.util.Util;
 
-@SuppressWarnings({"FieldMayBeFinal", "JavaReflectionMemberAccess"})
+@SuppressWarnings("FieldMayBeFinal")
 @Testable
 public class ReflectTest {
     @SuppressWarnings("WrapperTypeMayBePrimitive")
@@ -47,10 +44,6 @@ public class ReflectTest {
 
     @Test
     public void reinterpret() {
-        var a = Classes.reinterpret(A.class, Integer.class);
-        a.toString();
-        A.class.getClassLoader().toString();
-
         Double dubble = 0D;
         var loong = Classes.reinterpret(dubble, Long.class);
 
@@ -58,7 +51,6 @@ public class ReflectTest {
         assert loong == 0xFFFFFFFFFFL;
 
         Classes.reinterpret(loong, Double.class);
-        Classes.reinterpret(A.class, (Object) Class.class);
 
         var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ReflectTest.class);
         assert object.getClass() == (object = Unsafe.allocateInstance(ReflectTest.class)).getClass();
@@ -95,27 +87,10 @@ public class ReflectTest {
     @Test
     public void classPath() {
         var classPath = Classes.classPath(ReflectTest.class.getClassLoader());
-        var file = new File("test");
-        var url = file.toURI().toURL();
+        var url = new File("test").toURI().toURL();
         Classes.addURL(classPath, url);
-        Arrays.asList(Classes.urls(classPath)).contains(url);
-    }
 
-    @Test
-    void constructor() {
-        class PrivateCtor {
-            public final int test;
-
-            private PrivateCtor(int test) {
-                this.test = test;
-            }
-        }
-
-        assert Arrays.equals(Constructors.direct(PrivateCtor.class), new Constructor[]{PrivateCtor.class.getDeclaredConstructor(ReflectTest.class, int.class)});
-        assert Constructors.find(PrivateCtor.class, ReflectTest.class, int.class).newInstance(this, 4).test == 4;
-        assert Constructors.construct(PrivateCtor.class, this, 27).test == 27;
-        assert Constructors.find(0L, Enumeration.class, "", 1, 4D) == null;
-        assert Constructors.find(Enumeration.class, "", 1, 4D) != null;
+        assert Arrays.asList(Classes.urls(classPath)).contains(url);
     }
 
     @Test

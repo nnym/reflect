@@ -6,15 +6,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 public class Methods {
     private static final MethodHandle getDeclaredMethods = Stream.of(Class.class.getDeclaredMethods())
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Method[].class)
-        .findAny()
         .map(Invoker::unreflectSpecial)
         .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
+        .max(Comparator.comparing(method -> ((Method[]) method.invoke(Reflect.class)).length))
         .get();
 
     private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();

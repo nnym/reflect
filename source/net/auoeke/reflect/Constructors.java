@@ -3,15 +3,18 @@ package net.auoeke.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
 public class Constructors {
     private static final MethodHandle getDeclaredConstructors = Methods.of(Class.class)
-        .filter(method -> Flags.isNative(method) && method.getReturnType() == Constructor[].class).findAny()
+        .filter(method -> Flags.isNative(method) && method.getReturnType() == Constructor[].class)
         .map(Invoker::unreflectSpecial)
-        .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method).get();
+        .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
+        .max(Comparator.comparing(method -> ((Constructor[]) method.invoke(TypeInfo.class)).length))
+        .get();
 
     private static final CacheMap<Class<?>, Constructor<?>[]> constructors = CacheMap.identity();
 
@@ -19,7 +22,7 @@ public class Constructors {
      Get a type's declared constructors directly without caching them or wrapping them in a stream.
 
      @param type a type
-     @return the array containing the type's declared methods
+     @return an array containing the type's declared constructors
      */
     public static <T> Constructor<T>[] direct(Class<T> type) {
         return (Constructor<T>[]) getDeclaredConstructors.invokeExact(type);
@@ -29,7 +32,7 @@ public class Constructors {
      Get a type's declared constructors.
 
      @param type a type
-     @return a stream containing the type's declared methods
+     @return a stream containing the type's declared constructors
      */
     public static <T> Stream<Constructor<T>> of(Class<T> type) {
         return Stream.of((Constructor<T>[]) constructors.computeIfAbsent(type, Constructors::direct));

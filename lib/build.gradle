@@ -11,13 +11,16 @@ configurations {
 repositories {
     mavenCentral()
     maven("maven.auoeke.net")
+    mavenLocal()
 }
 
 dependencies {
     reflect("net.auoeke:reflect")
 
-    implementation("net.auoeke:uncheck:0.0.1") {
-        exclude(group: "net.auoeke")
+    implementation("org.ow2.asm:asm-tree")
+    implementation("net.bytebuddy:byte-buddy-agent")
+    implementation("net.auoeke:uncheck") {
+        exclude(module: "net.auoeke:reflect")
     }
 }
 

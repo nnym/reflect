@@ -38,9 +38,10 @@ public class Reflect {
     public static Instrumentation instrumentation() {
         if (Agent.instrumentation == null) tryRun(() -> {
             // Attempt both methods.
-            tryRun(() -> Accessor.<Map<String, String>>getReference(Classes.load("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
+            tryRun(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
+            tryRun(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
             tryRun(() -> {
-                var HotSpotVirtualMachine = Classes.load("sun.tools.attach.HotSpotVirtualMachine");
+                var HotSpotVirtualMachine = Class.forName("sun.tools.attach.HotSpotVirtualMachine");
                 Unsafe.ensureClassInitialized(HotSpotVirtualMachine);
                 Accessor.putBoolean(HotSpotVirtualMachine, "ALLOW_ATTACH_SELF", true);
             });

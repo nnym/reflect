@@ -4,14 +4,17 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.util.Comparator;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
 public class Fields {
     private static final MethodHandle getDeclaredFields = Methods.of(Class.class)
-        .filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class).findAny()
+        .filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class)
         .map(Invoker::unreflectSpecial)
-        .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method).get();
+        .map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
+        .max(Comparator.comparing(method -> ((Field[]) method.invoke(Fields.class)).length))
+        .get();
 
     private static final CacheMap<Class<?>, Field[]> fields = CacheMap.identity();
     private static final CacheMap<Class<?>, Field[]> staticFields = CacheMap.identity();
