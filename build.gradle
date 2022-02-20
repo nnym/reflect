@@ -40,7 +40,7 @@ test {
 
     useJUnitPlatform()
     systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
-    jvmArgs("-Xdump:none", "-XX:ErrorFile=${systemProperty("java.io.tmpdir")}/java_err_%p.log")
+    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-Xdump:none", "-XX:ErrorFile=${systemProperty("java.io.tmpdir")}/java_err_%p.log")
 }
 
 jar {

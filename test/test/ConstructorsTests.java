@@ -4,14 +4,14 @@ import net.auoeke.reflect.Constructors;
 import org.junit.jupiter.api.Test;
 import reflect.misc.Enumeration;
 
-public class ConstructorsTests {
+public class ConstructorsTests extends Constructors {
     @Test
-    void constructor() {
-        Assert.arraysEqual(Constructors.direct(PrivateCtor.class), PrivateCtor.class.getDeclaredConstructors());
-        assert Constructors.find(PrivateCtor.class, int.class).newInstance(4).test == 4;
-        assert Constructors.construct(PrivateCtor.class, 27).test == 27;
-        assert Constructors.find(0L, Enumeration.class, "", 1, 4D) == null;
-        assert Constructors.find(Enumeration.class, "", 1, 4D) != null;
+    void test() {
+        Assert.arraysEqual(direct(PrivateCtor.class), PrivateCtor.class.getDeclaredConstructors());
+        assert find(PrivateCtor.class, int.class).newInstance(4).test == 4;
+        assert construct(PrivateCtor.class, 27).test == 27;
+        assert find(0L, Enumeration.class, "", 1, 4D) == null;
+        assert find(Enumeration.class, "", 1, 4D) != null;
     }
 
     static class PrivateCtor {

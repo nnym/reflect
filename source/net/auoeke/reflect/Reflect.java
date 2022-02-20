@@ -115,13 +115,10 @@ public class Reflect {
     }
 
     static boolean tryRun(Runnable runnable) {
-        try {
+        return runNull(() -> {
             runnable.run();
-        } catch (Throwable throwable) {
-            return false;
-        }
-
-        return true;
+            return true;
+        }) != null;
     }
 
     static <T> T runNull(Supplier<T> supplier) {
