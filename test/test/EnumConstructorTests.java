@@ -31,23 +31,23 @@ class EnumConstructorTests {
         };
         verifySize.run();
 
-        EnumConstructor.add(Enumeration.class, "TEST", 1D);
+        var t0 = EnumConstructor.add(Enumeration.class, "TEST", 1D);
         verifySize.run();
 
-        EnumConstructor.add(Enumeration.class, 0, "TEST", 3D);
+        var t1 = EnumConstructor.add(Enumeration.class, 0, "TEST", 3D);
         verifySize.run();
 
-        EnumConstructor.add(0L, Enumeration.class, "TEST", 4D);
+        var t2 = EnumConstructor.add(0L, Enumeration.class, "TEST", 4D);
         verifySize.run();
 
-        EnumConstructor.add(0L, Enumeration.class, 1, "TEST", 5D);
+        var t3 = EnumConstructor.add(0L, Enumeration.class, 1, "TEST", 5D);
         verifySize.run();
 
-        EnumConstructor.add(Enumeration.class, enumeration);
+        var t4 = EnumConstructor.add(Enumeration.class, enumeration);
         verifySize.run();
 
         var constructor = EnumConstructor.get(RetentionPolicy.class);
-        Util.repeat(() -> constructor.add("TEST"));
+        Util.repeat(4, () -> constructor.add("TEST"));
         Enumeration.valueOf("TEST");
     }
 }

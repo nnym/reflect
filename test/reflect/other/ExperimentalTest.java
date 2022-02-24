@@ -1,16 +1,15 @@
 package reflect.other;
 
-import java.lang.reflect.Field;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.annotation.Testable;
 import reflect.experimental.ReflectionFactory;
 import reflect.util.Logger;
 import reflect.util.Retainable;
 import reflect.util.Util;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.annotation.Testable;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "RedundantSuppression"})
 @Disabled
@@ -31,7 +30,7 @@ public class ExperimentalTest {
 
     @Test
     void factory() {
-        Field field = ReflectionFactory.field(ExperimentalTest.class, int.class, Flags.STATIC, 0);
+        var field = ReflectionFactory.field(ExperimentalTest.class, int.class, Flags.STATIC, 0);
         assert Accessor.getInt(field) == 0xB;
         assert Accessor.getLong(field) == 0xFF0000000BL;
 

@@ -10,7 +10,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 import net.gudenau.lib.unsafe.Unsafe;
 
@@ -21,22 +20,24 @@ public class Reflect {
     public static boolean securityDisabled;
 
     /**
-     The default class loader for operations that require a class loader.
+     The default class loader for some operations that require a class loader.
      */
     public static ClassLoader defaultClassLoader = Reflect.class.getClassLoader();
 
     /**
      Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
-     <b><p>
+     <p><b>
      Note that this method is not guaranteed to work with all JVM vendors.
      <br>
      Note that this method may stop working in the future; see the comments in {@linkplain sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
-     </b></p>
+     </b>
 
-     @return an {@link Instrumentation} instance if attachment was successful or {@code null} otherwise
+     @return an {@link Instrumentation} instance if attachment was successful or else {@code null}
      */
     public static Instrumentation instrumentation() {
-        if (Agent.instrumentation == null) tryRun(() -> {
+        if (Agent.instrumentation == null && !Agent.attempted) tryRun(() -> {
+            Agent.attempted = true;
+
             // Attempt both methods.
             tryRun(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
             tryRun(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
@@ -55,10 +56,9 @@ public class Reflect {
                     var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
                     source = agent.toString();
 
-                    if (Files.exists(agent)) try {
-                        vm.loadAgent(source);
+                    if (Files.exists(agent) && tryRun(() -> vm.loadAgent(source))) {
                         return;
-                    } catch (AgentLoadException exception) {}
+                    }
 
                     var jar = new JarOutputStream(Files.newOutputStream(agent));
                     jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
@@ -67,7 +67,7 @@ public class Reflect {
                         .findAny().get().openStream().readAllBytes()
                     );
                     jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
-                    jar.write(Agent.class.getResourceAsStream("Agent.class").readAllBytes());
+                    jar.write(Classes.classFile(Agent.class));
                     jar.close();
                 }
 
@@ -108,7 +108,7 @@ public class Reflect {
      as defined in {@linkplain jdk.internal.reflect.Reflection Reflection}.
      <br>
 
-     @apiNote This method can break (and has broken some part of Gson) code that relies on the aforementioned methods filtering methods.
+     @apiNote this method can break code (and has broken some part of Gson) that relies on the aforementioned methods filtering methods.
      */
     public static void clearMethodFilterMap() {
         Accessor.putReferenceVolatile(Classes.Reflection, "methodFilterMap", new HashMap<>());

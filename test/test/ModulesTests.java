@@ -12,44 +12,7 @@ import org.junit.platform.commons.annotation.Testable;
 @Testable
 public class ModulesTests {
     @Test
-    void open() {
-
-    }
-
-    @Test
-    void open1() {
-    }
-
-    @Test
-    void open2() {
-    }
-
-    @Test
-    void open3() {
-    }
-
-    @Test
-    void anonymize() {
-    }
-
-    @Test
-    void anonymize1() {
-    }
-
-    @Test
-    void anonymizeAll() {
-    }
-
-    @Test
-    void anonymize2() {
-    }
-
-    @Test
-    void anonymizeAll1() {
-    }
-
-    @Test
-    void anonymizeAll2() {
+    void openTest() {
         Runnable getUnsafe = () -> {
             var theUnsafe = Classes.load("jdk.internal.misc.Unsafe").getDeclaredField("theUnsafe");
             theUnsafe.trySetAccessible();
@@ -64,28 +27,8 @@ public class ModulesTests {
 
         Assert.exception("jdk.internal.misc.Unsafe should be inaccessible.", getUnsafe);
         Assert.exception("MethodHandles.Lookup#IMPL_LOOKUP should be inaccessible.", getIMPL_LOOKUP);
-        Modules.anonymizeAll();
+        Modules.open(Object.class.getModule());
         getUnsafe.run();
         getIMPL_LOOKUP.run();
-    }
-
-    @Test
-    void allLayers() {
-    }
-
-    @Test
-    void layers() {
-    }
-
-    @Test
-    void allLayers1() {
-    }
-
-    @Test
-    void modules() {
-    }
-
-    @Test
-    void allModules() {
     }
 }

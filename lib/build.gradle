@@ -11,7 +11,6 @@ configurations {
 repositories {
     mavenCentral()
     maven("maven.auoeke.net")
-    mavenLocal()
 }
 
 dependencies {

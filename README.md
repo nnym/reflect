@@ -19,7 +19,7 @@ dependencies {
 }
 ```
 
-Documentation is ~~very~~ scarce (600+ lines now) but I have taken to documenting my code recently.
+Documentation is ~~very~~ scarce (800+ lines now) but I have taken to documenting my code recently.
 
 ### A brief summary
 - `Accessor` reads, mutates and copies fields.

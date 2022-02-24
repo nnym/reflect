@@ -1,6 +1,5 @@
 package reflect;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,15 +81,6 @@ public class ReflectTest {
                 }
             });
         });
-    }
-
-    @Test
-    public void classPath() {
-        var classPath = Classes.classPath(ReflectTest.class.getClassLoader());
-        var url = new File("test").toURI().toURL();
-        Classes.addURL(classPath, url);
-
-        assert Arrays.asList(Classes.urls(classPath)).contains(url);
     }
 
     @Test

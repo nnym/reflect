@@ -39,7 +39,7 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(long flags, Class<E> type, Object... arguments) {
-        return (EnumConstructor<E>) constructors.computeIfAbsent(type, type1 -> new EnumConstructor<>(constructor(flags, (Class<E>) type1, arguments)));
+        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor<>(constructor(flags, t, arguments)));
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(Class<E> type, Object... arguments) {
@@ -47,13 +47,11 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(Class<E> type) {
-        // The constructor invocation would be generified and `t` would thus require a cast (because it is a Class<?>) that is impossible in a method reference.
-        //noinspection Convert2MethodRef
-        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor(t));
+        return (EnumConstructor<E>) constructors.computeIfAbsent(type, EnumConstructor::new);
     }
 
     public static <E extends Enum<E>> EnumConstructor<E> get(Class<E> type, Class<?>... parameterTypes) {
-        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor(t, parameterTypes));
+        return (EnumConstructor<E>) constructors.computeIfAbsent(type, t -> new EnumConstructor<>(t, parameterTypes));
     }
 
     public static <E extends Enum<E>> E add(Class<E> type, String name, Object... arguments) {
@@ -110,12 +108,12 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static Pointer enumArray(Class<?> type) {
-        return arrayFields.computeIfAbsent(type, type1 -> {
-            for (var field : Fields.direct(type1)) {
+        return arrayFields.computeIfAbsent(type, t -> {
+            for (var field : Fields.direct(t)) {
                 if (isValueField(field)) {
-                    type1.getEnumConstants();
+                    t.getEnumConstants();
 
-                    return new Pointer().staticField(field);
+                    return Pointer.of(field);
                 }
             }
 
@@ -156,12 +154,12 @@ public class EnumConstructor<E extends Enum<E>> {
         var type = Classes.load(Class.class.getName() + "$EnumVars");
 
         if (type == null) {
-            enumConstantPointer = new Pointer().instanceField(Class.class, "enumConstants");
-            enumConstantDirectoryPointer = new Pointer().instanceField(Class.class, "enumConstantDirectory");
+            enumConstantPointer = Pointer.of(Class.class, "enumConstants");
+            enumConstantDirectoryPointer = Pointer.of(Class.class, "enumConstantDirectory");
             getEnumVars = null;
         } else {
-            enumConstantPointer = new Pointer().instanceField(type, "cachedEnumConstants");
-            enumConstantDirectoryPointer = new Pointer().instanceField(type, "cachedEnumConstantDirectory");
+            enumConstantPointer = Pointer.of(type, "cachedEnumConstants");
+            enumConstantDirectoryPointer = Pointer.of(type, "cachedEnumConstantDirectory");
             getEnumVars = Invoker.findSpecial(Class.class, "getEnumVars", type);
         }
     }

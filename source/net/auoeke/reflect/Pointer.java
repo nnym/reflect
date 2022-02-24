@@ -8,6 +8,29 @@ public class Pointer implements Cloneable {
     public Object object;
     public long offset;
 
+    /**
+     Construct a pointer to a field.
+
+     @return the pointer
+     @since 4.6.0
+     */
+    public static Pointer of(Field field) {
+        var pointer = new Pointer();
+        return Flags.isStatic(field) ? pointer.staticField(field) : pointer.instanceField(field);
+    }
+
+    /**
+     Construct a pointer to a named field in a given type.
+
+     @param type the field's declaring type
+     @param field the field's name
+     @return the pointer
+     @since 4.6.0
+     */
+    public static Pointer of(Class<?> type, String field) {
+        return of(Fields.of(type, field));
+    }
+
     @Override
     public Pointer clone() {
         var clone = new Pointer();

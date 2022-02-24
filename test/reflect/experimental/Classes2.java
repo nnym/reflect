@@ -1,23 +1,20 @@
 package reflect.experimental;
 
-import java.lang.reflect.Type;
+import java.lang.instrument.Instrumentation;
 import net.auoeke.reflect.Classes;
-import net.auoeke.reflect.Reflect;
+import net.auoeke.reflect.ClassTransformer;
 
 public class Classes2 extends Classes {
-    public static <T> Class<T> load(Type type) {
-        return load(Reflect.defaultClassLoader, true, type);
-    }
+    public static byte[] stealBytecode(Instrumentation instrumentation, Class<?> type) {
+        var box = new byte[1][];
 
-    public static <T> Class<T> load(boolean initialize, Type type) {
-        return load(Reflect.defaultClassLoader, initialize, type);
-    }
+        if (instrumentation != null) {
+            ClassTransformer bytecodeStealer = (module, loader, name, t, domain, classFile) -> t == type ? box[0] = classFile : classFile;
+            instrumentation.addTransformer(bytecodeStealer, true);
+            instrumentation.retransformClasses(type);
+            instrumentation.removeTransformer(bytecodeStealer);
+        }
 
-    public static <T> Class<T> load(ClassLoader loader, Type type) {
-        return load(loader, true, type);
-    }
-
-    public static <T> Class<T> load(ClassLoader loader, boolean initialize, Type type) {
-        return (Class<T>) (type instanceof Class ? type : load(loader, initialize, type.getTypeName()));
+        return box[0];
     }
 }

@@ -36,8 +36,8 @@ final class CacheMap<K, V> {
         this.map().putAll(map.map());
     }
 
-    V computeIfAbsent(K key, Function<K, V> computer) {
-        return this.map().computeIfAbsent(key, computer);
+    <T extends K> V computeIfAbsent(T key, Function<? super T, ? extends V> computer) {
+        return this.map().computeIfAbsent(key, (Function<? super K, ? extends V>) computer);
     }
 
     private Map<K, V> map() {

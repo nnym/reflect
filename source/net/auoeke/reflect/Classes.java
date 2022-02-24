@@ -5,9 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
@@ -40,56 +37,54 @@ public class Classes {
     };
 
     private static final MethodHandle findLoadedClass = Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class);
-    private static final MethodHandle URLClassPath$addURL = Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class);
-    private static final MethodHandle URLClassPath$getURLs = Invoker.findVirtual(URLClassPath, "getURLs", URL[].class);
-    private static final MethodHandle defineClass0 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-    private static final MethodHandle defineClass1 = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class);
-    private static final MethodHandle defineClass2 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, CodeSource.class);
-    private static final MethodHandle defineClass3 = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, CodeSource.class);
+    private static final MethodHandle addURL = Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class);
+    private static final MethodHandle getURLs = Invoker.findVirtual(URLClassPath, "getURLs", URL[].class);
 
     /**
-     Change the class of <b>{@code object}</b> to that represented by <b>{@code T}</b> such that <b>{@code to.getClass() == T}</b>.
+     Change the type of an object. The target type should not be abstract or bigger than the object's type.
 
-     @param object the object whose class pointer to change.
-     @param dummy  a dummy varargs parameter for reifying <b>{@code T}</b>.
-     @param <T>    the desired new type.
-     @return <b>{@code object}</b>.
+     @param object the object whose type to change
+     @param <T>    the target type
+     @return {@code object}
      */
     public static <T> T reinterpret(Object object, T... dummy) {
         return (T) reinterpret(object, Unsafe.allocateInstance(dummy.getClass().getComponentType()));
     }
 
     /**
-     Change the class of <b>{@code object}</b> to the class represented by <b>{@code klass}</b> such that <b>{@code object.getClass().getName().equals(klass)}</b>.
+     Change the type of an object. The target type should not be abstract or bigger than the object's type.
 
-     @param object the object whose class pointer to change.
-     @param klass  the name of class to set as <b>{@code object}</b>'s class.
-     @param <T>    the desired new type.
-     @return <b>{@code object}</b>.
+     @param object the object whose type to change
+     @param type   the name of the target type
+     @param <T>    the target type
+     @return {@code object}
+     @see #reinterpret(Object, Class)
+     @deprecated because the class should be loaded by the caller.
      */
-    public static <T> T reinterpret(Object object, String klass) {
-        return reinterpret(object, (T) Unsafe.allocateInstance(load(Reflect.defaultClassLoader, false, klass)));
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> T reinterpret(Object object, String type) {
+        return reinterpret(object, (T) Unsafe.allocateInstance(load(Reflect.defaultClassLoader, false, type)));
     }
 
     /**
-     Change the class of <b>{@code object}</b> to <b>{@code klass}</b> such that <b>{@code object.getClass() == klass}</b>.
+     Change the type of an object. The target type should not be abstract or bigger than the object's type.
 
-     @param object the object whose class pointer to change.
-     @param klass  the class to set as <b>{@code object}</b>'s class.
-     @param <T>    the desired new type.
-     @return <b>{@code object}</b>.
+     @param object the object whose type to change
+     @param type   the target type
+     @param <T>    the target type
+     @return {@code object}
      */
-    public static <T> T reinterpret(Object object, Class<T> klass) {
-        return reinterpret(object, Unsafe.allocateInstance(klass));
+    public static <T> T reinterpret(Object object, Class<T> type) {
+        return reinterpret(object, Unsafe.allocateInstance(type));
     }
 
     /**
-     Change the class of <b>{@code to}</b> to that of <b>{@code from}</b> such that <b>{@code to.getClass() == from.getClass()}</b>.
+     Change the type of an object. The target type should not be bigger than the object's type.
 
-     @param to   the object whose class pointer to change.
-     @param from the object from which to get the class pointer.
-     @param <T>  the desired new type.
-     @return <b>{@code to}</b>.
+     @param to   the object whose type to change
+     @param from an instance of the target type
+     @param <T>  the target type type
+     @return {@code to}
      */
     public static <T> T reinterpret(Object to, T from) {
         Accessor.copyAddress(to, from, classOffset);
@@ -98,35 +93,34 @@ public class Classes {
     }
 
     /**
-     Change the class of <b>{@code object}</b> to the class represented by <b>{@code from}</b>.
+     Change the type of an object. The target type should not be bigger than the object's type.
 
-     @param object       the object whose class pointer to change.
-     @param classPointer the class pointer.
-     @param <T>          a convenience type parameter for casting.
-     @return <b>{@code to}</b>.
+     @param object the object whose type to change
+     @param klass  the {@linkplain #klass Klass*} of the target type
+     @param <T>    the target type
+     @return {@code object}
      */
-    public static <T> T reinterpret(Object object, long classPointer) {
-        Unsafe.putAddress(object, classOffset, classPointer);
+    public static <T> T reinterpret(Object object, long klass) {
+        Unsafe.putAddress(object, classOffset, klass);
 
         return (T) object;
     }
 
     /**
-     Get the <b>{@code Klass*}</b> from a {@link Class}.<br>
-     <b>{@code klass}</b> must not be abstract.
+     Get a non-abstract type's {@code Klass*}.
 
-     @param clas a class.
-     @return the Klass*.
+     @param type a type
+     @return the type's {@code Klass*}
      */
-    public static long klass(Class<?> clas) {
-        return klass(Unsafe.allocateInstance(clas));
+    public static long klass(Class<?> type) {
+        return klass(Unsafe.allocateInstance(type));
     }
 
     /**
-     Get the <b>{@code Klass*}</b> of an object.
+     Get the {@code Klass*} of an object.
 
-     @param object the object.
-     @return its <b>{@code Klass*}</b>.
+     @param object an object
+     @return the object's type's {@code Klass*}
      */
     public static long klass(Object object) {
         return Unsafe.getAddress(object, classOffset);
@@ -145,7 +139,7 @@ public class Classes {
     }
 
     public static URL[] urls(Object classPath) {
-        return (URL[]) URLClassPath$getURLs.invoke(classPath);
+        return (URL[]) getURLs.invoke(classPath);
     }
 
     public static void addSystemURL(URL... url) {
@@ -160,22 +154,22 @@ public class Classes {
         var classPath = classPath(classLoader);
 
         for (var url : urls) {
-            URLClassPath$addURL.invoke(classPath, url);
+            addURL.invoke(classPath, url);
         }
     }
 
     public static void addURL(ClassLoader classLoader, URL url) {
-        URLClassPath$addURL.invoke(classPath(classLoader), url);
+        addURL.invoke(classPath(classLoader), url);
     }
 
     public static void addURL(Object classPath, URL... urls) {
         for (var url : urls) {
-            URLClassPath$addURL.invoke(classPath, url);
+            addURL.invoke(classPath, url);
         }
     }
 
     public static void addURL(Object classPath, URL url) {
-        URLClassPath$addURL.invoke(classPath, url);
+        addURL.invoke(classPath, url);
     }
 
     public static Object classPath(ClassLoader classLoader) {
@@ -189,18 +183,18 @@ public class Classes {
     /**
      Load a class by name.
 
-     @param loader the class loader by which to load the class
+     @param loader     the class loader whereby to load the class
      @param initialize whether to initialize the class
-     @param name the name of the class
-     @param <T> the class
+     @param name       the name of the class
+     @param <T>        the class
      @return the class if it was loaded successfully or null if an error occurred
      */
     public static <T> Class<T> load(ClassLoader loader, boolean initialize, String name) {
         return Reflect.runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
     }
 
-    public static void load(String... classes) {
-        load(Reflect.defaultClassLoader, true, classes);
+    public static void load(String... types) {
+        load(Reflect.defaultClassLoader, true, types);
     }
 
     public static void load(boolean initialize, String... classes) {
@@ -229,60 +223,160 @@ public class Classes {
         return load(loader, true, name);
     }
 
-    public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
-        return (Class<T>) defineClass0.invokeExact(classLoader, name, bytecode, offset, length, protectionDomain);
+    /**
+     Initialize a class if it has not been initialized yet.
+
+     @param type a class
+     @return the class
+     @since 4.6.0
+     */
+    public static <T> Class<T> initialize(Class<T> type) {
+        Unsafe.ensureClassInitialized(type);
+        return type;
     }
 
-    public static <T> Class<T> defineClass(ClassLoader classLoader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
-        return (Class<T>) defineClass1.invokeExact(classLoader, name, bytecode, protectionDomain);
+    /**
+     Attempt to locate and read a given type's class file.
+
+     @param loader the class loader that should be used in order to locate the type; {@code null} means the bootstrap class loader
+     @param type the name of the type to locate
+     @return the class file of the type if located or else {@code null}
+     @since 4.6.0
+     */
+    public static byte[] classFile(ClassLoader loader, String type) {
+        type = type.replace('.', '/') + ".class";
+
+        try (var stream = loader == null ? Object.class.getResourceAsStream('/' + type) : loader.getResourceAsStream(type)) {
+            return stream == null ? null : stream.readAllBytes();
+        }
     }
 
-    public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
-        return (Class<T>) defineClass2.invokeExact(classLoader, name, bytecode, offset, length, codeSource);
+    /**
+     Attempt to locate and read a given type's class file.
+
+     @return the class file of the type if located or else {@code null}
+     @since 4.6.0
+     */
+    public static byte[] classFile(Class<?> type) {
+        if (type.isArray() || type.isPrimitive()) {
+            throw new IllegalArgumentException("type must be user-defined");
+        }
+
+        try (var stream = type.getResourceAsStream('/' + type.getName().replace('.', '/') + ".class")) {
+            return stream == null ? null : stream.readAllBytes();
+        }
     }
 
-    public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, ByteBuffer bytecode, CodeSource codeSource) {
-        return (Class<T>) defineClass3.invokeExact(classLoader, name, bytecode, codeSource);
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> defineClass(ClassLoader loader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
+        return new ClassDefiner<T>().loader(loader).name(name).classFile(bytecode, offset, length).protectionDomain(protectionDomain).define();
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> defineClass(ClassLoader loader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
+        return new ClassDefiner<T>().loader(loader).name(name).classFile(bytecode).protectionDomain(protectionDomain).define();
+    }
+
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> defineClass(SecureClassLoader loader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
+        return new ClassDefiner<T>().secureLoader(loader).name(name).classFile(bytecode, offset, length).source(codeSource).define();
+    }
+
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> defineClass(SecureClassLoader loader, String name, ByteBuffer bytecode, CodeSource codeSource) {
+        return new ClassDefiner<T>().secureLoader(loader).name(name).classFile(bytecode).source(codeSource).define();
+    }
+
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineClass(ClassLoader classLoader, byte[] bytecode, int offset, int length) {
         return defineClass(classLoader, null, bytecode, offset, length, null);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode) {
         return defineClass(classLoader, name, bytecode, 0, bytecode.length);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length) {
         return defineClass(classLoader, name, bytecode, offset, length, null);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, ProtectionDomain protectionDomain) {
         return defineClass(classLoader, name, bytecode, 0, bytecode.length, protectionDomain);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, CodeSource codeSource) {
         return defineClass(classLoader, name, bytecode, 0, bytecode.length, codeSource);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name, ProtectionDomain protectionDomain) {
-        return defineClass(classLoader, name, Files.readAllBytes(Path.of(resourceLoader.getResource(name.replace('.', '/') + ".class").toURI())), protectionDomain);
+        return defineClass(classLoader, name, classFile(resourceLoader, name), protectionDomain);
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name) {
         return crossDefineClass(resourceLoader, classLoader, name, null);
     }
 
-    public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
-        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-        var bytecode = Files.readAllBytes(Path.of(url.toURI()));
-
-        return Unsafe.defineClass(name, bytecode, 0, bytecode.length, null, new ProtectionDomain(new CodeSource(url, (CodeSigner[]) null), null, null, null));
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> crossDefineClass(ClassLoader loader, Class<?> type) {
+        return new ClassDefiner<T>().loader(loader).from(type).define();
     }
 
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
+    public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
+        return new ClassDefiner<T>().classFile(classFile(resourceLoader, name)).unsafe().define();
+    }
+
+    /**
+     @deprecated in favor of {@link ClassDefiner}.
+     */
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static <T> Class<T> defineSystemClass(ClassLoader resourceLoader, String name) {
-        var url = resourceLoader.getResource(name.replace('.', '/') + ".class");
-        return defineClass(systemClassLoader, name, Files.readAllBytes(Path.of(url.toURI())), new CodeSource(url, (CodeSigner[]) null));
+        return new ClassDefiner<T>().loader(systemClassLoader).classFile(classFile(resourceLoader, name)).define();
     }
 
     @Deprecated(forRemoval = true) // Use Types::supertypes.
@@ -313,11 +407,11 @@ public class Classes {
     }
 
     static {
-        var byteArray = new byte[0];
+        var charArray = new char[0];
         var shortArray = new short[0];
         long offset = 0;
 
-        while (Unsafe.getInt(byteArray, offset) == Unsafe.getInt(shortArray, offset)) {
+        while (Unsafe.getInt(charArray, offset) == Unsafe.getInt(shortArray, offset)) {
             offset += 4;
         }
 
