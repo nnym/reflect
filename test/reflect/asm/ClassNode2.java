@@ -15,7 +15,8 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
 public class ClassNode2 extends ClassNode implements BitField, Opcodes {
-    public ClassLoader loader = Reflect.defaultClassLoader;
+    static final ClassLoader loader = ClassNode2.class.getClassLoader();
+
     private ClassReader reader;
 
     public ClassNode2() {
@@ -116,11 +117,11 @@ public class ClassNode2 extends ClassNode implements BitField, Opcodes {
     public <T> Class<T> define() {
         var bytecode = this.bytecode();
 
-        return Unsafe.defineClass(this.name, bytecode, 0, bytecode.length, this.loader, ClassNode2.class.getProtectionDomain());
+        return Unsafe.defineClass(this.name, bytecode, 0, bytecode.length, loader, ClassNode2.class.getProtectionDomain());
     }
 
     public <T> Class<T> init() {
-        return Classes.load(this.loader, true, this.define().getName());
+        return Classes.load(loader, true, this.define().getName());
     }
 
     public byte[] bytecode() {

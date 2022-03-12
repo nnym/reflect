@@ -151,7 +151,7 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     static {
-        var type = Classes.load(Class.class.getName() + "$EnumVars");
+        var type = Classes.load(EnumConstructor.class.getClassLoader(), Class.class.getName() + "$EnumVars");
 
         if (type == null) {
             enumConstantPointer = Pointer.of(Class.class, "enumConstants");

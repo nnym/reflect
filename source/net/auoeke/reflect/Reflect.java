@@ -22,6 +22,7 @@ public class Reflect {
     /**
      The default class loader for some operations that require a class loader.
      */
+    @Deprecated(since = "4.7.0", forRemoval = true)
     public static ClassLoader defaultClassLoader = Reflect.class.getClassLoader();
 
     /**

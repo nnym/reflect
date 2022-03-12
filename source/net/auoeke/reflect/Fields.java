@@ -48,8 +48,8 @@ public class Fields {
         return all(object.getClass(), Object.class);
     }
 
-    public static Field of(String klass, String name) {
-        return of(Classes.load(klass), name);
+    public static Field of(String type, String name) {
+        return of(Class.forName(type), name);
     }
 
     public static Field of(Class<?> type, String name) {
@@ -64,8 +64,8 @@ public class Fields {
         return all(type).filter(field -> field.getName().equals(name)).findAny().orElse(null);
     }
 
-    public static Field any(String klass, String name) {
-        return any(Classes.load(klass), name);
+    public static Field any(String type, String name) {
+        return any(Class.forName(type), name);
     }
 
     public static Stream<Field> staticOf(Class<?> type) {

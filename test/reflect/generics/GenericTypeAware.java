@@ -9,10 +9,8 @@ public abstract class GenericTypeAware<T> {
 
     protected GenericTypeAware() {
         Type genericSuperclass = this.getClass().getGenericSuperclass();
-
         assert genericSuperclass instanceof ParameterizedType;
-
-        this.type = Classes.load(((ParameterizedType) genericSuperclass).getActualTypeArguments()[0].getTypeName());
+        this.type = (Class<T>) Class.forName(((ParameterizedType) genericSuperclass).getActualTypeArguments()[0].getTypeName());
     }
 
     @SafeVarargs

@@ -1,7 +1,6 @@
 package test;
 
 import java.lang.invoke.MethodHandles;
-import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Modules;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ public class ModulesTests {
     @Test
     void openTest() {
         Runnable getUnsafe = () -> {
-            var theUnsafe = Classes.load("jdk.internal.misc.Unsafe").getDeclaredField("theUnsafe");
+            var theUnsafe = Class.forName("jdk.internal.misc.Unsafe").getDeclaredField("theUnsafe");
             theUnsafe.trySetAccessible();
             theUnsafe.get(null);
         };
