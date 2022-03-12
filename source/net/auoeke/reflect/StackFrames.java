@@ -31,14 +31,6 @@ public class StackFrames {
     }
 
     /**
-     @deprecated for {@link #frameList}
-     */
-    @Deprecated(forRemoval = true)
-    public static List<StackWalker.StackFrame> frames() {
-        return frameList();
-    }
-
-    /**
      Find the first stack frame in the result of a transformation of the given stream of stack frames starting at this method's caller.
 
      @param transformation the stack frame stream transformation
@@ -139,25 +131,11 @@ public class StackFrames {
     }
 
     /**
-     Get the stack trace element at a given depth rooted at this method's caller.
-
-     @param depth the target stack trace element's depth
-     @return the stack trace element at the given depth
-     @deprecated because excessive; {@code trace()[depth]} suffices
-     */
-    @Deprecated(forRemoval = true)
-    public static StackTraceElement traceFrame(int depth) {
-        return trace()[1 + depth];
-    }
-
-    /**
      Get this method's caller's stack trace element.
 
      @return this method's caller's stack trace element
-     @deprecated because excessive; {@code trace()[0]} suffices
      */
-    @Deprecated(forRemoval = true)
     public static StackTraceElement traceFrame() {
-        return traceFrame(1);
+        return trace()[1];
     }
 }

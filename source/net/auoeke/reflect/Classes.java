@@ -4,9 +4,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,21 +46,6 @@ public class Classes {
      */
     public static <T> T reinterpret(Object object, T... dummy) {
         return (T) reinterpret(object, Unsafe.allocateInstance(dummy.getClass().getComponentType()));
-    }
-
-    /**
-     Change the type of an object. The target type should not be abstract or bigger than the object's type.
-
-     @param object the object whose type to change
-     @param type   the name of the target type
-     @param <T>    the target type
-     @return {@code object}
-     @see #reinterpret(Object, Class)
-     @deprecated because the class should be loaded by the caller.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> T reinterpret(Object object, String type) {
-        return reinterpret(object, (T) Unsafe.allocateInstance(load(Reflect.defaultClassLoader, false, type)));
     }
 
     /**
@@ -265,130 +247,6 @@ public class Classes {
         try (var stream = type.getResourceAsStream('/' + type.getName().replace('.', '/') + ".class")) {
             return stream == null ? null : stream.readAllBytes();
         }
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader loader, String name, byte[] bytecode, int offset, int length, ProtectionDomain protectionDomain) {
-        return new ClassDefiner<T>().loader(loader).name(name).classFile(bytecode, offset, length).protectionDomain(protectionDomain).define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader loader, String name, ByteBuffer bytecode, ProtectionDomain protectionDomain) {
-        return new ClassDefiner<T>().loader(loader).name(name).classFile(bytecode).protectionDomain(protectionDomain).define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(SecureClassLoader loader, String name, byte[] bytecode, int offset, int length, CodeSource codeSource) {
-        return new ClassDefiner<T>().secureLoader(loader).name(name).classFile(bytecode, offset, length).source(codeSource).define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(SecureClassLoader loader, String name, ByteBuffer bytecode, CodeSource codeSource) {
-        return new ClassDefiner<T>().secureLoader(loader).name(name).classFile(bytecode).source(codeSource).define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader classLoader, byte[] bytecode, int offset, int length) {
-        return defineClass(classLoader, null, bytecode, offset, length, null);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode) {
-        return defineClass(classLoader, name, bytecode, 0, bytecode.length);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, int offset, int length) {
-        return defineClass(classLoader, name, bytecode, offset, length, null);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(ClassLoader classLoader, String name, byte[] bytecode, ProtectionDomain protectionDomain) {
-        return defineClass(classLoader, name, bytecode, 0, bytecode.length, protectionDomain);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineClass(SecureClassLoader classLoader, String name, byte[] bytecode, CodeSource codeSource) {
-        return defineClass(classLoader, name, bytecode, 0, bytecode.length, codeSource);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name, ProtectionDomain protectionDomain) {
-        return defineClass(classLoader, name, classFile(resourceLoader, name), protectionDomain);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> crossDefineClass(ClassLoader resourceLoader, ClassLoader classLoader, String name) {
-        return crossDefineClass(resourceLoader, classLoader, name, null);
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> crossDefineClass(ClassLoader loader, Class<?> type) {
-        return new ClassDefiner<T>().loader(loader).from(type).define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineBootstrapClass(ClassLoader resourceLoader, String name) {
-        return new ClassDefiner<T>().classFile(classFile(resourceLoader, name)).unsafe().define();
-    }
-
-    /**
-     @deprecated in favor of {@link ClassDefiner}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static <T> Class<T> defineSystemClass(ClassLoader resourceLoader, String name) {
-        return new ClassDefiner<T>().loader(systemClassLoader).classFile(classFile(resourceLoader, name)).define();
-    }
-
-    @Deprecated(forRemoval = true) // Use Types::supertypes.
-    public static List<Class<?>> supertypes(Class<?> type) {
-        var supertypes = new ArrayList<>(Arrays.asList(type.getInterfaces()));
-        type = type.getSuperclass();
-
-        if (type != null) {
-            supertypes.add(type);
-        }
-
-        return supertypes;
     }
 
     public static List<Type> genericSupertypes(Class<?> type) {

@@ -1,7 +1,6 @@
 package net.auoeke.reflect;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -283,32 +282,12 @@ public class Types {
         return canCast(flags, offset, left, Stream.of(right).map(Object::getClass).toArray(Class[]::new));
     }
 
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(long flags, int offset, Executable executable, Class<?>... types) {
-        return canCast(flags, offset, executable.getParameterTypes(), types);
-    }
-
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(long flags, int offset, Executable executable, Object... arguments) {
-        return canCast(flags, offset, executable.getParameterTypes(), arguments);
-    }
-
     public static boolean canCast(long flags, Class<?>[] left, Class<?>... right) {
         return canCast(flags, 0, left, right);
     }
 
     public static boolean canCast(long flags, Class<?>[] left, Object... right) {
         return canCast(flags, 0, left, right);
-    }
-
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(long flags, Executable executable, Class<?>... types) {
-        return canCast(flags, 0, executable.getParameterTypes(), types);
-    }
-
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(long flags, Executable executable, Object... arguments) {
-        return canCast(flags, 0, executable.getParameterTypes(), arguments);
     }
 
     public static boolean canCast(int offset, Class<?>[] left, Class<?>... right) {
@@ -319,27 +298,12 @@ public class Types {
         return canCast(DEFAULT_CONVERSION, offset, left, right);
     }
 
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(int offset, Executable executable, Object... arguments) {
-        return canCast(DEFAULT_CONVERSION, offset, executable.getParameterTypes(), arguments);
-    }
-
     public static boolean canCast(Class<?>[] left, Class<?>... right) {
         return canCast(DEFAULT_CONVERSION, 0, left, right);
     }
 
     public static boolean canCast(Class<?>[] left, Object... right) {
         return canCast(DEFAULT_CONVERSION, 0, left, right);
-    }
-
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(Executable executable, Class<?>... types) {
-        return canCast(DEFAULT_CONVERSION, 0, executable.getParameterTypes(), types);
-    }
-
-    @Deprecated(forRemoval = true, since = "4.5.0") // This is excessive.
-    public static boolean canCast(Executable executable, Object... arguments) {
-        return canCast(DEFAULT_CONVERSION, 0, executable.getParameterTypes(), arguments);
     }
 
     /**

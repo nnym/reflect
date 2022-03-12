@@ -55,7 +55,6 @@ public class StackFramesTests extends StackFrames {
     void traceTest() {
         Assert.equal(trace()[0].getClassName(), this.getClass().getName())
             .equal(traceFrame().getMethodName(), "traceTest")
-            .equal(traceFrame(0).getMethodName(), "traceTest")
             .arraysEqual(trace(), trace(Thread.currentThread()), traceStream(Thread.currentThread()).toArray());
 
         var box = new Box<StackTraceElement[]>();

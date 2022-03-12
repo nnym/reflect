@@ -74,73 +74,6 @@ public class Modules {
     }
 
     /**
-     Open the package of a class referenced by name and loaded by {@link Reflect#defaultClassLoader} to all modules.
-
-     @param type the name of a class in the package
-     @deprecated because this method is unnecessary: let the client load the class.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void open(String type) {
-        open(Classes.load(type));
-    }
-
-    /**
-     Make the modules in {@code layer} unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @deprecated because this method is too dangerous to be useful; consider {@linkplain #open(Module) the new bulk open methods}.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymize(ModuleLayer layer) {
-        layer.modules().forEach(Modules::anonymize);
-    }
-
-    /**
-     Make the modules in {@code layer} and its parents unnamed recursively.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @deprecated because this method is too dangerous to be useful.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymizeAll(ModuleLayer layer) {
-        anonymize(layer);
-        layer.parents().forEach(Modules::anonymizeAll);
-    }
-
-    /**
-     Make all modules defined to {@code loader} unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @deprecated because this method is too dangerous to be useful.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymize(ClassLoader loader) {
-        layers(loader).forEach(Modules::anonymize);
-    }
-
-    /**
-     Make all modules in module layers defined to {@code loader} and their parents unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @deprecated because this method is too dangerous to be useful.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymizeAll(ClassLoader loader) {
-        layers(loader).forEach(Modules::anonymizeAll);
-    }
-
-    /**
-     Make all modules in module layers defined to this class' loader and their parents unnamed.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @deprecated because this method is too dangerous to be useful.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymizeAll() {
-        anonymizeAll(Modules.class.getClassLoader());
-    }
-
-    /**
      Return a stream of the module layers that are defined to a class loader.
 
      @return the module layers defined to the class loader
@@ -161,31 +94,11 @@ public class Modules {
     }
 
     /**
-     Return a stream of the module layers that are defined to a class loader and their ancestors.
-
-     @return a stream of the module layers defined to the class loader and their ancestors
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static Stream<ModuleLayer> allLayers(ClassLoader loader) {
-        return layers(loader).flatMap(Modules::allLayers);
-    }
-
-    /**
      Return a stream of the modules that are defined to a class loader.
 
      @return a stream of the modules that are defined to the class loader
      */
     public static Stream<Module> modules(ClassLoader loader) {
         return layers(loader).flatMap(layer -> layer.modules().stream());
-    }
-
-    /**
-     Return a stream of the modules that are defined to a class loader and those in their layers' ancestors.
-
-     @return a stream of the modules that are defined to the class loader and those in their layers' ancestors
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static Stream<Module> allModules(ClassLoader loader) {
-        return allLayers(loader).flatMap(layer -> layer.modules().stream());
     }
 }
