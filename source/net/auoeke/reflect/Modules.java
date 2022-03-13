@@ -67,9 +67,9 @@ public class Modules {
      This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
 
      @see #open(Module)
-     @deprecated
+     @deprecated This method should never be used.
      */
-    @Deprecated(since = "4.6.0")
+    @Deprecated(since = "4.6.0", forRemoval = true)
     public static void anonymize(Module module) {
         name.putReference(module, null);
     }
