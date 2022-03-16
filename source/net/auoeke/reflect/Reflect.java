@@ -20,12 +20,6 @@ public class Reflect {
     public static boolean securityDisabled;
 
     /**
-     The default class loader for some operations that require a class loader.
-     */
-    @Deprecated(since = "4.7.0", forRemoval = true)
-    public static ClassLoader defaultClassLoader = Reflect.class.getClassLoader();
-
-    /**
      Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
      <p><b>
      Note that this method is not guaranteed to work with all JVM vendors.

@@ -176,84 +176,28 @@ public class Classes {
     }
 
     /**
-     Attempt to load multiple classes by name and ensure that they are initialized.
-     The classes are loaded by {@link Reflect#defaultClassLoader}.
-
-     @param classes names of classes to load
-     @deprecated The uses of this method are very few. Iterate manually.
-     */
-    @Deprecated(since = "4.7.0", forRemoval = true)
-    public static void load(String... classes) {
-        load(Reflect.defaultClassLoader, true, classes);
-    }
-
-    /**
-     Attempt to load multiple classes by name and optionally ensure that they are initialized.
-     The classes are loaded by {@link Reflect#defaultClassLoader}.
-
-     @param initialize whether to initialize the classes if not yet initialized
-     @param classes names of classes to load
-     @deprecated The uses of this method are very few. Iterate manually.
-     */
-    @Deprecated(since = "4.7.0", forRemoval = true)
-    public static void load(boolean initialize, String... classes) {
-        load(Reflect.defaultClassLoader, initialize, classes);
-    }
-
-    /**
-     Attempt to load multiple classes by name by a providid class loader and ensure that they are initialized.
-
-     @param loader the loader whereby to load the class
-     @param initialize whether to initialize the classes if not yet initialized
-     @param classes names of classes to load
-     @deprecated The uses of this method are very few. Iterate manually.
-     */
-    @Deprecated(since = "4.7.0", forRemoval = true)
-    public static void load(ClassLoader loader, String... classes) {
-        load(loader, true, classes);
-    }
-
-    /**
-     Attempt to load multiple classes by name by a provided class loader and optionally ensure that they are initialized.
-
-     @param initialize whether to initialize the classes if not yet initialized
-     @param classes names of classes to load
-     @deprecated The uses of this method are very few. Iterate manually.
-     */
-    @Deprecated(since = "4.7.0", forRemoval = true)
-    public static void load(ClassLoader loader, boolean initialize, String... classes) {
-        for (var klass : classes) {
-            load(loader, initialize, klass);
-        }
-    }
-
-    /**
      Attempt to load a class by name and ensure that it is initialized.
-     The class is loaded by {@link Reflect#defaultClassLoader}.
+     The class is loaded by the loader of the caller.
 
      @param name a class name
      @param <T> the class
      @return a reference to the class if it can be loaded or else {@code null}
-     @deprecated The caller class should be specified manually. God willing, in the future this method will use the class loader associated with the caller.
      */
-    @Deprecated(since = "4.7.0")
     public static <T> Class<T> load(String name) {
-        return load(Reflect.defaultClassLoader, true, name);
+        return load(StackFrames.caller().getClassLoader(), true, name);
     }
 
     /**
      Attempt to load and a class by name and optionally ensure that it is initialized.
-     The class is loaded by {@link Reflect#defaultClassLoader}.
+     The class is loaded by the loader of the caller.
 
      @param initialize whether to initialize the class if uninitialized
      @param name a class name
      @param <T> the class
      @return a reference to the class if it can be loaded or else {@code null}
-     @deprecated The caller class should be specified manually. God willing, in the future this method will use the class loader associated with the caller.
      */
-    @Deprecated(since = "4.7.0")
     public static <T> Class<T> load(boolean initialize, String name) {
-        return load(Reflect.defaultClassLoader, initialize, name);
+        return load(StackFrames.caller().getClassLoader(), initialize, name);
     }
 
     /**

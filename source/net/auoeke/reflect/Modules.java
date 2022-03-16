@@ -63,18 +63,6 @@ public class Modules {
     }
 
     /**
-     Make {@code module} unnamed; thereby opening it to all unnamed modules.
-     This method is unsafe (see {@link Module#getLayer()} and other methods that rely on {@link Module#isNamed()}); use it with <b>great</b> caution.
-
-     @see #open(Module)
-     @deprecated This method should never be used.
-     */
-    @Deprecated(since = "4.6.0", forRemoval = true)
-    public static void anonymize(Module module) {
-        name.putReference(module, null);
-    }
-
-    /**
      Return a stream of the module layers that are defined to a class loader.
 
      @return the module layers defined to the class loader
