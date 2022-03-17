@@ -3,7 +3,10 @@ package net.auoeke.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,7 +180,7 @@ public class Classes {
 
     /**
      Attempt to load a class by name and ensure that it is initialized.
-     The class is loaded by the loader of the caller.
+     The class is loaded by the loader of the caller's class.
 
      @param name a class name
      @param <T> the class
@@ -189,7 +192,7 @@ public class Classes {
 
     /**
      Attempt to load and a class by name and optionally ensure that it is initialized.
-     The class is loaded by the loader of the caller.
+     The class is loaded by the loader of the caller's class.
 
      @param initialize whether to initialize the class if uninitialized
      @param name a class name
@@ -240,6 +243,17 @@ public class Classes {
     }
 
     /**
+     Attempt to locate and read a type's class file.
+
+     @param type the name of the type to locate
+     @return the class file of the type if located or else {@code null}
+     @since 4.6.0
+     */
+    public static byte[] classFile(String type) {
+        return classFile(StackFrames.caller().getClassLoader(), type);
+    }
+
+    /**
      Attempt to locate and read a given type's class file.
 
      @return the class file of the type if located or else {@code null}
@@ -266,8 +280,28 @@ public class Classes {
         return supertypes;
     }
 
+    /**
+     Generate a {@link CodeSource} for a {@link URL} with certificates if the URL points to a JAR.
+
+     @return a {@link CodeSource} for {@code url}
+     @since 4.8.0
+     */
+    public static CodeSource codeSource(URL url) {
+        return new CodeSource(url, url != null && url.openConnection() instanceof JarURLConnection jar ? jar.getCertificates() : null);
+    }
+
+    /**
+     Generate a {@link ProtectionDomain} with the provided {@link ClassLoader} and the {@link CodeSource} produced by {@link #codeSource} from the given {@link URL}.
+
+     @return a {@link ProtectionDomain} with a generated {@link CodeSource} and {@code loader}.
+     @since 4.8.0
+     */
+    public static ProtectionDomain protectionDomain(URL url, ClassLoader loader) {
+        return new ProtectionDomain(codeSource(url), null, loader, null);
+    }
+
     private static Class<?> tryLoad(String... classes) {
-        return Stream.of(classes).map(name -> load(Classes.class.getClassLoader(), name)).filter(Objects::nonNull).findFirst().orElse(null);
+        return Stream.of(classes).map(Classes::load).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     static {

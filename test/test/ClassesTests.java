@@ -35,14 +35,25 @@ public class ClassesTests extends Classes {
 
         var b = ClassDefiner.make().loader(new ClassLoader() {}).classFile(bytes).unsafe().initialize().define();
         var bb = ClassDefiner.make().loader(new SecureClassLoader() {}).classFile(buffer).unsafe().initialize().define();
-        var s = ClassDefiner.make().secureLoader(new SecureClassLoader() {}).from(Test.class).initialize().define();
-        var sb = ClassDefiner.make().secureLoader(new SecureClassLoader() {}).classFile(buffer.clear()).define();
-
+        var s = ClassDefiner.make().from(Test.class).secureLoader(new SecureClassLoader() {}, Test.class.getProtectionDomain().getCodeSource()).initialize().define();
+        var sb = ClassDefiner.make().secureLoader(new SecureClassLoader() {}, Test.class.getProtectionDomain().getCodeSource()).classFile(buffer.clear()).define();
+        var doNotInitialize = ClassDefiner.make().loader(new ClassLoader() {}).classFile("test/DoNotInitialize").define();
         var u = Pointer.of(sb, "u");
-        assert u.getReference() == null;
-        Assert.distinct(Test.class, b, bb, s, sb)
+
+        Assert.equal(u.getReference(), null)
+            .equalBy(type -> type.getProtectionDomain().getCodeSource(), s, sb, Test.class)
             .equalBy(Class::getName, Test.class, b, bb, s, sb)
+            .distinctBy(Class::getProtectionDomain, s, sb, Test.class)
+            .distinct(Test.class, b, bb, s, sb)
             .distinct(Stream.concat(Stream.of(null, Test.u), Stream.of(b, bb, s, initialize(sb)).map(u::getReference)).toArray())
             .exception("java.* packages are restricted", () -> ClassDefiner.make().loader(new SecureClassLoader() {}).from(UUID.class).unsafe().define());
+    }
+}
+
+class DoNotInitialize {
+    static {
+        if (true) { // Thankfully the compiler is stupid.
+            throw new UnsupportedOperationException("initialization");
+        }
     }
 }

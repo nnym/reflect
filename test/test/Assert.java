@@ -32,12 +32,16 @@ public class Assert {
         return asert(arrays.length < 2 || Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
     }
 
-    public static <T, X> Assert equalBy(Function<T, X> key, T... objects) {
+    public static <T> Assert equalBy(Function<T, Object> key, T... objects) {
         return equal(Stream.of(objects).map(key).toArray());
     }
 
     public static Assert distinct(Object... objects) {
         return asert(Stream.of(objects).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
+    }
+
+    public static <T> Assert distinctBy(Function<T, Object> key, T... objects) {
+        return asert(Stream.of(objects).map(key).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
     }
 
     private static Assert asert(boolean b) {
