@@ -36,37 +36,42 @@ public class Reflect {
             // Attempt both methods.
             tryRun(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
             tryRun(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
-            tryRun(() -> {
-                var HotSpotVirtualMachine = Class.forName("sun.tools.attach.HotSpotVirtualMachine");
-                Unsafe.ensureClassInitialized(HotSpotVirtualMachine);
-                Accessor.putBoolean(HotSpotVirtualMachine, "ALLOW_ATTACH_SELF", true);
-            });
+            tryRun(() -> Accessor.putBoolean(Classes.initialize(Class.forName("sun.tools.attach.HotSpotVirtualMachine")), "ALLOW_ATTACH_SELF", true));
 
             var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
             try {
-                var source = Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                var source = runNull(() -> Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
-                if (!source.endsWith(".jar")) {
-                    var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
-                    source = agent.toString();
+                // @formatter:off
+                branch: {
+                    if (source == null || !source.endsWith(".jar")) {
+                        var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
+                        source = agent.toString();
 
-                    if (Files.exists(agent) && tryRun(() -> vm.loadAgent(source))) {
-                        return;
+                        if (Files.exists(agent) && tryRun(() -> vm.loadAgent(source))) {
+                            break branch;
+                        }
+
+                        var jar = new JarOutputStream(Files.newOutputStream(agent));
+                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+                        jar.write(Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME)
+                            .filter(manifest -> Agent.class.getName().equals(new Manifest(manifest.openStream()).getMainAttributes().getValue("Agent-Class")))
+                            .findAny().get().openStream().readAllBytes()
+                        );
+                        jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
+                        jar.write(Classes.classFile(Agent.class));
+                        jar.close();
                     }
 
-                    var jar = new JarOutputStream(Files.newOutputStream(agent));
-                    jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                    jar.write(Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME)
-                        .filter(manifest -> Agent.class.getName().equals(new Manifest(manifest.openStream()).getMainAttributes().getValue("Agent-Class")))
-                        .findAny().get().openStream().readAllBytes()
-                    );
-                    jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
-                    jar.write(Classes.classFile(Agent.class));
-                    jar.close();
+                    vm.loadAgent(source);
                 }
 
-                vm.loadAgent(source);
+                if (Agent.class.getClassLoader() != ClassLoader.getSystemClassLoader()) {
+                    Agent.instrumentation = Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(Agent.class.getName()), "instrumentation");
+                }
+
+                // @formatter:on
             } finally {
                 vm.detach();
             }
