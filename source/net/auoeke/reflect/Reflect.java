@@ -82,7 +82,6 @@ public class Reflect {
                                 }
                             })
                         )
-                        .peek(System.out::println)
                         .filter(entry -> entry != null && Agent.class.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
                         .findFirst()
                         .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: " + Agent.class.getName() + '"'));
