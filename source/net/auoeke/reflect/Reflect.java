@@ -178,7 +178,7 @@ public class Reflect {
     }
 
     private static String path(JarURLConnection jar) {
-        // Must not use URL::getPath because it prepends a '/' on Windows.
+        // Must not use URL::getPath because it prepends '/' on Windows.
         return Path.of(jar.getJarFileURL().toURI()).toString();
     }
 }
