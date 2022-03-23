@@ -1,23 +1,20 @@
 package net.auoeke.reflect;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.net.JarURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
@@ -57,7 +54,7 @@ public class Reflect {
                             Optional.ofNullable(result.andSuppress(() -> Agent.class.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
                                 if (url.openConnection() instanceof JarURLConnection jar) {
                                     var manifest = jar.getManifest();
-                                    return manifest == null ? null : Map.entry(jar.getJarFileURL().getPath(), manifest);
+                                    return manifest == null ? null : Map.entry(path(jar), manifest);
                                 }
 
                                 var manifest = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
@@ -74,7 +71,7 @@ public class Reflect {
                                 var connection = url.openConnection();
 
                                 if (connection instanceof JarURLConnection jar) {
-                                    return Map.entry(jar.getJarFileURL().getPath(), jar.getManifest());
+                                    return Map.entry(path(jar), jar.getManifest());
                                 }
 
                                 try (var input = connection.getInputStream()) {
@@ -99,7 +96,11 @@ public class Reflect {
                         }
                     }
 
-                    vm.loadAgent(sourceString);
+                    try {
+                        vm.loadAgent(sourceString);
+                    } catch (AgentLoadException exception) {
+                        throw Exceptions.message(exception, message -> sourceString + ": " + message);
+                    }
 
                     if (Agent.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
                         return Agent.instrumentation;
@@ -174,5 +175,10 @@ public class Reflect {
         } catch (Throwable throwable) {
             return null;
         }
+    }
+
+    private static String path(JarURLConnection jar) {
+        // Must not use URL::getPath because it prepends a '/' on Windows.
+        return Path.of(jar.getJarFileURL().toURI()).toString();
     }
 }
