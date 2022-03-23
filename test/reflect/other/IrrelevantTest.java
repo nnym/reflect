@@ -70,7 +70,7 @@ public class IrrelevantTest {
             int pub = 0;
             int pri = 0;
 
-            for (var type : Reflect.instrumentation().getAllLoadedClasses()) {
+            for (var type : Reflect.instrument().value().getAllLoadedClasses()) {
                 for (var method : members.apply(type)) {
                     if (Flags.isPublic(method)) {
                         ++pub;

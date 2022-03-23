@@ -4,7 +4,7 @@ import java.lang.instrument.Instrumentation;
 
 class Agent {
     static Instrumentation instrumentation;
-    static boolean attempted;
+    static Result<Instrumentation> result;
 
     public static void premain(String options, Instrumentation instrumentation) {
         Agent.instrumentation = instrumentation;

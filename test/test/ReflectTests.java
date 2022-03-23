@@ -11,7 +11,7 @@ import org.junit.platform.commons.annotation.Testable;
 public class ReflectTests extends Reflect {
     @Test public void instrumentationTest() {
         if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
-            var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new), null) {
+            var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new)) {
                 @Override protected Class<?> loadClass(String name, boolean resolve) {
                     if (name.startsWith("java.")) {
                         return ClassLoader.getSystemClassLoader().loadClass(name);
@@ -43,6 +43,6 @@ public class ReflectTests extends Reflect {
             loader.close();
         }
 
-        assert instrumentation() != null && instrumentation().isRedefineClassesSupported() && instrumentation().isRetransformClassesSupported() && instrumentation().isNativeMethodPrefixSupported();
+        assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
     }
 }

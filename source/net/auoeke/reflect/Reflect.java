@@ -1,22 +1,33 @@
 package net.auoeke.reflect;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
+import java.net.JarURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import com.sun.tools.attach.VirtualMachine;
-import net.gudenau.lib.unsafe.Unsafe;
 
 /**
  Miscellaneous utilities.
  */
 public class Reflect {
+    /**
+     @deprecated Use {@code System.getSecurityManager() == null}.
+     */
+    @Deprecated(forRemoval = true, since = "4.9.0")
     public static boolean securityDisabled;
 
     /**
@@ -27,57 +38,95 @@ public class Reflect {
      Note that this method may stop working in the future; see the comments in {@linkplain sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
      </b>
 
-     @return an {@link Instrumentation} instance if attachment was successful or else {@code null}
+     @return a {@link Result} containing an {@link Instrumentation} instance if attachment was successful
+     @since 4.9.0
      */
-    public static Instrumentation instrumentation() {
-        if (Agent.instrumentation == null && !Agent.attempted) tryRun(() -> {
-            Agent.attempted = true;
+    public static Result<Instrumentation> instrument() {
+        if (Agent.result == null) {
+            var result = new Result<Instrumentation>();
 
-            // Attempt both methods.
-            tryRun(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
-            tryRun(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
-            tryRun(() -> Accessor.putBoolean(Classes.initialize(Class.forName("sun.tools.attach.HotSpotVirtualMachine")), "ALLOW_ATTACH_SELF", true));
+            result.map(() -> {
+                result.andSuppress(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
+                result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
+                result.andSuppress(() -> Accessor.putBoolean(Classes.initialize(Class.forName("sun.tools.attach.HotSpotVirtualMachine")), "ALLOW_ATTACH_SELF", true));
 
-            var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
+                var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
-            try {
-                var source = runNull(() -> Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                try {
+                    var source = Stream.concat(
+                            Optional.ofNullable(result.andSuppress(() -> Agent.class.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
+                                if (url.openConnection() instanceof JarURLConnection jar) {
+                                    var manifest = jar.getManifest();
+                                    return manifest == null ? null : Map.entry(jar.getJarFileURL().getPath(), manifest);
+                                }
 
-                // @formatter:off
-                branch: {
-                    if (source == null || !source.endsWith(".jar")) {
+                                var manifest = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
+
+                                if (!Files.exists(manifest)) {
+                                    return null;
+                                }
+
+                                try (var input = Files.newInputStream(manifest)) {
+                                    return Map.entry("", new Manifest(input));
+                                }
+                            }).stream(),
+                            Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
+                                var connection = url.openConnection();
+
+                                if (connection instanceof JarURLConnection jar) {
+                                    return Map.entry(jar.getJarFileURL().getPath(), jar.getManifest());
+                                }
+
+                                try (var input = connection.getInputStream()) {
+                                    return Map.entry("", new Manifest(input));
+                                }
+                            })
+                        )
+                        .peek(System.out::println)
+                        .filter(entry -> entry != null && Agent.class.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
+                        .findFirst()
+                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: " + Agent.class.getName() + '"'));
+                    var sourceString = source.getKey();
+
+                    if (!sourceString.endsWith(".jar")) {
                         var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
-                        source = agent.toString();
+                        sourceString = agent.toString();
 
-                        if (Files.exists(agent) && tryRun(() -> vm.loadAgent(source))) {
-                            break branch;
+                        try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
+                            jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+                            source.getValue().write(jar);
+                            jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
+                            jar.write(Classes.classFile(Agent.class));
                         }
-
-                        var jar = new JarOutputStream(Files.newOutputStream(agent));
-                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                        jar.write(Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME)
-                            .filter(manifest -> Agent.class.getName().equals(new Manifest(manifest.openStream()).getMainAttributes().getValue("Agent-Class")))
-                            .findAny().get().openStream().readAllBytes()
-                        );
-                        jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
-                        jar.write(Classes.classFile(Agent.class));
-                        jar.close();
                     }
 
-                    vm.loadAgent(source);
+                    vm.loadAgent(sourceString);
+
+                    if (Agent.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+                        return Agent.instrumentation;
+                    }
+
+                    return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(Agent.class.getName()), "instrumentation");
+                } finally {
+                    vm.detach();
                 }
+            });
 
-                if (Agent.class.getClassLoader() != ClassLoader.getSystemClassLoader()) {
-                    Agent.instrumentation = Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(Agent.class.getName()), "instrumentation");
-                }
+            Agent.result = result;
+        }
 
-                // @formatter:on
-            } finally {
-                vm.detach();
-            }
-        });
+        return Agent.result;
+    }
 
-        return Agent.instrumentation;
+    /**
+     Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
+
+     @return an {@link Instrumentation} instance if attachment was successful or else {@code null}
+     @see #instrument
+     */
+    @Deprecated(forRemoval = true, since = "4.9.0")
+    public static Instrumentation instrumentation() {
+        return instrument().orNull();
     }
 
     /**
@@ -87,9 +136,8 @@ public class Reflect {
      */
     @SuppressWarnings("removal")
     public static void disableSecurity() {
-        if (!securityDisabled) {
+        if (System.getSecurityManager() != null) {
             Accessor.putReference(System.class, "security", null);
-            securityDisabled = true;
         }
     }
 
