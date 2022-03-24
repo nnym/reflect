@@ -210,7 +210,7 @@ public class Pointer implements Cloneable {
      @since 4.10.0
      */
     public Pointer field(Object object, String name) {
-        return this.instanceField(name).bind(object);
+        return this.bind(object).instanceField(name);
     }
 
     /**
