@@ -19,8 +19,6 @@ dependencies {
 }
 ```
 
-Documentation is ~~very~~ scarce (800+ lines now) but I have taken to documenting my code recently.
-
 ### A brief summary
 - `Accessor` reads, mutates and copies fields.
 - `Classes` is a set of methods for working with classes (`defineClass`, `reinterpret` (runtime `reinterpret_cast`)).
