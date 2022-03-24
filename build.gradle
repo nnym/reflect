@@ -5,7 +5,7 @@ plugins {
 }
 
 group("net.auoeke")
-version("4.10.0")
+version("4.10.1")
 
 javaVersion(17)
 

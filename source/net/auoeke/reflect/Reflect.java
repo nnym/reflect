@@ -27,6 +27,8 @@ public class Reflect {
     @Deprecated(forRemoval = true, since = "4.9.0")
     public static boolean securityDisabled;
 
+    private static Result<Instrumentation> instrumentation;
+
     /**
      Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
      <p><b>
@@ -39,7 +41,7 @@ public class Reflect {
      @since 4.9.0
      */
     public static Result<Instrumentation> instrument() {
-        if (Agent.result == null) {
+        if (instrumentation == null) {
             var result = new Result<Instrumentation>();
 
             result.map(() -> {
@@ -112,10 +114,10 @@ public class Reflect {
                 }
             });
 
-            Agent.result = result;
+            instrumentation = result;
         }
 
-        return Agent.result;
+        return instrumentation;
     }
 
     /**
