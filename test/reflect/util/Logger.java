@@ -4,8 +4,7 @@ import java.util.Arrays;
 
 public class Logger {
     public static void log(Object... objects) {
-        final String string = Arrays.toString(objects);
-
+        var string = Arrays.toString(objects);
         log(string.substring(1, string.length() - 1));
     }
 

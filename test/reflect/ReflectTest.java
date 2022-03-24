@@ -24,46 +24,7 @@ import reflect.util.Util;
 @SuppressWarnings("FieldMayBeFinal")
 @Testable
 public class ReflectTest {
-    @SuppressWarnings("WrapperTypeMayBePrimitive")
-    @Test
-    public void pointer() {
-        var a = new A();
-        a.yes = 446;
-        Double yes = a.yes;
-
-        var pointer = new Pointer().bind(a).instanceField("yes");
-
-        Util.repeat(() -> {
-            pointer.putDouble(pointer.getDouble() + 4);
-            Accessor.putDouble(yes, "value", yes + 4);
-
-            assert yes == pointer.getDouble();
-        });
-    }
-
-    @Test
-    public void reinterpret() {
-        Double dubble = 0D;
-        var loong = Classes.reinterpret(dubble, Long.class);
-
-        Accessor.putLong(loong, "value", 0xFFFFFFFFFFL);
-        assert loong == 0xFFFFFFFFFFL;
-
-        Classes.reinterpret(loong, Double.class);
-
-        var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ReflectTest.class);
-        assert object.getClass() == (object = Unsafe.allocateInstance(ReflectTest.class)).getClass();
-        assert object.getClass() == Classes.reinterpret(object, ReflectTest.class).getClass();
-        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ReflectTest()).getClass() == ReflectTest.class;
-    }
-
-    @Test
-    public void allFields() {
-        assert Stream.of(A.class, B.class, C.class).allMatch(Fields.all(C.class).collect(HashMap::new, (map, field) -> map.computeIfAbsent(field.getDeclaringClass(), type -> new HashMap<>()), Map::putAll)::containsKey);
-    }
-
-    @Test
-    public void testCopy() {
+    @Test public void testCopy() {
         var one = new TestObject();
         var two = new TestObject();
         var fields = Fields.instanceOf(ReflectTest.class).toList();
@@ -83,8 +44,7 @@ public class ReflectTest {
         });
     }
 
-    @Test
-    void accessor() {
+    @Test void accessor() {
         assert Accessor.getIntVolatile(0, "value") == 0 && Accessor.getInt(0, "value") == 0;
 
         class A {

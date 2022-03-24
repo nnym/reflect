@@ -6,9 +6,11 @@ import java.security.SecureClassLoader;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Pointer;
+import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.ReflectTest;
@@ -16,16 +18,29 @@ import reflect.ReflectTest;
 @SuppressWarnings("AccessStaticViaInstance")
 @Testable
 public class ClassesTests extends Classes {
-    @Test
-    void classes() {
+    @Test public void reinterpret() {
+        Double dubble = 0D;
+        var loong = Classes.reinterpret(dubble, Long.class);
+
+        Accessor.putLong(loong, "value", 0xFFFFFFFFFFL);
+        assert loong == 0xFFFFFFFFFFL;
+
+        Classes.reinterpret(loong, Double.class);
+
+        var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ReflectTest.class);
+        assert object.getClass() == (object = Unsafe.allocateInstance(ReflectTest.class)).getClass();
+        assert object.getClass() == Classes.reinterpret(object, ReflectTest.class).getClass();
+        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ReflectTest()).getClass() == ReflectTest.class;
+    }
+
+    @Test void classes() {
         var classPath = classPath(ReflectTest.class.getClassLoader());
         var url = Path.of("test").toUri().toURL();
         addURL(classPath, url);
         assert List.of(urls(classPath)).contains(url);
     }
 
-    @Test
-    void definer() {
+    @Test void definer() {
         class Test {
             static final UUID u = UUID.randomUUID();
         }

@@ -28,7 +28,7 @@ public class Classes {
     public static final Object systemClassPath = classPath(systemClassLoader);
 
     public static final long classOffset;
-    public static final int fieldOffset = (int) Unsafe.objectFieldOffset(Fields.of(Integer.class, "value"));
+    public static final int fieldOffset = (int) Fields.offset(Fields.of(Integer.class, "value"));
 
     public static final boolean x64 = switch (fieldOffset) {
         case 8 -> false;

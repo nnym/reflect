@@ -116,12 +116,11 @@ public class ClassNode2 extends ClassNode implements BitField, Opcodes {
 
     public <T> Class<T> define() {
         var bytecode = this.bytecode();
-
-        return Unsafe.defineClass(this.name, bytecode, 0, bytecode.length, loader, ClassNode2.class.getProtectionDomain());
+        return Unsafe.defineClass(null, bytecode, 0, bytecode.length, loader, ClassNode2.class.getProtectionDomain());
     }
 
     public <T> Class<T> init() {
-        return Classes.load(loader, true, this.define().getName());
+        return Classes.initialize(this.define());
     }
 
     public byte[] bytecode() {
