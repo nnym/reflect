@@ -171,7 +171,7 @@ public class Pointer implements Cloneable {
     }
 
     /**
-     Derive an offset for this pointer from a field.
+     Derive {@linkplain #offset(long) offset} and {@linkplain #type(int) type} for this pointer from a field.
 
      @param field a field wherefrom to derive this pointer's offset
      @return {@code this}
@@ -188,7 +188,7 @@ public class Pointer implements Cloneable {
     }
 
     /**
-     Derive an offset for this pointer from a named field in a given type.
+     Derive {@linkplain #offset(long) offset} and {@linkplain #type(int) type} for this pointer from a named field in a given type.
      If the field is static, then also bind the type.
 
      @param type a type
@@ -201,7 +201,7 @@ public class Pointer implements Cloneable {
     }
 
     /**
-     Derive an offset for this pointer from a named field in an object and bind the object.
+     Derive {@linkplain #offset(long) offset} and {@linkplain #type(int) type} for this pointer from a named field in an object and bind the object.
      If multiple fields with the same name are found, then the field of the most derived type is used.
 
      @param object an object
@@ -214,7 +214,7 @@ public class Pointer implements Cloneable {
     }
 
     /**
-     Derive an offset for this pointer from a field declared by this pointer's bound type.
+     Derive {@linkplain #offset(long) offset} and {@linkplain #type(int) type} for this pointer from a field declared by this pointer's bound type.
 
      @param name the name of a field declared by this pointer's bound type
      @return {@code this}
@@ -224,7 +224,7 @@ public class Pointer implements Cloneable {
     }
 
     /**
-     Derive an offset for this pointer from a field in this pointer's bound object.
+     Derive {@linkplain #offset(long) offset} and {@linkplain #type(int) type} for this pointer from a field in this pointer's bound object.
 
      @param name the name of a field in this pointer's bound object
      @return {@code this}
