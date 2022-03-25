@@ -1,5 +1,7 @@
 package test;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.security.SecureClassLoader;
@@ -9,7 +11,9 @@ import java.util.stream.Stream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
+import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Pointer;
+import net.auoeke.reflect.Reflect;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -62,6 +66,30 @@ public class ClassesTests extends Classes {
             .distinct(Test.class, b, bb, s, sb)
             .distinct(Stream.concat(Stream.of(null, Test.u), Stream.of(b, bb, s, initialize(sb)).map(u::getReference)).toArray())
             .exception("java.* packages are restricted", () -> ClassDefiner.make().loader(new SecureClassLoader() {}).from(UUID.class).unsafe().define());
+    }
+
+    @Test void load() {
+        var loader = new URLClassLoader(new URL[]{ClassesTests.class.getProtectionDomain().getCodeSource().getLocation()}) {
+            @Override protected Class<?> loadClass(String name, boolean resolve) {
+                try {
+                    this.findClass(name);
+                    return null;
+                } catch (ClassNotFoundException bad) {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        };
+
+        assert loader.loadClass(Object.class.getName()) != null;
+        assert loader.loadClass(ClassesTests.class.getName()) == null;
+
+        class Test {
+            static Class<?> load(String name) {
+                return loadWithCaller(name);
+            }
+        }
+
+        assert ClassesTests.class == Invoker.findStatic(ClassDefiner.make().loader(loader).classFile(classFile(Test.class)).define(), "load", Class.class, String.class).invoke(ClassesTests.class.getName());
     }
 }
 

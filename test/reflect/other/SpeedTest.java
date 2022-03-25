@@ -2,7 +2,9 @@ package reflect.other;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
@@ -24,9 +26,10 @@ import reflect.util.Util;
 @Testable
 public class SpeedTest {
     static final int tests = 1;
-    static int iterations = 100;
+    static int iterations = 1000;
     static Runnable runnable0;
     static Runnable runnable1;
+    static List<Field> fields;
 
     static long mean(Runnable test) {
         return mean(true, null, test);
@@ -161,9 +164,10 @@ public class SpeedTest {
         Fields.direct(TestObject.class);
         time("cache ", () -> Fields.of(TestObject.class));
 
-        mean("cached", () -> Fields.of(TestObject.class).toList());
-        mean("all   ", () -> Fields.all(TestObject.class).toList());
-        mean("raw   ", () -> Fields.direct(TestObject.class));
+        mean("cached         ", () -> fields = Fields.of(TestObject.class).toList());
+        mean("uncached stream", () -> fields = Stream.of(Fields.direct(TestObject.class)).toList());
+        mean("all            ", () -> Fields.all(TestObject.class).toList());
+        mean("raw            ", () -> Fields.direct(TestObject.class));
     }
 
     @Test

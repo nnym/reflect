@@ -15,6 +15,11 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
+/**
+ Utilities that deal mostly with class loading.
+
+ @since 0.6.0
+ */
 @SuppressWarnings("unused")
 public class Classes {
     public static final SecureClassLoader systemClassLoader = (SecureClassLoader) ClassLoader.getSystemClassLoader();
@@ -162,7 +167,7 @@ public class Classes {
     }
 
     public static Field classPathField(Class<?> loaderClass) {
-        return Fields.all(loaderClass).filter(field -> URLClassPath.isAssignableFrom(field.getType())).findAny().orElse(null);
+        return Fields.allInstance(loaderClass).filter(field -> URLClassPath.isAssignableFrom(field.getType())).findAny().orElse(null);
     }
 
     /**
@@ -194,7 +199,7 @@ public class Classes {
      Attempt to load and a class by name and optionally ensure that it is initialized.
      The class is loaded by the loader of the caller's class.
 
-     @param initialize whether to initialize the class if uninitialized
+     @param initialize whether to initialize the class if not initialized
      @param name a class name
      @param <T> the class
      @return a reference to the class if it can be loaded or else {@code null}
@@ -207,11 +212,37 @@ public class Classes {
      Attempt to load and a class by name by a given class loader and ensure that it is initialized.
 
      @param loader the loader whereby to load the class
+     @param name the name of the class to load
      @param <T> the class
      @return a reference to the class if it can be loaded or else {@code null}
      */
     public static <T> Class<T> load(ClassLoader loader, String name) {
         return load(loader, true, name);
+    }
+
+    /**
+     Attempt to load a class by name by the loader of this method's caller's caller and ensure that it is initialized.
+
+     @param name the name of the class to load
+     @param <T> the class
+     @return a reference to the class if it can be loaded or else {@code null}
+     @since 4.11.0
+     */
+    public static <T> Class<T> loadWithCaller(String name) {
+        return load(StackFrames.caller(2).getClassLoader(), name);
+    }
+
+    /**
+     Attempt to load a class by name by the loader of this method's caller's caller and optionally ensure that it is initialized.
+
+     @param initialize whether to initialize the class if not initialized
+     @param name the name of the class to load
+     @param <T> the class
+     @return a reference to the class if it can be loaded or else {@code null}
+     @since 4.11.0
+     */
+    public static <T> Class<T> loadWithCaller(boolean initialize, String name) {
+        return load(StackFrames.caller(2).getClassLoader(), initialize, name);
     }
 
     /**
