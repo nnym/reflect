@@ -116,6 +116,9 @@ public class Classes {
         return Unsafe.getAddress(object, classOffset);
     }
 
+    /**
+     For when you're dealing with recursive generics and wildcards.
+     */
     public static <T> T cast(Object object) {
         return (T) object;
     }
@@ -141,20 +144,16 @@ public class Classes {
     }
 
     public static void addURL(ClassLoader classLoader, URL... urls) {
-        var classPath = classPath(classLoader);
-
-        for (var url : urls) {
-            addURL.invoke(classPath, url);
-        }
+        addURL(classPath(classLoader), urls);
     }
 
     public static void addURL(ClassLoader classLoader, URL url) {
-        addURL.invoke(classPath(classLoader), url);
+        addURL(classPath(classLoader), url);
     }
 
     public static void addURL(Object classPath, URL... urls) {
         for (var url : urls) {
-            addURL.invoke(classPath, url);
+            addURL(classPath, url);
         }
     }
 
