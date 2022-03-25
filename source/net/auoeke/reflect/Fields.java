@@ -112,11 +112,11 @@ public class Fields {
     }
 
     public static Stream<Field> all(Object object, Class<?> end) {
-        return all(object.getClass(), end);
+        return Types.classes(object.getClass(), end).flatMap(Fields::instanceOf);
     }
 
     public static Stream<Field> all(Object object) {
-        return all(object.getClass(), Object.class);
+        return all(object, Object.class);
     }
 
     public static Field any(Class<?> type, String name) {
@@ -135,10 +135,6 @@ public class Fields {
         return Stream.of(staticFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isStatic).toArray(Field[]::new)));
     }
 
-    public static Stream<Field> instanceOf(Object object) {
-        return all(object.getClass()).filter(Flags::isStatic);
-    }
-
     public static Stream<Field> instanceOf(Class<?> type) {
         return Stream.of(instanceFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isInstance).toArray(Field[]::new)));
     }
@@ -151,14 +147,22 @@ public class Fields {
         return allInstance(type, Object.class);
     }
 
+    /**
+     @deprecated Use {@link #all(Object)}.
+     */
+    @Deprecated(since = "4.11.1", forRemoval = true)
     public static Stream<Field> allInstance(Object object) {
-        return allInstance(object.getClass());
+        return all(object);
     }
 
     public static Stream<Field> allStatic(Class<?> type) {
         return all(type).filter(Flags::isStatic);
     }
 
+    /**
+     @deprecated Use {@link #allStatic(Class)}.
+     */
+    @Deprecated(since = "4.11.1", forRemoval = true)
     public static Stream<Field> allStatic(Object object) {
         return allStatic(object.getClass());
     }

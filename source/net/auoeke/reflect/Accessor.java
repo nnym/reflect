@@ -1761,7 +1761,7 @@ public class Accessor {
         }
 
         var clone = (T) Unsafe.allocateInstance(object.getClass());
-        Fields.allInstance(object).forEach(field -> Accessor.copy(clone, object, field));
+        Fields.all(object).forEach(field -> Accessor.copy(clone, object, field));
 
         return clone;
     }
