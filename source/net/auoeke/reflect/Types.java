@@ -51,7 +51,7 @@ public class Types {
      Return a type's supertypes in declaration order.
 
      @param type a type
-     @param <T>  {@code type}
+     @param <T> {@code type}
      @return {@code type}'s supertypes
      @throws NullPointerException if {@code type} is {@code null}
      */
@@ -65,8 +65,8 @@ public class Types {
      Get a class hierarchy starting at a class and ending at one of its ancestors.
 
      @param begin the most derived type
-     @param end   the oldest ancestor; may be {@code null} (exclusive)
-     @param <T>   the type of the initial class
+     @param end the oldest ancestor; may be {@code null} (exclusive)
+     @param <T> the type of the initial class
      @return the hierarchy
      */
     public static <T> Stream<Class<?>> classes(Class<T> begin, Class<?> end) {
@@ -77,7 +77,7 @@ public class Types {
      Get the hierarchy of a class.
 
      @param begin the most derived type
-     @param <T>   the most derived type
+     @param <T> the most derived type
      @return the hierarchy
      */
     public static <T> Stream<Class<?>> classes(Class<T> begin) {
@@ -98,7 +98,7 @@ public class Types {
      Return a stream of a type and its every base type.
 
      @param type a type
-     @param <T>  {@code type}
+     @param <T> {@code type}
      @return {@code type} and its every base type
      */
     public static <T> Stream<Class<?>> hierarchy(Class<T> type) {
@@ -112,7 +112,7 @@ public class Types {
      Count a type's class or interface depth. A class' interface depth is 1 greater than the greatest interface depth of any of its declared or inherited interfaces.
      If {@code type} is null, then return 0.
 
-     @param type       a type
+     @param type a type
      @param interfaces whether to compute interface depth instead of class depth
      @return the depth
      */
@@ -137,14 +137,13 @@ public class Types {
      Compute the generation gap between 2 types. The gap is positive if {@code a} is more derived than {@code b} or negative if {@code b} is more derived than {@code a}.
      If the types are unrelated, then return {@link Integer#MAX_VALUE}.
 
-     @param a          a type
-     @param b          a type
+     @param a a type
+     @param b a type
      @param interfaces whether to compute the generation gap in terms of interface depth instead of class depth
      @return the generation gap between {@code a} and {@code b}
      */
     public static int difference(Class<?> a, Class<?> b, boolean interfaces) {
         return a == null || b == null || a.isAssignableFrom(b) || b.isAssignableFrom(a) ? depth(a, interfaces) - depth(b, interfaces) : Integer.MAX_VALUE;
-
     }
 
     /**
@@ -196,7 +195,7 @@ public class Types {
     /**
      Check whether 2 types are the same or if one of them is a primitive and the other is its wrapper type.
 
-     @param type  a type
+     @param type a type
      @param other another type
      @return whether they are the some or one of them is a wrapper of the other
      */
@@ -220,7 +219,7 @@ public class Types {
      {@code left variable = right;}
 
      @param flags the conversion flags
-     @param left  the type to which to assign
+     @param left the type to which to assign
      @param right the type to assign
      @throws NullPointerException if {@code left} or {@code right} is {@code null}
      @see #WIDEN
@@ -235,17 +234,17 @@ public class Types {
 
         if (left.isPrimitive()) {
             return Flags.any(flags, UNBOX) && unbox(right) == left
-                   || Flags.any(flags, WIDEN) && (Flags.any(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
+                || Flags.any(flags, WIDEN) && (Flags.any(flags, UNBOX) || right.isPrimitive()) && TypeInfo.of(left).canWiden(TypeInfo.of(right));
         }
 
         return Flags.any(flags, BOX) && left == box(right)
-               || Flags.any(flags, REWRAP) && !right.isPrimitive() && TypeInfo.of(left).canWiden(TypeInfo.of(right));
+            || Flags.any(flags, REWRAP) && !right.isPrimitive() && TypeInfo.of(left).canWiden(TypeInfo.of(right));
     }
 
     /**
      Check whether an assignment is legal according to the {@linkplain #DEFAULT_CONVERSION default conversion flags}.
 
-     @param left  the type to which assignment is to be tested
+     @param left the type to which assignment is to be tested
      @param right the type from which assignment is to be tested
      @return {@link #canCast(long, Class, Class)} with the default conversion flags
      */
@@ -256,7 +255,7 @@ public class Types {
     /**
      Test whether a sequence of types can be assigned from a parallel array of types with optional coercion.
 
-     @param flags  see {@link #UNBOX} and {@link #WIDEN}
+     @param flags see {@link #UNBOX} and {@link #WIDEN}
      @param offset offset of the first type in {@code left}
      @return whether the types in {@code left} can be assigned from the types in {@code right}
      */
@@ -307,28 +306,21 @@ public class Types {
     }
 
     /**
+     Box an array and its elements if it is not already of an object type.
+
      @param array an array
-     @param <T>   the type of the boxed array
-     @return the boxed version of {@code array} if its component type is primitive; {@code array} otherwise
+     @param <T> the type of the boxed array
+     @return a boxed version of {@code array} if its component type is primitive or else {@code array}
      */
     public static <T> T[] box(Object array) {
-        var type = array.getClass().componentType();
-        var wrapper = box(type);
-
-        if (wrapper == type) {
-            return (T[]) array;
-        }
-
-        var length = Array.getLength(array);
-        var boxed = (T[]) Array.newInstance(wrapper, length);
-        IntStream.range(0, length).forEach(index -> Array.set(boxed, index, Array.get(array, index)));
-
-        return boxed;
+        return convert(array, box(array.getClass().componentType()));
     }
 
     /**
+     Unbox an array and its elements if it is not already primitive.
+
      @param array an array
-     @param <T>   the type of the unboxed array
+     @param <T> the type of the unboxed array
      @return the unboxed version of {@code array} if its component type is a primitive wrapper type; {@code array} if its component type is primitive; {@literal null} otherwise
      */
     public static <T> T unbox(Object array) {
@@ -339,16 +331,49 @@ public class Types {
         }
 
         var primitive = unbox(type);
+        return primitive == null || primitive == type ? null : convert(array, primitive);
+    }
 
-        if (primitive == null || primitive == type) {
-            return null;
+    /**
+     Return a primitive version of an array with a given primitive component type.
+     If the component type of the source array is the same as the target type, then return {@code array}.
+     Elements may be widened in order to match the target component type.
+
+     @param array an array
+     @param componentType the component type of the primitive array
+     @param <T> the type of the unboxed array
+     @throws IllegalArgumentException if {@code componentType} is not primitive
+     @return a primitive version of {@code array} with component type {@code componentType}
+     @since 4.12.0
+     */
+    public static <T> T unbox(Object array, Class<?> componentType) {
+        if (!componentType.isPrimitive()) {
+            throw new IllegalArgumentException(componentType + " is not primitive");
         }
 
-        var cast = (Object[]) array;
-        var length = cast.length;
-        var unboxed = (T) Array.newInstance(primitive, length);
-        IntStream.range(0, length).forEach(index -> Array.set(unboxed, index, cast[index]));
+        return convert(array, componentType);
+    }
 
-        return unboxed;
+    /**
+     Convert the component type of an array.
+     If the target type is the same as the component type of the source array, then return {@code array}.
+     Primitive elements may be widened and primitive wrappers may be unwrapped in order to match the target component type.
+
+     @param array an array
+     @param componentType the component type of the new array
+     @param <T> the type of the new array
+     @return an array with component type {@code componentType} and the elements of the previous array possibly widened or unboxed
+     @since 4.12.0
+     */
+    public static <T> T convert(Object array, Class<?> componentType) {
+        if (array.getClass().componentType() == componentType) {
+            return (T) array;
+        }
+
+        var length = Array.getLength(array);
+        var boxed = Array.newInstance(componentType, length);
+        IntStream.range(0, length).forEach(index -> Array.set(boxed, index, Array.get(array, index)));
+
+        return (T) boxed;
     }
 }

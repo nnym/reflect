@@ -15,22 +15,19 @@ import org.junit.jupiter.api.Test;
 import sun.misc.Unsafe;
 
 class TypesTests extends Types {
-    @Test
-    void classesTest() {
+    @Test void classesTest() {
         assert classes(C.class, A.class).count() == 2;
         assert classes(Object.class).count() == 1;
     }
 
-    @Test
-    void hierarchyTest() {
+    @Test void hierarchyTest() {
         var hierarchy = hierarchy(Interface3.Impl.class).toList();
         var test = List.of(Interface3.Impl.class, Interface3.class, Interface2.class, Interface1.class, Object.class);
         assert test.containsAll(hierarchy) && hierarchy.containsAll(test);
     }
 
     // Must not depend on the standard library's hierarchy excessively.
-    @Test
-    void depthTest() {
+    @Test void depthTest() {
         // classes
         Assert.equal(0, depth(null), depth(null, false));
         Assert.equal(1, depth(Object.class), depth(Object.class, false));
@@ -44,8 +41,7 @@ class TypesTests extends Types {
         Assert.equal(3, depth(Interface3.class), depth(Interface3.class, true));
     }
 
-    @Test
-    void differenceTest() {
+    @Test void differenceTest() {
         assert difference(Object.class, null) == 1;
         assert difference(null, Object.class) == -1;
         assert difference(TypesTests.class, Integer.class) == Integer.MAX_VALUE;
@@ -57,8 +53,7 @@ class TypesTests extends Types {
         assert difference(Interface1.class, Interface1.Impl.class) == -1;
     }
 
-    @Test
-    void sizeTest() {
+    @Test void sizeTest() {
         assert size(boolean.class) == Byte.SIZE;
         assert size(byte.class) == Byte.SIZE;
         assert size(short.class) == Short.SIZE;
@@ -70,8 +65,7 @@ class TypesTests extends Types {
         assert size(Object.class) == Unsafe.ADDRESS_SIZE * Byte.SIZE;
     }
 
-    @Test
-    void unbox() {
+    @Test void unbox() {
         assert unbox(Integer.class) == int.class;
         assert unbox(int.class) == int.class;
         assert unbox(Object.class) == null;
@@ -80,8 +74,7 @@ class TypesTests extends Types {
         assert unbox(void.class) == void.class;
     }
 
-    @Test
-    void boxTest() {
+    @Test void boxTest() {
         assert box(int.class) == Integer.class;
         assert box(Integer.class) == Integer.class;
         assert box(Object.class) == Object.class;
@@ -90,8 +83,7 @@ class TypesTests extends Types {
         assert box(Void.class) == Void.class;
     }
 
-    @Test
-    void equalsTest() {
+    @Test void equalsTest() {
         assert equals(int.class, Integer.class);
         assert equals(byte.class, Byte.class);
         assert equals(short.class, Short.class);
@@ -104,8 +96,7 @@ class TypesTests extends Types {
         assert equals(Object.class, Object.class);
     }
 
-    @Test
-    void isWrapperTest() {
+    @Test void isWrapperTest() {
         assert isWrapper(Integer.class);
         assert !isWrapper(short.class);
         assert !isWrapper(void.class);
@@ -116,8 +107,7 @@ class TypesTests extends Types {
         assert !isWrapper(int.class);
     }
 
-    @Test
-    void canCastTest() {
+    @Test void canCastTest() {
         assert !Types.canCast(0L, new Class[]{int.class, Integer.class, Object.class, void.class}, Integer.class, Integer.class, Object.class, void.class);
         assert Types.canCast(0, new Class[]{int.class, Integer.class, Object.class, void.class}, Integer.class, Integer.class, Object.class, Void.class);
         assert Types.canCast(Object.class, Object.class);
@@ -142,8 +132,7 @@ class TypesTests extends Types {
         assert !Types.canCast(REWRAP, Integer.class, Long.class);
     }
 
-    @Test
-    void boxTest1() {
+    @Test void arrayBoxTest() {
         var ints = IntStream.range(0, 10000).toArray();
         assert Arrays.equals(ints, Stream.of(Types.box(ints)).mapToInt(i -> (int) i).toArray());
 
@@ -165,9 +154,8 @@ class TypesTests extends Types {
         assert Types.box(objects) == objects;
     }
 
-    @Test
-    void unboxTest() {
-        var ints = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).toArray(Integer[]::new);
+    @Test void arrayUnboxTest() {
+        Integer[] ints = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         assert Arrays.equals(Stream.of(ints).mapToInt(i -> i).toArray(), Types.unbox(ints));
 
         var doubles = Stream.iterate(0D, d -> d < 100, d -> d + 1).toArray(Double[]::new);
@@ -184,5 +172,29 @@ class TypesTests extends Types {
 
         assert Types.unbox(bytes) == bytes;
         assert Types.unbox(new Object[0]) == null;
+    }
+
+    @Test void arrayCustomUnboxTest() {
+        Integer[] integers = {1, 2, 3, 4};
+        var ints = new int[]{1, 2, 3, 4};
+        var longs = new long[]{1, 2, 3, 4};
+        var floats = new float[]{0.1F, 0.1F, 0.2F, 0.3F, 0.5F, 0.8F, 1.3F, 2.1F, 3.4F, 5.5F, 8.9F, 14.4F, 233.123F, 572.6F};
+        var doubles = Types.<double[]>convert(floats, double.class);
+        assert IntStream.range(0, floats.length).allMatch(index -> floats[index] == doubles[index]);
+        assert unbox(ints, int.class) == ints;
+        assert Arrays.equals(longs, unbox(ints, long.class));
+        assert Arrays.equals(ints, unbox(integers, int.class));
+        assert Arrays.equals(longs, unbox(integers, long.class));
+
+        Assert.exception(() -> unbox(integers, Integer.class));
+        Assert.exception(() -> unbox(integers, short.class));
+        Assert.exception(() -> unbox(integers, boolean.class));
+        Assert.exception(() -> unbox(integers, void.class));
+    }
+
+    @Test void convert() {
+        Integer[] integers = {1, 2, 3, 4};
+        int[] ints = {1, 2, 3, 4};
+        assert Arrays.equals(integers, convert(ints, Integer.class));
     }
 }
