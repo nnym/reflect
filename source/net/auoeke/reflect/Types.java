@@ -5,6 +5,11 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/**
+ Utilities that deal with types and type conversion.
+
+ @since 0.14.0
+ */
 @SuppressWarnings("unused")
 public class Types {
     // @formatter:off
