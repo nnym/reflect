@@ -43,6 +43,27 @@ public class Types {
     private static final CacheMap<Class<?>, Integer> interfaceDepths = CacheMap.identity();
 
     /**
+     @return a stream of the primitive field types.
+     */
+    public static Stream<Class<?>> fieldPrimitives() {
+        return Stream.of(boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class);
+    }
+
+    /**
+     @return a stream of the base field types (primitive types and {@link Object}).
+     */
+    public static Stream<Class<?>> fieldBase() {
+        return Stream.of(boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, Object.class);
+    }
+
+    /**
+     @return a stream of the primitive method return types (field primitive types and {@code void}).
+     */
+    public static Stream<Class<?>> returnPrimitives() {
+        return Stream.of(boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, void.class);
+    }
+
+    /**
      Return a stream of a type's interfaces.
 
      @param type a type
