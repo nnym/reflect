@@ -19,33 +19,35 @@ public class Constructors {
     private static final CacheMap<Class<?>, Constructor<?>[]> constructors = CacheMap.identity();
 
     /**
-     Get a type's declared constructors directly without caching them or wrapping them in a stream.
+     Return an array of a type's all constructors without caching them or wrapping them in a stream.
 
      @param type a type
-     @return an array containing the type's declared constructors
+     @return an array containing all the type's constructors
      */
     public static <T> Constructor<T>[] direct(Class<T> type) {
         return (Constructor<T>[]) getDeclaredConstructors.invokeExact(type);
     }
 
     /**
-     Get a type's declared constructors.
+     Return a stream of a type's all constructors.
+     The constructors are cached and shared between callers.
 
      @param type a type
-     @return a stream containing the type's declared constructors
+     @return a stream containing the type's all constructors
      */
     public static <T> Stream<Constructor<T>> of(Class<T> type) {
         return Stream.of((Constructor<T>[]) constructors.computeIfAbsent(type, Constructors::direct));
     }
 
     /**
-     Instantiate {@code type} through a constructor if it is available or fall back to {@link Unsafe#allocateInstance(Class)}.
+     Instantiate {@code type} through a default constructor if it is available or fall back to {@link Unsafe#allocateInstance(Class)}.
 
      @return the new instance; never {@code null}
      @throws InstantiationException if {@code type} is abstract
      */
     public static <T> T instantiate(Class<T> type) {
-        return Optional.ofNullable(Invoker.findConstructor(type)).map(Invoker::<T>invoke).orElseGet(() -> Unsafe.allocateInstance(type));
+        var constructor = Reflect.runNull(() -> Invoker.findConstructor(type));
+        return constructor == null ? Unsafe.allocateInstance(type) : (T) constructor.invoke();
     }
 
     public static <T> T construct(Class<T> type, Object... arguments) {
