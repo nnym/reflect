@@ -81,22 +81,6 @@ public class ClassDefiner<T> {
     }
 
     /**
-     Set the {@linkplain SecureClassLoader secure loader} that should define the class by one of {@linkplain SecureClassLoader#defineClass the CodeSource-accepting methods}.
-
-     @param loader the defining loader of the class; must not be {@code null}
-     @return {@code this}
-     @throws NullPointerException if {@code loader == null}
-     @deprecated Setting a {@link SecureClassLoader} makes sense only with a custom {@link CodeSource}; use {@link #secureLoader(SecureClassLoader, CodeSource)}.
-     */
-    @Deprecated(since = "4.8.0", forRemoval = true)
-    public ClassDefiner<T> secureLoader(SecureClassLoader loader) {
-        this.loader = Objects.requireNonNull(loader);
-        this.secure = true;
-
-        return this;
-    }
-
-    /**
      Set the {@link SecureClassLoader} that should define the class by one of {@linkplain SecureClassLoader#defineClass the CodeSource-accepting methods}
      and the {@link CodeSource} of the {@link ProtectionDomain} of the class.
 

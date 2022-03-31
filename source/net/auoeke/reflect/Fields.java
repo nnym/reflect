@@ -81,14 +81,6 @@ public class Fields {
     }
 
     /**
-     @deprecated Use {@link #any(Class, String)}.
-     */
-    @Deprecated(since = "4.11.0", forRemoval = true)
-    public static Field of(String type, String name) {
-        return of(Classes.loadWithCaller(name), name);
-    }
-
-    /**
      Return a sequential stream of all fields declared by {@code begin} and its base classes until {@code end} (exclusive).
      The fields in the stream are in class hierarchy order starting with the most derived class {@code begin}.
 
@@ -123,14 +115,6 @@ public class Fields {
         return all(type).filter(field -> field.getName().equals(name)).findFirst().orElse(null);
     }
 
-    /**
-     @deprecated Use {@link #any(Class, String)}.
-     */
-    @Deprecated(since = "4.11.0", forRemoval = true)
-    public static Field any(String type, String name) {
-        return any(Classes.loadWithCaller(type), name);
-    }
-
     public static Stream<Field> staticOf(Class<?> type) {
         return Stream.of(staticFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isStatic).toArray(Field[]::new)));
     }
@@ -147,23 +131,7 @@ public class Fields {
         return allInstance(type, Object.class);
     }
 
-    /**
-     @deprecated Use {@link #all(Object)}.
-     */
-    @Deprecated(since = "4.11.1", forRemoval = true)
-    public static Stream<Field> allInstance(Object object) {
-        return all(object);
-    }
-
     public static Stream<Field> allStatic(Class<?> type) {
         return all(type).filter(Flags::isStatic);
-    }
-
-    /**
-     @deprecated Use {@link #allStatic(Class)}.
-     */
-    @Deprecated(since = "4.11.1", forRemoval = true)
-    public static Stream<Field> allStatic(Object object) {
-        return allStatic(object.getClass());
     }
 }

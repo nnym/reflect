@@ -21,12 +21,6 @@ import com.sun.tools.attach.VirtualMachine;
  Miscellaneous utilities.
  */
 public class Reflect {
-    /**
-     @deprecated Use {@code System.getSecurityManager() == null}.
-     */
-    @Deprecated(forRemoval = true, since = "4.9.0")
-    public static boolean securityDisabled;
-
     private static Result<Instrumentation> instrumentation;
 
     /**
@@ -118,17 +112,6 @@ public class Reflect {
         }
 
         return instrumentation;
-    }
-
-    /**
-     Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
-
-     @return an {@link Instrumentation} instance if attachment was successful or else {@code null}
-     @see #instrument
-     */
-    @Deprecated(forRemoval = true, since = "4.9.0")
-    public static Instrumentation instrumentation() {
-        return instrument().orNull();
     }
 
     /**

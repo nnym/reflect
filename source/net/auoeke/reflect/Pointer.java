@@ -233,30 +233,6 @@ public class Pointer implements Cloneable {
         return this.field(Fields.of(this.object, name));
     }
 
-    /** @deprecated Use {@link #field(Class, String)}. */
-    @Deprecated(since = "4.10.0", forRemoval = true)
-    public Pointer staticField(Class<?> type, String name) {
-        return this.field(type, name);
-    }
-
-    /** @deprecated Use {@link #field(Field)}. */
-    @Deprecated(since = "4.10.0", forRemoval = true)
-    public Pointer staticField(Field field) {
-        return this.field(field);
-    }
-
-    /** @deprecated Use {@link #field(Class, String)}. */
-    @Deprecated(since = "4.10.0", forRemoval = true)
-    public Pointer instanceField(Class<?> type, String name) {
-        return this.field(type, name);
-    }
-
-    /** @deprecated Use {@link #field(Field)}. */
-    @Deprecated(since = "4.10.0", forRemoval = true)
-    public Pointer instanceField(Field field) {
-        return this.field(field);
-    }
-
     /**
      Get the target's value regardless of type in this pointer's object.
 
