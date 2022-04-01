@@ -45,7 +45,7 @@ public class Modules {
     }
 
     /**
-     {@linkplain #open(Module) Open} the modules in a {@linkplain ModuleLayer module layer} to all modules.
+     {@link #open(Module) Open} the modules in a {@link ModuleLayer module layer} to all modules.
 
      @since 4.6.0
      */
@@ -54,7 +54,7 @@ public class Modules {
     }
 
     /**
-     {@linkplain #open(ModuleLayer) Open} the module layers defined to a class loader to all modules.
+     {@link #open(ModuleLayer) Open} the module layers defined to a class loader to all modules.
 
      @since 4.6.0
      */

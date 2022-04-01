@@ -28,7 +28,7 @@ public class Reflect {
      <p><b>
      Note that this method is not guaranteed to work with all JVM vendors.
      <br>
-     Note that this method may stop working in the future; see the comments in {@linkplain sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
+     Note that this method may stop working in the future; see the comments in {@link sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
      </b>
 
      @return a {@link Result} containing an {@link Instrumentation} instance if attachment was successful
@@ -115,7 +115,7 @@ public class Reflect {
     }
 
     /**
-     Disable {@linkplain System#getSecurityManager() the deprecated security manager}.
+     Disable {@link System#getSecurityManager() the deprecated security manager}.
      <p>
      Using this method is discouraged.
      */
@@ -128,7 +128,7 @@ public class Reflect {
 
     /**
      Clears the reflection field filter map, preventing {@link Class#getFields} and {@link Class#getDeclaredFields} from filtering,
-     as defined in {@linkplain jdk.internal.reflect.Reflection Reflection}.
+     as defined in {@link jdk.internal.reflect.Reflection Reflection}.
 
      @apiNote this method can break code that relies on the aforementioned methods filtering fields.
      */
@@ -138,7 +138,7 @@ public class Reflect {
 
     /**
      Clears the reflection method filter map, preventing {@link Class#getMethods} and {@link Class#getDeclaredMethods} from filtering
-     as defined in {@linkplain jdk.internal.reflect.Reflection Reflection}.
+     as defined in {@link jdk.internal.reflect.Reflection Reflection}.
      <br>
 
      @apiNote this method can break code (and has broken some part of Gson) that relies on the aforementioned methods filtering methods.

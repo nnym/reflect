@@ -47,7 +47,7 @@ public class Methods {
     }
 
     /**
-     Get a type's declared methods directly without {@linkplain jdk.internal.reflect.Reflection#filterMethods filtering} or caching them or wrapping them in a stream.
+     Get a type's declared methods directly without {@link jdk.internal.reflect.Reflection#filterMethods filtering} or caching them or wrapping them in a stream.
 
      @param type a type
      @return the array containing the type's declared methods
@@ -57,7 +57,7 @@ public class Methods {
     }
 
     /**
-     Get a type's declared methods without {@linkplain jdk.internal.reflect.Reflection#filterMethods filtering}.
+     Get a type's declared methods without {@link jdk.internal.reflect.Reflection#filterMethods filtering}.
 
      @param type a type
      @return a stream containing the type's declared methods

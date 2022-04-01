@@ -35,7 +35,7 @@ public class Types {
     // @formatter:on
 
     /**
-     {@linkplain #WIDEN Widen primitives} and {@linkplain #UNBOX unbox wrappers}.
+     {@link #WIDEN Widen primitives} and {@link #UNBOX unbox wrappers}.
      */
     public static final long DEFAULT_CONVERSION = WIDEN | UNBOX | BOX;
 
@@ -268,7 +268,7 @@ public class Types {
     }
 
     /**
-     Check whether an assignment is legal according to the {@linkplain #DEFAULT_CONVERSION default conversion flags}.
+     Check whether an assignment is legal according to the {@link #DEFAULT_CONVERSION default conversion flags}.
 
      @param left the type to which assignment is to be tested
      @param right the type from which assignment is to be tested

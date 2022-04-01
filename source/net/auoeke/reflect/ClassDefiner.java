@@ -10,8 +10,8 @@ import net.gudenau.lib.unsafe.Unsafe;
 
 /**
  A class definition builder.
- The only required parameter in all cases is {@linkplain #classFile(byte[]) a class file}
- but most likely in most cases {@linkplain #loader(ClassLoader) a class loader} will have to be specified.
+ The only required parameter in all cases is {@link #classFile(byte[]) a class file}
+ but most likely in most cases {@link #loader(ClassLoader) a class loader} will have to be specified.
 
  @param <T> the type of the class to define
  @since 4.6.0 */
@@ -81,7 +81,7 @@ public class ClassDefiner<T> {
     }
 
     /**
-     Set the {@link SecureClassLoader} that should define the class by one of {@linkplain SecureClassLoader#defineClass the CodeSource-accepting methods}
+     Set the {@link SecureClassLoader} that should define the class by one of {@link SecureClassLoader#defineClass the CodeSource-accepting methods}
      and the {@link CodeSource} of the {@link ProtectionDomain} of the class.
 
      @param loader the defining loader of the class; must not be {@code null}
@@ -199,7 +199,7 @@ public class ClassDefiner<T> {
     }
 
     /**
-     Use {@linkplain jdk.internal.misc.Unsafe#defineClass Unsafe::defineClass} in order to define the class.
+     Use {@link jdk.internal.misc.Unsafe#defineClass Unsafe::defineClass} in order to define the class.
 
      @return {@code this}
      */

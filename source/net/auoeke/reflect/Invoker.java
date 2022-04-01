@@ -23,7 +23,7 @@ public class Invoker {
     public static final long DISCARD_UNUSED = 1L << 63;
 
     /**
-     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
+     {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
 
      @param handle a method handle
      @return the method handle reflected as a {@link Member}
@@ -33,7 +33,7 @@ public class Invoker {
     }
 
     /**
-     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Field}.
+     {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Field}.
 
      @param handle a method handle
      @return the method handle reflected as a {@link Field}
@@ -43,7 +43,7 @@ public class Invoker {
     }
 
     /**
-     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as an {@link Executable}.
+     {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as an {@link Executable}.
 
      @param handle a method handle
      @return the method handle reflected as an {@link Executable}
@@ -53,7 +53,7 @@ public class Invoker {
     }
 
     /**
-     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Constructor}.
+     {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Constructor}.
 
      @param handle a method handle
      @return the method handle reflected as a {@link Constructor}
@@ -63,7 +63,7 @@ public class Invoker {
     }
 
     /**
-     {@linkplain MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Method}.
+     {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Method}.
 
      @param handle a method handle
      @return the method handle reflected as a {@link Method}
@@ -250,8 +250,8 @@ public class Invoker {
 
     /**
      Produce a method handle of type {@code type} that invokes {@code handle} by reordering the resulting handle's parameters to match {@code handle}'s parameters by type.
-     Each input parameter (in {@code type}) is matched to the first {@linkplain Types#canCast(long, Class, Class) applicable} output parameter (in {@code handle})
-     with the smallest {@linkplain Types#difference generation gap} between their types.
+     Each input parameter (in {@code type}) is matched to the first {@link Types#canCast(long, Class, Class) applicable} output parameter (in {@code handle})
+     with the smallest {@link Types#difference generation gap} between their types.
      <p>
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 

@@ -86,7 +86,7 @@ public class Classes {
      Change the type of an object. The target type should not be bigger than the object's type.
 
      @param object the object whose type to change
-     @param klass the {@linkplain #klass Klass*} of the target type
+     @param klass the {@link #klass Klass*} of the target type
      @param <T> the target type
      @return {@code object}
      */
