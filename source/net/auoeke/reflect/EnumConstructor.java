@@ -102,14 +102,6 @@ public class EnumConstructor<E extends Enum<E>> {
         return get(flags, type, arguments).construct(ordinal, name, arguments);
     }
 
-    public static Pointer enumConstantDirectory(Class<?> type) {
-        return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
-    }
-
-    public static Pointer enumConstants(Class<?> type) {
-        return enumConstantPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
-    }
-
     public static Pointer enumArray(Class<?> type) {
         return arrayFields.computeIfAbsent(type, t -> {
             for (var field : Fields.direct(t)) {
@@ -133,8 +125,16 @@ public class EnumConstructor<E extends Enum<E>> {
         return owner.isEnum() && field.getType().componentType() == owner;
     }
 
-    public static int nextOrdinal(Class<?> type) {
+    private static int nextOrdinal(Class<?> type) {
         return type.getEnumConstants().length;
+    }
+
+    private static Pointer enumConstantDirectory(Class<?> type) {
+        return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
+    }
+
+    private static Pointer enumConstants(Class<?> type) {
+        return enumConstantPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
     }
 
     public E construct(int ordinal, String name, Object... arguments) {
