@@ -7,7 +7,6 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +21,7 @@ import net.gudenau.lib.unsafe.Unsafe;
  */
 @SuppressWarnings("unused")
 public class Classes {
-    public static final SecureClassLoader systemClassLoader = (SecureClassLoader) ClassLoader.getSystemClassLoader();
+    public static final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
     public static final Class<?> ConstantPool = tryLoad("jdk.internal.reflect.ConstantPool", "sun.reflect.ConstantPool");
     public static final Class<?> JavaLangAccess = tryLoad("jdk.internal.access.JavaLangAccess", "jdk.internal.misc.JavaLangAccess", "sun.misc.JavaLangAccess");
