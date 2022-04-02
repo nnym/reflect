@@ -5,7 +5,6 @@ import java.lang.instrument.Instrumentation;
 import java.net.JarURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -112,46 +111,6 @@ public class Reflect {
         }
 
         return instrumentation;
-    }
-
-    /**
-     Disable {@link System#getSecurityManager() the deprecated security manager}.
-     <p>
-     Using this method is discouraged.
-     */
-    @SuppressWarnings("removal")
-    public static void disableSecurity() {
-        if (System.getSecurityManager() != null) {
-            Accessor.putReference(System.class, "security", null);
-        }
-    }
-
-    /**
-     Clears the reflection field filter map, preventing {@link Class#getFields} and {@link Class#getDeclaredFields} from filtering,
-     as defined in {@link jdk.internal.reflect.Reflection Reflection}.
-
-     @apiNote this method can break code that relies on the aforementioned methods filtering fields.
-     */
-    public static void clearFieldFilterMap() {
-        Accessor.putReferenceVolatile(Classes.Reflection, "fieldFilterMap", new HashMap<>());
-    }
-
-    /**
-     Clears the reflection method filter map, preventing {@link Class#getMethods} and {@link Class#getDeclaredMethods} from filtering
-     as defined in {@link jdk.internal.reflect.Reflection Reflection}.
-     <br>
-
-     @apiNote this method can break code (and has broken some part of Gson) that relies on the aforementioned methods filtering methods.
-     */
-    public static void clearMethodFilterMap() {
-        Accessor.putReferenceVolatile(Classes.Reflection, "methodFilterMap", new HashMap<>());
-    }
-
-    static boolean tryRun(Runnable runnable) {
-        return runNull(() -> {
-            runnable.run();
-            return true;
-        }) != null;
     }
 
     static <T> T runNull(Supplier<T> supplier) {
