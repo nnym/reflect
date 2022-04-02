@@ -237,8 +237,9 @@ public class Pointer implements Cloneable {
      Get the target's value regardless of type in this pointer's object.
 
      @return the value of this pointer's target in its object
-     @throws IllegalStateException if {@link #type} is not valid (@see below)
+     @throws IllegalStateException if {@link #type} is not valid
      @since 4.10.0
+     @see #type(int)
      */
     public Object get() {
         return switch (this.type) {

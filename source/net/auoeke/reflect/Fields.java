@@ -26,8 +26,8 @@ public class Fields {
 
     /**
      Compute the offset of a field from its (type or object) base.
-     If the field is static, then the offset is from its declaring type;
-     otherwise, the offset is from an object of the type of its declaring class.
+     If the field is static, then the base is its declaring type;
+     otherwise, the base is an instance of its declaring type.
 
      @param field a field
      @return the field's offset from its base
