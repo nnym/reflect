@@ -14,7 +14,8 @@ import net.gudenau.lib.unsafe.Unsafe;
  but most likely in most cases {@link #loader(ClassLoader) a class loader} will have to be specified.
 
  @param <T> the type of the class to define
- @since 4.6.0 */
+ @since 4.6.0
+ */
 public class ClassDefiner<T> {
     private static final MethodHandle defineClass = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
     private static final MethodHandle bufferDefineClass = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class);

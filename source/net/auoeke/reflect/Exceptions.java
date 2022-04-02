@@ -2,6 +2,9 @@ package net.auoeke.reflect;
 
 import java.util.function.Function;
 
+/**
+ @since 4.9.0
+ */
 class Exceptions {
     private static final Pointer detailMessage = Pointer.of(Throwable.class, "detailMessage");
 

@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
+/**
+ @since 1.4.0
+ */
 public class Constructors {
     private static final MethodHandle getDeclaredConstructors = Methods.of(Class.class)
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Constructor[].class)

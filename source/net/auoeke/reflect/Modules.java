@@ -5,6 +5,8 @@ import java.util.stream.Stream;
 
 /**
  Utilities for opening modules and getting modules and layers defined to class loaders.
+
+ @since 3.1.0
  */
 public class Modules {
     /**
@@ -12,7 +14,6 @@ public class Modules {
      */
     public static final Module everyone = Accessor.getReference(Module.class, "EVERYONE_MODULE");
 
-    private static final Pointer name = Pointer.of(Module.class, "name");
     private static final MethodHandle implAddExportsOrOpens = Invoker.findSpecial(Module.class, "implAddExportsOrOpens", void.class, String.class, Module.class, boolean.class, boolean.class);
     private static final MethodHandle layers = Invoker.findStatic(ModuleLayer.class, "layers", Stream.class, ClassLoader.class);
 

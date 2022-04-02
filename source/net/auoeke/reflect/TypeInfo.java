@@ -2,6 +2,9 @@ package net.auoeke.reflect;
 
 import net.gudenau.lib.unsafe.Unsafe;
 
+/**
+ @since 4.0.0
+ */
 enum TypeInfo {
     VOID(void.class, Void.class, 0, 0),
     BOOLEAN(boolean.class, Boolean.class, Byte.SIZE, 0),

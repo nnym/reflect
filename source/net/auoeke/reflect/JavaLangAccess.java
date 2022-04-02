@@ -2,6 +2,9 @@ package net.auoeke.reflect;
 
 import java.lang.invoke.MethodHandle;
 
+/**
+ @since 1.2.0
+ */
 public class JavaLangAccess {
     public static final Object javaLangAccess = Invoker.findStatic(Classes.SharedSecrets, "getJavaLangAccess", Classes.JavaLangAccess).invoke();
 

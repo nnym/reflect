@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 /**
  Utilities for getting stack frames and callers.
+
+ @since 1.10.0
  */
 public class StackFrames {
     public static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);

@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ @since 4.0.0
+ */
 final class CacheMap<K, V> {
     private final Supplier<? extends Map<K, V>> constructor;
     private SoftReference<Map<K, V>> map;

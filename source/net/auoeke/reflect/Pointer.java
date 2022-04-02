@@ -10,7 +10,8 @@ import net.gudenau.lib.unsafe.Unsafe;
  Pointers acquired directly from the constructor require configuration before use.
  All pointers can be configured by the methods {@link #bind}, {@link #offset(long)}, {@link #type(int)}, {@link #field}, {@link #instanceField}, {@link #staticField}.
 
- @since 0.15.0 */
+ @since 0.15.0
+ */
 @SuppressWarnings("unused")
 public class Pointer implements Cloneable {
     /** @since 4.10.0 */

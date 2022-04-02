@@ -8,6 +8,9 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
+/**
+ @since 0.6.0
+ */
 public class Fields {
     private static final MethodHandle getDeclaredFields = Methods.of(Class.class)
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class)

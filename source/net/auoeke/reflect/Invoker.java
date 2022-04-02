@@ -15,6 +15,9 @@ import java.util.stream.IntStream;
 
 import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 
+/**
+ @since 0.6.0
+ */
 @SuppressWarnings("unused")
 public class Invoker {
     /**

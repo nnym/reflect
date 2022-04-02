@@ -10,6 +10,9 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+/**
+ @since 0.13.0
+ */
 public class Methods {
     private static final MethodHandle getDeclaredMethods = Stream.of(Class.class.getDeclaredMethods())
         .filter(method -> Flags.isNative(method) && method.getReturnType() == Method[].class)

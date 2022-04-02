@@ -3,6 +3,9 @@ package net.auoeke.reflect;
 import java.lang.reflect.Field;
 import net.gudenau.lib.unsafe.Unsafe;
 
+/**
+ @since 0.5.0
+ */
 @SuppressWarnings("unused")
 public class Accessor {
     public static long staticFieldOffset(Class<?> type, String name) {

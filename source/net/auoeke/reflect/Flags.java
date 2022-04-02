@@ -9,6 +9,8 @@ import java.lang.reflect.Modifier;
 
 /**
  Utilities for working with flags and particularly Java modifiers.
+
+ @since 4.0.0
  */
 @SuppressWarnings("unused")
 public class Flags {
