@@ -8,14 +8,6 @@ import net.gudenau.lib.unsafe.Unsafe;
  */
 @SuppressWarnings("unused")
 public class Accessor {
-    public static long staticFieldOffset(Class<?> type, String name) {
-        return Unsafe.staticFieldOffset(Fields.of(type, name));
-    }
-
-    public static long objectFieldOffset(Class<?> type, String name) {
-        return Unsafe.objectFieldOffset(Fields.of(type, name));
-    }
-
     public static boolean getBoolean(Field field) {
         return Unsafe.getBoolean(field.getDeclaringClass(), Unsafe.staticFieldOffset(field));
     }

@@ -41,6 +41,20 @@ public class Fields {
     }
 
     /**
+     Compute the offset of a field from its (type or object) base.
+     If the field is static, then the base is its declaring type;
+     otherwise, the base is an instance of its declaring type.
+
+     @param declaringType the field's declaring type
+     @param name the field's name
+     @return the field's offset from its base
+     @since 5.0.0
+     */
+    public static long offset(Class<?> declaringType, String name) {
+        return offset(of(declaringType, name));
+    }
+
+    /**
      Retrieve an array of fields declared by a type without filtering.
 
      @param type a type
