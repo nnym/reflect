@@ -11,9 +11,9 @@ import java.util.Arrays;
 public class EnumConstructor<E extends Enum<E>> {
     private static final int ENUM_VALUES = Flags.PRIVATE | Flags.STATIC | Flags.SYNTHETIC | Flags.FINAL;
 
+    private static final Pointer enumConstants;
+    private static final Pointer enumConstantDirectory;
     private static final MethodHandle getEnumVars;
-    private static final Pointer enumConstantPointer;
-    private static final Pointer enumConstantDirectoryPointer;
     private static final CacheMap<Class<?>, Pointer> arrayFields = CacheMap.identity();
     private static final CacheMap<Class<?>, EnumConstructor<?>> constructors = CacheMap.identity();
 
@@ -80,8 +80,8 @@ public class EnumConstructor<E extends Enum<E>> {
         newValues[values.length] = enumConstant;
 
         enumArrayPointer.putReference(newValues);
-        enumConstants(type).putReference(newValues);
-        enumConstantDirectory(type).putReference(null);
+        enumConstants.putReference(getEnumVars == null ? type : getEnumVars.invoke(type), newValues);
+        enumConstantDirectory.putReference(getEnumVars == null ? type : getEnumVars.invoke(type), null);
 
         return enumConstant;
     }
@@ -129,14 +129,6 @@ public class EnumConstructor<E extends Enum<E>> {
         return type.getEnumConstants().length;
     }
 
-    private static Pointer enumConstantDirectory(Class<?> type) {
-        return enumConstantDirectoryPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
-    }
-
-    private static Pointer enumConstants(Class<?> type) {
-        return enumConstantPointer.clone().bind(getEnumVars == null ? type : getEnumVars.invoke(type));
-    }
-
     public E construct(int ordinal, String name, Object... arguments) {
         return (E) this.constructor.invoke(name, ordinal, arguments);
     }
@@ -157,12 +149,12 @@ public class EnumConstructor<E extends Enum<E>> {
         var type = Classes.load(EnumConstructor.class.getClassLoader(), Class.class.getName() + "$EnumVars");
 
         if (type == null) {
-            enumConstantPointer = Pointer.of(Class.class, "enumConstants");
-            enumConstantDirectoryPointer = Pointer.of(Class.class, "enumConstantDirectory");
+            enumConstants = Pointer.of(Class.class, "enumConstants");
+            enumConstantDirectory = Pointer.of(Class.class, "enumConstantDirectory");
             getEnumVars = null;
         } else {
-            enumConstantPointer = Pointer.of(type, "cachedEnumConstants");
-            enumConstantDirectoryPointer = Pointer.of(type, "cachedEnumConstantDirectory");
+            enumConstants = Pointer.of(type, "cachedEnumConstants");
+            enumConstantDirectory = Pointer.of(type, "cachedEnumConstantDirectory");
             getEnumVars = Invoker.findSpecial(Class.class, "getEnumVars", type);
         }
     }
