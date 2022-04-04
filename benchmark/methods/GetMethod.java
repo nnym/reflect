@@ -7,7 +7,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import reflect.misc.A;
 
 public class GetMethod {
-    static final Method declaredMethod = Methods.of(A.class, "privateMethod");
+    static final Method declaredMethod = Methods.of(A.class, "privateMethod2");
 
     @Benchmark public void bySignature() {
         Methods.of(A.class, "privateMethod2", int.class);
@@ -19,6 +19,10 @@ public class GetMethod {
 
     @Benchmark public void unreflect() {
         Invoker.unreflect(declaredMethod);
+    }
+
+    @Benchmark public void getAndUnreflect() {
+        Invoker.unreflect(A.class, "privateMethod2", int.class);
     }
 
     @Benchmark public void findStatic() {

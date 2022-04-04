@@ -22,8 +22,8 @@ public class Methods {
         .get();
 
     private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
-    // Todo: cache methods by name?
-    // private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
+    private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
+    private static final CacheMap<MethodKey, Method> methodsBySignature = CacheMap.hash();
 
     public static <T extends Executable> T find(long flags, int offset, Stream<T> methods, Object... arguments) {
         return methods.filter(method -> Types.canCast(flags, offset, method.getParameterTypes(), arguments)).findAny().orElse(null);
@@ -70,26 +70,30 @@ public class Methods {
     }
 
     /**
-     Get a type's any method with a given name.
+     Attempt to find a type's first method with a given name.
 
      @param type the type
      @param name the method's name
-     @return the first method found with the given name in any order
+     @return the first method found with the given name; {@code null} if not found
      */
     public static Method of(Class<?> type, String name) {
-        return of(type).filter(method -> method.getName().equals(name)).findAny().orElse(null);
+        var methods = methodsByName.computeIfAbsent(type, t -> CacheMap.hash()).computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new));
+        return methods.length > 0 ? methods[0] : null;
     }
 
     /**
-     Get a type's any method with given name and parameter types.
+     Attempt to find a type's first method with given name and parameter types.
 
      @param type the type
      @param name the method's name
      @param parameterTypes the method's parameter types
-     @return the method
+     @return the first method found with the given name and parameter types; {@code null} if not found
      */
     public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
-        return of(type).filter(method -> method.getName().equals(name) && Arrays.equals(method.getParameterTypes(), parameterTypes)).findAny().orElse(null);
+        return methodsBySignature.computeIfAbsent(
+            new MethodKey(type, name, parameterTypes),
+            key -> of(key.owner()).filter(method -> method.getName().equals(key.name()) && Arrays.equals(method.getParameterTypes(), key.parameterTypes())).findFirst().orElse(null)
+        );
     }
 
     /**
@@ -143,5 +147,15 @@ public class Methods {
      */
     public static <T> T defaultValue(Class<? extends Annotation> type, String name) {
         return (T) of(type, name).getDefaultValue();
+    }
+
+    private record MethodKey(Class<?> owner, String name, Class<?>[] parameterTypes) {
+        @Override public boolean equals(Object object) {
+            return object instanceof MethodKey key && this.owner == key.owner && this.name.equals(key.name) && Arrays.equals(this.parameterTypes, key.parameterTypes);
+        }
+
+        @Override public int hashCode() {
+            return this.owner.hashCode() ^ this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes);
+        }
     }
 }

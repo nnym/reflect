@@ -16,14 +16,15 @@ import java.util.stream.IntStream;
 import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
 
 /**
- @since 0.6.0
- */
+ @since 0.6.0 */
 @SuppressWarnings("unused")
 public class Invoker {
     /**
      Discard input parameters that did not match any output parameter.
      */
     public static final long DISCARD_UNUSED = 1L << 63;
+
+    private static final CacheMap<Method, MethodHandle> unreflectCache = CacheMap.identity();
 
     /**
      {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
@@ -79,7 +80,7 @@ public class Invoker {
      Invoke a method handle without arguments.
 
      @param handle a method handle
-     @param <T>    the handle's return type
+     @param <T> the handle's return type
      @return the result
      */
     public static <T> T invoke(MethodHandle handle) {
@@ -89,9 +90,9 @@ public class Invoker {
     /**
      Invoke a method handle with arguments.
 
-     @param handle    a method handle
+     @param handle a method handle
      @param arguments arguments wherewith to invoke the handle
-     @param <T>       the handle's return type
+     @param <T> the handle's return type
      @return the result
      */
     public static <T> T invoke(MethodHandle handle, Object... arguments) {
@@ -102,8 +103,8 @@ public class Invoker {
      Invokes {@link MethodHandles.Lookup#bind} on the trusted implementation lookup.
 
      @param receiver the object on which to invoke the target method
-     @param name     the target method's name
-     @param type     the target method's type
+     @param name the target method's name
+     @param type the target method's type
      @return a method handle corresponding to the target method and bound to {@code receiver}
      @see MethodHandles.Lookup#bind
      */
@@ -184,7 +185,7 @@ public class Invoker {
     }
 
     public static MethodHandle unreflect(Method method) {
-        return trustedLookup.unreflect(method);
+        return unreflectCache.computeIfAbsent(method, m -> trustedLookup.unreflect(m));
     }
 
     public static MethodHandle unreflect(Class<?> type, String name, Class<?>... parameterTypes) {
@@ -258,9 +259,9 @@ public class Invoker {
      <p>
      If {@code handle.type()} and {@code type} are equal, then return {@code handle}.
 
-     @param flags  {@link #DISCARD_UNUSED}
+     @param flags {@link #DISCARD_UNUSED}
      @param handle the method handle
-     @param type   the method type whereto to adapt {@code handle}
+     @param type the method type whereto to adapt {@code handle}
      @return the adapted method handle
      @throws IllegalArgumentException if {@code handle.type().parameterCount()} != {@code type.parameterCount()}
      */
@@ -322,7 +323,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle         the method handle
+     @param handle the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
@@ -334,7 +335,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle         the method handle
+     @param handle the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
@@ -350,7 +351,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle         the method handle
+     @param handle the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
@@ -362,7 +363,7 @@ public class Invoker {
     /**
      Produce a method handle that invokes {@code handle} with input parameters reordered to match output parameters by type.
 
-     @param handle         the method handle
+     @param handle the method handle
      @param parameterTypes the input parameter types
      @return the adapted method handle
      @see #adapt(MethodHandle, MethodType)
