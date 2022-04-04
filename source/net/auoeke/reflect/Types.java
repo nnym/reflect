@@ -8,8 +8,7 @@ import java.util.stream.Stream;
 /**
  Utilities that deal with types and type conversion.
 
- @since 0.14.0
- */
+ @since 0.14.0 */
 @SuppressWarnings("unused")
 public class Types {
     // @formatter:off
@@ -339,7 +338,19 @@ public class Types {
      @return a boxed version of {@code array} if its component type is primitive or else {@code array}
      */
     public static <T> T[] box(Object array) {
-        return convert(array, box(array.getClass().componentType()));
+        // @formatter:off
+        return (T[]) (
+            array instanceof boolean[] b ? box(b)
+            : array instanceof byte[] b ? box(b)
+            : array instanceof char[] c ? box(c)
+            : array instanceof short[] s ? box(s)
+            : array instanceof int[] i ? box(i)
+            : array instanceof long[] l ? box(l)
+            : array instanceof float[] f ? box(f)
+            : array instanceof double[] d ? box(d)
+            : array
+        );
+        // @formatter:on
     }
 
     /**
@@ -368,8 +379,8 @@ public class Types {
      @param array an array
      @param componentType the component type of the primitive array
      @param <T> the type of the unboxed array
-     @throws IllegalArgumentException if {@code componentType} is not primitive
      @return a primitive version of {@code array} with component type {@code componentType}
+     @throws IllegalArgumentException if {@code componentType} is not primitive
      @since 4.12.0
      */
     public static <T> T unbox(Object array, Class<?> componentType) {
@@ -401,5 +412,133 @@ public class Types {
         IntStream.range(0, length).forEach(index -> Array.set(boxed, index, Array.get(array, index)));
 
         return (T) boxed;
+    }
+
+    /**
+     Box a {@code boolean[]} by constructing a new {@code Boolean[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code boolean[]} to box
+     @return a {@code Boolean[]} with the same length and elements as those of {@code array}
+     */
+    public static Boolean[] box(boolean[] array) {
+        var box = new Boolean[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code byte[]} by constructing a new {@code Byte[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code byte[]} to box
+     @return a {@code Byte[]} with the same length and elements as those of {@code array}
+     */
+    public static Byte[] box(byte[] array) {
+        var box = new Byte[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code char[]} by constructing a new {@code Character[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code char[]} to box
+     @return a {@code Character[]} with the same length and elements as those of {@code array}
+     */
+    public static Character[] box(char[] array) {
+        var box = new Character[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code short[]} by constructing a new {@code Short[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code short[]} to box
+     @return a {@code Short[]} with the same length and elements as those of {@code array}
+     */
+    public static Short[] box(short[] array) {
+        var box = new Short[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code int[]} by constructing a new {@code Integer[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code int[]} to box
+     @return a {@code Integer[]} with the same length and elements as those of {@code array}
+     */
+    public static Integer[] box(int[] array) {
+        var box = new Integer[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code long[]} by constructing a new {@code Long[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code long[]} to box
+     @return a {@code Long[]} with the same length and elements as those of {@code array}
+     */
+    public static Long[] box(long[] array) {
+        var box = new Long[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code float[]} by constructing a new {@code Float[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code float[]} to box
+     @return a {@code Float[]} with the same length and elements as those of {@code array}
+     */
+    public static Float[] box(float[] array) {
+        var box = new Float[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
+    }
+
+    /**
+     Box a {@code double[]} by constructing a new {@code Double[]} containing wrappers of the elements of the original array.
+
+     @param array a {@code double[]} to box
+     @return a {@code Double[]} with the same length and elements as those of {@code array}
+     */
+    public static Double[] box(double[] array) {
+        var box = new Double[array.length];
+
+        for (var i = 0; i < array.length; i++) {
+            box[i] = array[i];
+        }
+
+        return box;
     }
 }
