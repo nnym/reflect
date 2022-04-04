@@ -6,12 +6,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class Util {
-    public static int repetitions = 10000;
-
-    public static <T> T nul() {
-        return null;
-    }
-
     public static void bp() {}
 
     public static <T> T last(List<T> list) {
@@ -36,10 +30,6 @@ public class Util {
 
     public static boolean equals(Object... objects) {
         return Stream.of(objects).skip(1).allMatch(objects[0]::equals);
-    }
-
-    public static void repeat(Runnable test) {
-        repeat(repetitions, test);
     }
 
     public static void repeat(int repetitions, Runnable test) {

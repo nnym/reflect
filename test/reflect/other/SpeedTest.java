@@ -3,14 +3,10 @@ package reflect.other;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
-import net.auoeke.reflect.Types;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -26,10 +22,11 @@ import reflect.util.Util;
 @Testable
 public class SpeedTest {
     static final int tests = 1;
-    static int iterations = 1000;
+    static int iterations = 10000;
     static Runnable runnable0;
     static Runnable runnable1;
     static List<Field> fields;
+    static boolean boolea;
 
     static long mean(Runnable test) {
         return mean(true, null, test);
@@ -160,30 +157,9 @@ public class SpeedTest {
     }
 
     @Test
-    void reflectField() {
-        Fields.direct(TestObject.class);
-        time("cache ", () -> Fields.of(TestObject.class));
-
-        mean("cached         ", () -> fields = Fields.of(TestObject.class).toList());
-        mean("uncached stream", () -> fields = Stream.of(Fields.direct(TestObject.class)).toList());
-        mean("all            ", () -> Fields.all(TestObject.class).toList());
-        mean("raw            ", () -> Fields.direct(TestObject.class));
-    }
-
-    @Test
     void instantiation() {
         mean("constructor", () -> new ArrayList<>());
         mean("Unsafe", () -> Unsafe.allocateInstance(ArrayList.class));
-    }
-
-    @Test
-    void clon() {
-        var a = new A();
-
-        mean("clone         ", a::clone);
-        mean("copy <init>   ", () -> new A(a));
-        mean("copy          ", a::copy);
-        mean("Accessor.clone", () -> Accessor.clone(a));
     }
 
     @Test
@@ -206,13 +182,6 @@ public class SpeedTest {
     }
 
     @Test
-    void newInvokerUnreflect() {
-        // timeN("new", () -> Invoker.unreflect2(A.class, "privateMethod"));
-
-        mean("old", () -> Invoker.unreflect(A.class, "privateMethod"));
-    }
-
-    @Test
     void method() {
         mean(() -> Methods.of(TestObject.class));
         mean(ReflectTest.class::getDeclaredMethods);
@@ -230,13 +199,13 @@ public class SpeedTest {
 
     @Test
     void cast() {
-        mean("checkcast", () -> {ReflectTest test = Util.nul();});
-        mean("Class#cast", () -> {ReflectTest test = ReflectTest.class.cast(Util.nul());});
+        mean("checkcast", () -> {ReflectTest test = null;});
+        mean("Class#cast", () -> {var test = ReflectTest.class.cast(null);});
     }
 
     @Test
     void stringChars() {
-        String string = "a".repeat(10000);
+        var string = "a".repeat(10000);
 
         Logger.log("array");
         mean("toCharArray", string::toCharArray);
@@ -257,20 +226,14 @@ public class SpeedTest {
     void typeCheck() {
         enum Type {INT, DOUBLE}
         record BoxRecord(Type type) {}
-        abstract class BoxClass {}
-        class IntBox extends BoxClass {int i;}
-        class DoubleBox extends BoxClass {double d;}
         BoxClass b = new IntBox();
-        BoxRecord r = new BoxRecord(Type.INT);
+        var r = new BoxRecord(Type.INT);
 
-        mean("instanceof", Util.voidify(() -> b instanceof DoubleBox));
-        mean("enum", Util.voidify(() -> r.type() == Type.DOUBLE));
+        mean("enum", () -> {boolea = r.type() == Type.DOUBLE;});
+        mean("instanceof", () -> {boolea = b instanceof DoubleBox;});
     }
 
-    @Test
-    void box() {
-        var array = IntStream.range(0, 1000).toArray();
-        Types.box(array);
-        time(() -> Types.box(array));
-    }
+    abstract sealed class BoxClass permits IntBox, DoubleBox {}
+    final class IntBox extends BoxClass {int i;}
+    final class DoubleBox extends BoxClass {double d;}
 }

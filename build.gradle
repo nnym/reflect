@@ -2,6 +2,7 @@ plugins {
     id("maven-publish")
     id("java-library")
     id("gronk").version("latest.release")
+    id("me.champeau.jmh").version("latest.release")
 }
 
 group("net.auoeke")
@@ -9,8 +10,14 @@ version("5.0.0")
 
 javaVersion(17)
 
+sourceSets {
+    jmh {
+        java.srcDirs = ["benchmark"]
+    }
+}
+
 configurations {
-    testAnnotationProcessor {
+    [jmhAnnotationProcessor, testAnnotationProcessor]*.tap {
         extendsFrom(annotationProcessor)
     }
 }
@@ -31,7 +38,14 @@ dependencies {
 }
 
 compileTestJava {
+    options.release.set(JavaVersion.current().majorVersion as int)
     options.compilerArgs << "--enable-preview"
+}
+
+jmh {
+    fork = 1
+    warmup = "500ms"
+    timeOnIteration = "300ms"
 }
 
 test {
