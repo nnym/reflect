@@ -3,7 +3,6 @@ package reflect.experimental;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import net.auoeke.reflect.Constructors;
 import net.auoeke.reflect.Invoker;
 
 public class ReflectionFactory {
@@ -22,7 +21,7 @@ public class ReflectionFactory {
     }
 
     static {
-        var field$init = Invoker.unreflectConstructor(Constructors.direct(Field.class)[0]);
+        var field$init = Invoker.unreflectConstructor(Field.class.getDeclaredConstructors()[0]);
         field = field$init.type().parameterCount() == 8 ? MethodHandles.insertArguments(field$init, 4, false) : field$init;
     }
 }
