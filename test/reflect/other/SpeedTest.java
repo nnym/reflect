@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.ReflectTest;
 import reflect.util.Logger;
-import reflect.util.Util;
 
 @SuppressWarnings("ALL")
 @Disabled
@@ -18,15 +17,7 @@ public class SpeedTest {
     static Runnable runnable1;
     static boolean boolea;
 
-    static long mean(Runnable test) {
-        return mean(true, null, test);
-    }
-
     static long mean(String label, Runnable test) {
-        return mean(true, label, test);
-    }
-
-    static long mean(boolean loud, String label, Runnable test) {
         long time = System.nanoTime();
 
         for (int i = 0; i < iterations; i++) {
@@ -35,81 +26,29 @@ public class SpeedTest {
 
         long duration = Math.round((double) (System.nanoTime() - time) / iterations);
 
-        if (loud) {
-            if (label == null) {
-                Logger.log(duration);
-            } else {
-                Logger.log("%s: %s", label, duration);
-            }
+        if (label == null) {
+            Logger.log(duration);
+        } else {
+            Logger.log("%s: %s", label, duration);
         }
 
         return duration;
     }
 
-    static long time(Runnable test) {
-        return time(true, null, test);
-    }
-
     static long time(String label, Runnable test) {
-        return time(true, label, test);
-    }
-
-    static long time(boolean loud, Runnable test) {
-        return time(loud, null, test);
-    }
-
-    static long time(boolean loud, String label, Runnable test) {
         long time = System.nanoTime();
 
         test.run();
 
         time = System.nanoTime() - time;
 
-        if (loud) {
-            if (label == null) {
-                Logger.log(time);
-            } else {
-                Logger.log("%s: %s", label, time);
-            }
+        if (label == null) {
+            Logger.log(time);
+        } else {
+            Logger.log("%s: %s", label, time);
         }
 
         return time;
-    }
-
-    static long total(Runnable test) {
-        return total(true, null, test);
-    }
-
-    static long total(String label, Runnable test) {
-        return total(true, label, test);
-    }
-
-    static long total(boolean loud, Runnable test) {
-        return total(loud, null, test);
-    }
-
-    static long total(boolean loud, String label, Runnable test) {
-        long time = System.nanoTime();
-
-        for (int i = 0; i < iterations; i++) {
-            test.run();
-        }
-
-        time = System.nanoTime() - time;
-
-        if (loud) {
-            if (label == null) {
-                Logger.log(time);
-            } else {
-                Logger.log("%s: %s", label, time);
-            }
-        }
-
-        return time;
-    }
-
-    static void times(int iterations, Runnable action) {
-        Util.with(iterations, SpeedTest.iterations, i -> SpeedTest.iterations = i, action);
     }
 
     @Test void instantiation() {
