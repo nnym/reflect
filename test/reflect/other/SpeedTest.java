@@ -1,14 +1,11 @@
 package reflect.other;
 
 import java.util.ArrayList;
-import net.auoeke.reflect.Invoker;
-import net.auoeke.reflect.Methods;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.ReflectTest;
-import reflect.misc.A;
 import reflect.util.Logger;
 import reflect.util.Util;
 
@@ -115,37 +112,9 @@ public class SpeedTest {
         Util.with(iterations, SpeedTest.iterations, i -> SpeedTest.iterations = i, action);
     }
 
-    @Test void invoker() {
-        var object = new Object();
-
-        var handle = Invoker.findVirtual(Object.class, "hashCode", int.class);
-        time(() -> handle.invokeExact(object));
-
-        var method = Object.class.getMethod("hashCode");
-        time(() -> method.invoke(object));
-    }
-
     @Test void instantiation() {
         mean("constructor", () -> new ArrayList<>());
         mean("Unsafe", () -> Unsafe.allocateInstance(ArrayList.class));
-    }
-
-    @Test void unreflect() {
-        var method = Methods.of(A.class, "privateMethod");
-        var declaredMethod = A.class.getDeclaredMethod("privateMethod");
-        var methodHandle = Invoker.findStatic(A.class, "privateMethod", String.class);
-        var unreflected = Invoker.unreflect(method);
-
-        mean("Method 0", () -> Methods.of(A.class, "privateMethod2", int.class));
-        mean("Method 1", () -> Methods.of(A.class, "privateMethod"));
-
-        mean("Method 2", () -> {
-            var method1 = A.class.getDeclaredMethod("privateMethod");
-            method1.setAccessible(true);
-        });
-
-        mean("MethodHandle#unreflect ", () -> Invoker.unreflect(declaredMethod));
-        mean("MethodHandle#findStatic", () -> Invoker.findStatic(A.class, "privateMethod", String.class));
     }
 
     @SuppressWarnings("Convert2Lambda")
