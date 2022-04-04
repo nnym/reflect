@@ -103,17 +103,7 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static Pointer enumArray(Class<?> type) {
-        return arrayFields.computeIfAbsent(type, t -> {
-            for (var field : Fields.direct(t)) {
-                if (isValueField(field)) {
-                    t.getEnumConstants();
-
-                    return Pointer.of(field);
-                }
-            }
-
-            return null;
-        });
+        return arrayFields.computeIfAbsent(type, t -> Fields.of(t).filter(EnumConstructor::isValueField).peek(field -> field.getDeclaringClass().getEnumConstants()).findFirst().map(Pointer::of).orElse(null));
     }
 
     public static boolean isValueField(Field field) {
