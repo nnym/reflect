@@ -2,7 +2,6 @@ package reflect.util;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class Util {
@@ -38,10 +37,6 @@ public class Util {
         }
     }
 
-    public static Runnable voidify(Supplier<?> supplier) {
-        return supplier::get;
-    }
-
     public static String buildString(Object initial, Consumer<StringBuilder> consumer) {
         var builder = new StringBuilder(String.valueOf(initial));
         consumer.accept(builder);
@@ -51,11 +46,5 @@ public class Util {
 
     public static String buildString(Consumer<StringBuilder> consumer) {
         return buildString("", consumer);
-    }
-
-    public static <T> void with(T value, T current, Consumer<? super T> set, Runnable action) {
-        set.accept(value);
-        action.run();
-        set.accept(current);
     }
 }
