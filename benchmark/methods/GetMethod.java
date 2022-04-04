@@ -28,4 +28,8 @@ public class GetMethod {
     @Benchmark public void getDeclaredMethod() {
         A.class.getDeclaredMethod("privateMethod");
     }
+
+    @Benchmark public void getDeclaredMethodWithParameter() {
+        A.class.getDeclaredMethod("privateMethod2", int.class);
+    }
 }

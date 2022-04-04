@@ -11,8 +11,12 @@ public class Invoke {
     static final MethodHandle handle = Invoker.findVirtual(Object.class, "hashCode", int.class);
     static final Method method = Object.class.getMethod("hashCode");
 
-    @Benchmark public void handle() {
+    @Benchmark public void handleExact() {
         var i = (int) handle.invokeExact(object);
+    }
+
+    @Benchmark public void handle() {
+        var i = (int) handle.invoke(object);
     }
 
     @Benchmark public void method() {
