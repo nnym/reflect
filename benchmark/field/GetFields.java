@@ -11,7 +11,7 @@ public class GetFields {
         Arrays.asList(Fields.direct(TestObject.class));
     }
 
-    @Benchmark public void cached() {
+    @Benchmark public void of() {
         Fields.of(TestObject.class).toList();
     }
 
@@ -19,7 +19,11 @@ public class GetFields {
         Stream.of(Fields.direct(TestObject.class)).toList();
     }
 
-    @Benchmark public void allFields() {
+    @Benchmark public void all() {
         Fields.all(TestObject.class).toList();
+    }
+
+    @Benchmark public void getDeclaredFields() {
+        TestObject.class.getDeclaredFields();
     }
 }

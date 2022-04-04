@@ -1,10 +1,6 @@
 package reflect.other;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
-import net.auoeke.reflect.Fields;
-import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.gudenau.lib.unsafe.Unsafe;
@@ -13,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.ReflectTest;
 import reflect.misc.A;
-import reflect.misc.TestObject;
 import reflect.util.Logger;
 import reflect.util.Util;
 
@@ -21,11 +16,9 @@ import reflect.util.Util;
 @Disabled
 @Testable
 public class SpeedTest {
-    static final int tests = 1;
     static int iterations = 10000;
     static Runnable runnable0;
     static Runnable runnable1;
-    static List<Field> fields;
     static boolean boolea;
 
     static long mean(Runnable test) {
@@ -48,7 +41,9 @@ public class SpeedTest {
         if (loud) {
             if (label == null) {
                 Logger.log(duration);
-            } else Logger.log("%s: %s", label, duration);
+            } else {
+                Logger.log("%s: %s", label, duration);
+            }
         }
 
         return duration;
@@ -76,7 +71,9 @@ public class SpeedTest {
         if (loud) {
             if (label == null) {
                 Logger.log(time);
-            } else Logger.log("%s: %s", label, time);
+            } else {
+                Logger.log("%s: %s", label, time);
+            }
         }
 
         return time;
@@ -106,7 +103,9 @@ public class SpeedTest {
         if (loud) {
             if (label == null) {
                 Logger.log(time);
-            } else Logger.log("%s: %s", label, time);
+            } else {
+                Logger.log("%s: %s", label, time);
+            }
         }
 
         return time;
@@ -116,54 +115,22 @@ public class SpeedTest {
         Util.with(iterations, SpeedTest.iterations, i -> SpeedTest.iterations = i, action);
     }
 
-    @Test
-    void invoker() {
+    @Test void invoker() {
         var object = new Object();
-        var start = System.nanoTime();
+
         var handle = Invoker.findVirtual(Object.class, "hashCode", int.class);
-
-        for (int i = 0; i < iterations; i++) {
-            int code = (int) handle.invokeExact(object);
-        }
-
-        System.out.println(System.nanoTime() - start);
-        start = System.nanoTime();
+        time(() -> handle.invokeExact(object));
 
         var method = Object.class.getMethod("hashCode");
-
-        for (int i = 0; i < iterations; i++) {
-            int code = (int) method.invoke(object);
-        }
-
-        System.out.println(System.nanoTime() - start);
+        time(() -> method.invoke(object));
     }
 
-    @Test
-    void normalField() {
-        Runnable test = () -> {
-            var field = TestObject.class.getDeclaredField("integer");
-            field.setAccessible(true);
-
-            var modifiers = Fields.of(Field.class, "modifiers");
-            Unsafe.putBoolean(modifiers, Fields.overrideOffset, true);
-            modifiers.setInt(field, Flags.remove(field, Flags.FINAL));
-        };
-
-        time(test);
-        time(test);
-        time(test);
-        time(test);
-        time(test);
-    }
-
-    @Test
-    void instantiation() {
+    @Test void instantiation() {
         mean("constructor", () -> new ArrayList<>());
         mean("Unsafe", () -> Unsafe.allocateInstance(ArrayList.class));
     }
 
-    @Test
-    public void unreflect() {
+    @Test void unreflect() {
         var method = Methods.of(A.class, "privateMethod");
         var declaredMethod = A.class.getDeclaredMethod("privateMethod");
         var methodHandle = Invoker.findStatic(A.class, "privateMethod", String.class);
@@ -181,15 +148,8 @@ public class SpeedTest {
         mean("MethodHandle#findStatic", () -> Invoker.findStatic(A.class, "privateMethod", String.class));
     }
 
-    @Test
-    void method() {
-        mean(() -> Methods.of(TestObject.class));
-        mean(ReflectTest.class::getDeclaredMethods);
-    }
-
     @SuppressWarnings("Convert2Lambda")
-    @Test
-    void lambda() {
+    @Test void lambda() {
         time("anonymous class", () -> runnable0 = new Runnable() {
             @Override public void run() {}
         });
@@ -197,14 +157,12 @@ public class SpeedTest {
         time("lambda", () -> runnable1 = () -> {});
     }
 
-    @Test
-    void cast() {
+    @Test void cast() {
         mean("checkcast", () -> {ReflectTest test = null;});
         mean("Class#cast", () -> {var test = ReflectTest.class.cast(null);});
     }
 
-    @Test
-    void stringChars() {
+    @Test void stringChars() {
         var string = "a".repeat(10000);
 
         Logger.log("array");
@@ -222,8 +180,7 @@ public class SpeedTest {
         });
     }
 
-    @Test
-    void typeCheck() {
+    @Test void typeCheck() {
         enum Type {INT, DOUBLE}
         record BoxRecord(Type type) {}
         BoxClass b = new IntBox();
