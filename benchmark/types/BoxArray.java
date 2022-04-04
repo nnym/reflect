@@ -4,10 +4,10 @@ import java.util.stream.IntStream;
 import net.auoeke.reflect.Types;
 import org.openjdk.jmh.annotations.Benchmark;
 
-public class UnboxArray {
+public class BoxArray {
     static final int[] array = IntStream.range(0, 1000).toArray();
 
-    @Benchmark public void oldObjectBox() {
+    @Benchmark public void reflectiveBox() {
         Types.convert(array, Types.box(array.getClass().componentType()));
     }
 
