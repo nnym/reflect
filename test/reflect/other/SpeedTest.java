@@ -5,7 +5,6 @@ import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import reflect.ReflectTest;
 import reflect.util.Logger;
 
 @SuppressWarnings("ALL")
@@ -66,8 +65,8 @@ public class SpeedTest {
     }
 
     @Test void cast() {
-        mean("checkcast", () -> {ReflectTest test = null;});
-        mean("Class#cast", () -> {var test = ReflectTest.class.cast(null);});
+        mean("checkcast", () -> {SpeedTest test = null;});
+        mean("Class#cast", () -> {var test = SpeedTest.class.cast(null);});
     }
 
     @Test void stringChars() {

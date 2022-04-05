@@ -13,11 +13,9 @@ import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Pointer;
-import net.auoeke.reflect.Reflect;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import reflect.ReflectTest;
 
 @SuppressWarnings("AccessStaticViaInstance")
 @Testable
@@ -31,14 +29,14 @@ public class ClassesTests extends Classes {
 
         Classes.reinterpret(loong, Double.class);
 
-        var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ReflectTest.class);
-        assert object.getClass() == (object = Unsafe.allocateInstance(ReflectTest.class)).getClass();
-        assert object.getClass() == Classes.reinterpret(object, ReflectTest.class).getClass();
-        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ReflectTest()).getClass() == ReflectTest.class;
+        var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ClassesTests.class);
+        assert object.getClass() == (object = Unsafe.allocateInstance(ClassesTests.class)).getClass();
+        assert object.getClass() == Classes.reinterpret(object, ClassesTests.class).getClass();
+        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ClassesTests()).getClass() == ClassesTests.class;
     }
 
     @Test void classes() {
-        var classPath = classPath(ReflectTest.class.getClassLoader());
+        var classPath = classPath(ClassesTests.class.getClassLoader());
         var url = Path.of("test").toUri().toURL();
         addURL(classPath, url);
         assert List.of(urls(classPath)).contains(url);
@@ -59,12 +57,12 @@ public class ClassesTests extends Classes {
         var doNotInitialize = ClassDefiner.make().loader(new ClassLoader() {}).classFile("test/DoNotInitialize").define();
         var u = Pointer.of(sb, "u");
 
-        Assert.equal(u.getReference(), null)
+        Assert.equal(u.get(), null)
             .equalBy(type -> type.getProtectionDomain().getCodeSource(), s, sb, Test.class)
             .equalBy(Class::getName, Test.class, b, bb, s, sb)
             .distinctBy(Class::getProtectionDomain, s, sb, Test.class)
             .distinct(Test.class, b, bb, s, sb)
-            .distinct(Stream.concat(Stream.of(null, Test.u), Stream.of(b, bb, s, initialize(sb)).map(u::getReference)).toArray())
+            .distinct(Stream.concat(Stream.of(null, Test.u), Stream.of(b, bb, s, initialize(sb)).map(u::get)).toArray())
             .exception("java.* packages are restricted", () -> ClassDefiner.make().loader(new SecureClassLoader() {}).from(UUID.class).unsafe().define());
     }
 

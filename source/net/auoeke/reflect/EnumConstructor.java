@@ -74,14 +74,14 @@ public class EnumConstructor<E extends Enum<E>> {
     }
 
     public static <E extends Enum<E>> E add(Class<E> type, E enumConstant) {
-        var enumArrayPointer = enumArray(type);
-        E[] values = enumArrayPointer.getT();
+        var enumArray = enumArray(type);
+        E[] values = enumArray.getT();
         var newValues = Arrays.copyOf(values, values.length + 1);
         newValues[values.length] = enumConstant;
 
-        enumArrayPointer.putReference(newValues);
-        enumConstants.putReference(getEnumVars == null ? type : getEnumVars.invoke(type), newValues);
-        enumConstantDirectory.putReference(getEnumVars == null ? type : getEnumVars.invoke(type), null);
+        enumArray.put(newValues);
+        enumConstants.put(getEnumVars == null ? type : getEnumVars.invoke(type), newValues);
+        enumConstantDirectory.put(getEnumVars == null ? type : getEnumVars.invoke(type), null);
 
         return enumConstant;
     }

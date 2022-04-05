@@ -56,7 +56,7 @@ public class Methods {
      @return the array containing the type's declared methods
      */
     public static Method[] direct(Class<?> type) {
-        return (Method[]) getDeclaredMethods.invokeExact(type);
+        return (Method[]) getDeclaredMethods.invoke(type);
     }
 
     /**

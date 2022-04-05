@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
- A reference to a datum at an offset from a type or an object.
+ An immutable reference to a datum at an offset from a type or an object.
  <p>
  A pointer can be constructed by one of {@link #of the factory methods} or the constructor.
  Pointers acquired directly from the constructor require configuration before use.
@@ -16,6 +16,7 @@ import net.gudenau.lib.unsafe.Unsafe;
 public class Pointer implements Cloneable {
     /** @since 4.10.0 */
     public static final int
+        UNKNOWN = -1,
         BOOLEAN = 0,
         BYTE = 1,
         CHAR = 2,
@@ -32,206 +33,217 @@ public class Pointer implements Cloneable {
      */
     public static final int REFERENCE = 8;
 
-    public Object object;
-    public long offset;
+    /**
+     The object that will be used as the default base in lookups and mutations.
+     */
+    public final Object base;
 
-    protected int type = -1;
+    /**
+     The offset of the target from the {@link #base}.
+     */
+    public final long offset;
+
+    /**
+     The type of the this pointer's target for {@link #get} and {@link #put}. May be one of
+     {@link #UNKNOWN},
+     {@link #BOOLEAN},
+     {@link #BYTE},
+     {@link #CHAR},
+     {@link #SHORT},
+     {@link #INT},
+     {@link #LONG},
+     {@link #FLOAT},
+     {@link #DOUBLE} and
+     {@link #REFERENCE}.
+
+     @see #type(int)
+     @since 4.10.0
+     */
+    public final int type;
+
+    protected Pointer(Object base, long offset, int type) {
+        this.base = base;
+        this.offset = offset;
+        this.type = type;
+    }
+
+    /**
+     Construct a pointer to a target of a known type located at an offset from a base.
+
+     @param base the {@link #base} of the pointer's target
+     @param offset the target's {@link #offset} from its {@code base}
+     @param type the target's {@link #type}
+     @return a new pointer with the provided {@code base}, {@code offset} and {@code type}
+     @throws IllegalArgumentException if {@code type} is not valid
+     @since 5.0.0
+     */
+    public static Pointer of(Object base, long offset, int type) {
+        if (type < UNKNOWN || type > REFERENCE) {
+            throw new IllegalArgumentException(Integer.toString(type));
+        }
+
+        return new Pointer(base, offset, type);
+    }
+
+    /**
+     Construct a pointer to a target of a known type located at an offset from a base.
+
+     @param base the {@link #base} of the pointer's target
+     @param offset the target's {@link #offset} from its {@code base}
+     @param type the target's {@link #type}
+     @return a new pointer with the provided {@code base}, {@code offset} and {@code type}
+     @since 5.0.0
+     */
+    public static Pointer of(Object base, long offset, Class<?> type) {
+        return new Pointer(base, offset, typeID(type));
+    }
+
+    /**
+     Construct a pointer to a target of an unknown type located at an offset from a base.
+
+     @param base the {@link #base} of the pointer's target
+     @param offset the target's {@link #offset} from its {@code base}
+     @return a new pointer with the provided {@code base} and {@code offset}
+     @since 5.0.0
+     */
+    public static Pointer of(Object base, long offset) {
+        return new Pointer(base, offset, UNKNOWN);
+    }
+
+    private static Pointer of(Object instance, Field field) {
+        return of(Flags.isStatic(field) ? field.getDeclaringClass() : instance, Fields.offset(field), field.getType());
+    }
 
     /**
      Construct a pointer to a field.
 
-     @return the pointer
+     @param field a field
+     @return a new pointer to the field
      @since 4.6.0
      */
     public static Pointer of(Field field) {
-        return new Pointer().field(field);
+        return of(null, field);
     }
 
     /**
-     Construct a pointer to a named field in a given type.
+     Construct a pointer to a named field in a given type. If the field is static, then also {@link #bind} its declaring type.
 
      @param type the field's declaring type
      @param field the field's name
-     @return the pointer
+     @return a new pointer to the field
      @since 4.6.0
      */
     public static Pointer of(Class<?> type, String field) {
-        return new Pointer().field(type, field);
+        return of(null, Fields.of(type, field));
     }
 
     /**
-     Construct a pointer to a named field bound to an object. The
+     Construct a pointer to a named field in an object.
 
-     @param object this pointer's new base
+     @param object the pointer's base
      @param field the name of a field of {@code object}
      @return a new pointer bound to {@code object} and pointing at the first field {@code field} therein
      @since 4.10.0
      */
     public static Pointer of(Object object, String field) {
-        return new Pointer().field(object, field);
+        return of(object, Fields.of(object, field));
     }
 
     /**
-     Construct an identical copy of {@code this}.
+     Clone the pointer.
 
-     @return a new pointer with the same properties as {@code this}
+     @return an identical copy of this pointer
      */
     @Override public Pointer clone() {
-        var clone = new Pointer();
-        clone.object = this.object;
-        clone.offset = this.offset;
-        clone.type = this.type;
-
-        return clone;
+        return new Pointer(this.base, this.offset, this.type);
     }
 
     /**
-     Store a default object that will be used as the base of future lookups and mutations.
+     Fork the pointer with a custom {@link #base}.
 
-     @param object the object that will be used as the base of future lookups and mutations
-     @return {@code this}
+     @param base the base of the new pointer
+     @return a copy of this pointer with the specified {@code base}
      */
-    public Pointer bind(Object object) {
-        this.object = object;
-
-        return this;
+    public Pointer bind(Object base) {
+        return new Pointer(base, this.offset, this.type);
     }
 
     /**
-     Set the offset of the this pointer's target from its {@link #bind base object}.
+     Fork the pointer with a custom {@link #offset}.
 
-     @param offset the offset of the this pointer's target from its base
-     @return {@code this}
+     @param offset the offset of the new pointer's target from its base
+     @return a copy of this pointer with the specified {@code offset}
      */
     public Pointer offset(long offset) {
-        this.offset = offset;
-
-        return this;
+        return new Pointer(this.base, offset, this.type);
     }
 
     /**
-     Set the type of the this pointer's target for {@link #get} and {@link #put}.
+     Fork this pointer with a custom {@link #type}.
 
-     @param type the type of the this pointer's target (see below for valid values)
-     @return {@code this}
-     @throws IllegalArgumentException if {@code type} is not valid (@see below)
-     @see #BOOLEAN
-     @see #BYTE
-     @see #CHAR
-     @see #SHORT
-     @see #INT
-     @see #LONG
-     @see #FLOAT
-     @see #DOUBLE
-     @see #REFERENCE
+     @param type the type of the new pointer's target
+     @return a copy of this pointer with the specified {@code type}
+     @throws IllegalArgumentException if {@code type} is not valid
+     @see #type
      @since 4.10.0
      */
     public Pointer type(int type) {
-        if (type < BOOLEAN || type > REFERENCE) {
-            throw new IllegalArgumentException(Integer.toString(type));
-        }
-
-        this.type = type;
-
-        return this;
+        return of(this.base, this.offset, type);
     }
 
     /**
-     Set the type of the this pointer's target for {@link #get} and {@link #put}.
+     Fork this pointer with a custom {@link #type}.
 
      @param type the type of the this pointer's target
-     @return {@code this}
-     @see #type(int)
+     @return a copy of this pointer with the specified {@code type}
      @since 4.10.0
      */
     public Pointer type(Class<?> type) {
-        // @formatter:off
-        return this.type(
-            type == boolean.class ? BOOLEAN
-            : type == byte.class ? BYTE
-            : type == char.class ? CHAR
-            : type == short.class ? SHORT
-            : type == int.class ? INT
-            : type == long.class ? LONG
-            : type == float.class ? FLOAT
-            : type == double.class ? DOUBLE
-            : REFERENCE
-        );
-        // @formatter:on
+        return of(this.base, this.offset, type);
     }
 
     /**
-     Get the type of the this pointer's target.
+     Fork the pointer with {@link #offset(long) offset} and {@link #type(int) type} derived from a field.
 
-     @return the type of this pointer's target if intitialized or else -1
-     @see #type(int)
-     @since 4.10.0
-     */
-    public int type() {
-        return this.type;
-    }
-
-    /**
-     Derive {@link #offset(long) offset} and {@link #type(int) type} for this pointer from a field.
-
-     @param field a field wherefrom to derive this pointer's offset
-     @return {@code this}
+     @param field a field wherefrom to derive the pointer's offset
+     @return a new pointer with the same {@link #base} and {@link #offset} and {@link #type} derived from the field
      @since 4.10.0
      */
     public Pointer field(Field field) {
-        this.offset(Fields.offset(field));
-
-        if (Flags.isStatic(field)) {
-            this.bind(field.getDeclaringClass());
-        }
-
-        return this.type(field.getType());
+        return of(this.base, field);
     }
 
     /**
-     Derive {@link #offset(long) offset} and {@link #type(int) type} for this pointer from a named field in a given type.
-     If the field is static, then also bind the type.
+     Fork the pointer with {@link #offset(long) offset} and {@link #type(int) type} derived from a field.
 
-     @param type a type
-     @param name the name of a field declared by {@code type}
-     @return {@code this}
+     @param type the field's declaring type
+     @param name the field's name
+     @return a new pointer with the same {@link #base} and {@link #offset} and {@link #type} derived from the field
      @since 4.10.0
      */
     public Pointer field(Class<?> type, String name) {
-        return this.field(Fields.of(type, name));
+        return of(this.base, Fields.of(type, name));
     }
 
     /**
-     Derive {@link #offset(long) offset} and {@link #type(int) type} for this pointer from a named field in an object and bind the object.
-     If multiple fields with the same name are found, then the field of the most derived type is used.
-
-     @param object an object
-     @param name the name of a field in {@code object}
-     @return {@code this}
-     @since 4.10.0
-     */
-    public Pointer field(Object object, String name) {
-        return this.bind(object).instanceField(name);
-    }
-
-    /**
-     Derive {@link #offset(long) offset} and {@link #type(int) type} for this pointer from a field declared by this pointer's bound type.
+     Fork the pointer with {@link #offset(long) offset} and {@link #type(int) type} derived from a static field declared by its {@link #base} type.
 
      @param name the name of a field declared by this pointer's bound type
-     @return {@code this}
+     @return a new pointer with the same {@link #base} and {@link #offset} and {@link #type} derived from the field
+     @throws ClassCastException if {@link #base} is not a {@link Class}
      */
     public Pointer staticField(String name) {
-        return this.field(Fields.of((Class<?>) this.object, name));
+        return of(null, Fields.of((Class<?>) this.base, name));
     }
 
     /**
-     Derive {@link #offset(long) offset} and {@link #type(int) type} for this pointer from a field in this pointer's bound object.
+     Fork the pointer with {@link #offset(long) offset} and {@link #type(int) type} derived from a field in its {@link #base}.
 
-     @param name the name of a field in this pointer's bound object
-     @return {@code this}
+     @param name the name of a field in this pointer's base object
+     @return a new pointer with the same {@link #base} and {@link #offset} and {@link #type} derived from the field
      */
     public Pointer instanceField(String name) {
-        return this.field(Fields.of(this.object, name));
+        return of(this.base, Fields.of(this.base, name));
     }
 
     /**
@@ -239,8 +251,8 @@ public class Pointer implements Cloneable {
 
      @return the value of this pointer's target in its object
      @throws IllegalStateException if {@link #type} is not valid
+     @see #type
      @since 4.10.0
-     @see #type(int)
      */
     public Object get() {
         return switch (this.type) {
@@ -289,15 +301,15 @@ public class Pointer implements Cloneable {
      */
     public void put(Object value) {
         switch (this.type) {
-            case BOOLEAN -> this.putBoolean(this.object, (boolean) value);
-            case BYTE -> this.putByte(this.object, (byte) value);
-            case CHAR -> this.putChar(this.object, (char) value);
-            case SHORT -> this.putShort(this.object, (short) value);
-            case INT -> this.putInt(this.object, (int) value);
-            case LONG -> this.putLong(this.object, (long) value);
-            case FLOAT -> this.putFloat(this.object, (float) value);
-            case DOUBLE -> this.putDouble(this.object, (double) value);
-            case REFERENCE -> this.putReference(this.object, value);
+            case BOOLEAN -> this.putBoolean(this.base, (boolean) value);
+            case BYTE -> this.putByte(this.base, (byte) value);
+            case CHAR -> this.putChar(this.base, (char) value);
+            case SHORT -> this.putShort(this.base, (short) value);
+            case INT -> this.putInt(this.base, (int) value);
+            case LONG -> this.putLong(this.base, (long) value);
+            case FLOAT -> this.putFloat(this.base, (float) value);
+            case DOUBLE -> this.putDouble(this.base, (double) value);
+            case REFERENCE -> this.putReference(this.base, value);
             default -> throw new IllegalStateException("type is not set");
         } ;
     }
@@ -326,7 +338,7 @@ public class Pointer implements Cloneable {
     }
 
     public <T> T getT() {
-        return Unsafe.getReference(this.object, this.offset);
+        return Unsafe.getReference(this.base, this.offset);
     }
 
     public <T> T getT(Object object) {
@@ -334,7 +346,7 @@ public class Pointer implements Cloneable {
     }
 
     public Object getReference() {
-        return Unsafe.getReference(this.object, this.offset);
+        return Unsafe.getReference(this.base, this.offset);
     }
 
     public Object getReference(Object object) {
@@ -346,11 +358,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putReference(Object value) {
-        Unsafe.putReference(this.object, this.offset, value);
+        Unsafe.putReference(this.base, this.offset, value);
     }
 
     public boolean getBoolean() {
-        return Unsafe.getBoolean(this.object, this.offset);
+        return Unsafe.getBoolean(this.base, this.offset);
     }
 
     public boolean getBoolean(Object object) {
@@ -358,7 +370,7 @@ public class Pointer implements Cloneable {
     }
 
     public void putBoolean(boolean value) {
-        Unsafe.putBoolean(this.object, this.offset, value);
+        Unsafe.putBoolean(this.base, this.offset, value);
     }
 
     public void putBoolean(Object object, boolean value) {
@@ -366,7 +378,7 @@ public class Pointer implements Cloneable {
     }
 
     public byte getByte() {
-        return Unsafe.getByte(this.object, this.offset);
+        return Unsafe.getByte(this.base, this.offset);
     }
 
     public byte getByte(Object object) {
@@ -378,11 +390,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putByte(byte value) {
-        Unsafe.putByte(this.object, this.offset, value);
+        Unsafe.putByte(this.base, this.offset, value);
     }
 
     public short getShort() {
-        return Unsafe.getShort(this.object, this.offset);
+        return Unsafe.getShort(this.base, this.offset);
     }
 
     public short getShort(Object object) {
@@ -394,11 +406,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putShort(short value) {
-        Unsafe.putShort(this.object, this.offset, value);
+        Unsafe.putShort(this.base, this.offset, value);
     }
 
     public char getChar() {
-        return Unsafe.getChar(this.object, this.offset);
+        return Unsafe.getChar(this.base, this.offset);
     }
 
     public char getChar(Object object) {
@@ -410,11 +422,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putChar(char value) {
-        Unsafe.putChar(this.object, this.offset, value);
+        Unsafe.putChar(this.base, this.offset, value);
     }
 
     public int getInt() {
-        return Unsafe.getInt(this.object, this.offset);
+        return Unsafe.getInt(this.base, this.offset);
     }
 
     public int getInt(Object object) {
@@ -426,11 +438,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putInt(int value) {
-        Unsafe.putInt(this.object, this.offset, value);
+        Unsafe.putInt(this.base, this.offset, value);
     }
 
     public long getLong() {
-        return Unsafe.getLong(this.object, this.offset);
+        return Unsafe.getLong(this.base, this.offset);
     }
 
     public long getLong(Object object) {
@@ -442,11 +454,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putLong(long value) {
-        Unsafe.putLong(this.object, this.offset, value);
+        Unsafe.putLong(this.base, this.offset, value);
     }
 
     public float getFloat() {
-        return Unsafe.getFloat(this.object, this.offset);
+        return Unsafe.getFloat(this.base, this.offset);
     }
 
     public float getFloat(Object object) {
@@ -458,11 +470,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putFloat(float value) {
-        Unsafe.putFloat(this.object, this.offset, value);
+        Unsafe.putFloat(this.base, this.offset, value);
     }
 
     public double getDouble() {
-        return Unsafe.getDouble(this.object, this.offset);
+        return Unsafe.getDouble(this.base, this.offset);
     }
 
     public double getDouble(Object object) {
@@ -474,11 +486,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putDouble(double value) {
-        Unsafe.putDouble(this.object, this.offset, value);
+        Unsafe.putDouble(this.base, this.offset, value);
     }
 
     public <T> T getVolatile() {
-        return Unsafe.getReferenceVolatile(this.object, this.offset);
+        return Unsafe.getReferenceVolatile(this.base, this.offset);
     }
 
     public <T> T getVolatile(Object object) {
@@ -490,11 +502,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putVolatile(Object value) {
-        Unsafe.putReferenceVolatile(this.object, this.offset, value);
+        Unsafe.putReferenceVolatile(this.base, this.offset, value);
     }
 
     public boolean getBooleanVolatile() {
-        return Unsafe.getBooleanVolatile(this.object, this.offset);
+        return Unsafe.getBooleanVolatile(this.base, this.offset);
     }
 
     public boolean getBooleanVolatile(Object object) {
@@ -506,11 +518,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putBooleanVolatile(boolean value) {
-        Unsafe.putBooleanVolatile(this.object, this.offset, value);
+        Unsafe.putBooleanVolatile(this.base, this.offset, value);
     }
 
     public byte getByteVolatile() {
-        return Unsafe.getByteVolatile(this.object, this.offset);
+        return Unsafe.getByteVolatile(this.base, this.offset);
     }
 
     public byte getByteVolatile(Object object) {
@@ -522,11 +534,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putByteVolatile(byte value) {
-        Unsafe.putByteVolatile(this.object, this.offset, value);
+        Unsafe.putByteVolatile(this.base, this.offset, value);
     }
 
     public short getShortVolatile() {
-        return Unsafe.getShortVolatile(this.object, this.offset);
+        return Unsafe.getShortVolatile(this.base, this.offset);
     }
 
     public short getShortVolatile(Object object) {
@@ -538,11 +550,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putShortVolatile(short value) {
-        Unsafe.putShortVolatile(this.object, this.offset, value);
+        Unsafe.putShortVolatile(this.base, this.offset, value);
     }
 
     public char getCharVolatile() {
-        return Unsafe.getCharVolatile(this.object, this.offset);
+        return Unsafe.getCharVolatile(this.base, this.offset);
     }
 
     public char getCharVolatile(Object object) {
@@ -554,11 +566,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putCharVolatile(char value) {
-        Unsafe.putCharVolatile(this.object, this.offset, value);
+        Unsafe.putCharVolatile(this.base, this.offset, value);
     }
 
     public int getIntVolatile() {
-        return Unsafe.getIntVolatile(this.object, this.offset);
+        return Unsafe.getIntVolatile(this.base, this.offset);
     }
 
     public int getIntVolatile(Object object) {
@@ -570,11 +582,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putIntVolatile(int value) {
-        Unsafe.putIntVolatile(this.object, this.offset, value);
+        Unsafe.putIntVolatile(this.base, this.offset, value);
     }
 
     public long getLongVolatile() {
-        return Unsafe.getLongVolatile(this.object, this.offset);
+        return Unsafe.getLongVolatile(this.base, this.offset);
     }
 
     public long getLongVolatile(Object object) {
@@ -586,11 +598,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putLongVolatile(long value) {
-        Unsafe.putLongVolatile(this.object, this.offset, value);
+        Unsafe.putLongVolatile(this.base, this.offset, value);
     }
 
     public float getFloatVolatile() {
-        return Unsafe.getFloatVolatile(this.object, this.offset);
+        return Unsafe.getFloatVolatile(this.base, this.offset);
     }
 
     public float getFloatVolatile(Object object) {
@@ -602,11 +614,11 @@ public class Pointer implements Cloneable {
     }
 
     public void putFloatVolatile(float value) {
-        Unsafe.putFloatVolatile(this.object, this.offset, value);
+        Unsafe.putFloatVolatile(this.base, this.offset, value);
     }
 
     public double getDoubleVolatile() {
-        return Unsafe.getDoubleVolatile(this.object, this.offset);
+        return Unsafe.getDoubleVolatile(this.base, this.offset);
     }
 
     public double getDoubleVolatile(Object object) {
@@ -618,6 +630,18 @@ public class Pointer implements Cloneable {
     }
 
     public void putDoubleVolatile(double value) {
-        Unsafe.putDoubleVolatile(this.object, this.offset, value);
+        Unsafe.putDoubleVolatile(this.base, this.offset, value);
+    }
+
+    private static int typeID(Class<?> type) {
+        return type == boolean.class ? BOOLEAN
+            : type == byte.class ? BYTE
+            : type == char.class ? CHAR
+            : type == short.class ? SHORT
+            : type == int.class ? INT
+            : type == long.class ? LONG
+            : type == float.class ? FLOAT
+            : type == double.class ? DOUBLE
+            : REFERENCE;
     }
 }

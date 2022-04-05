@@ -24,8 +24,8 @@ public class Fields {
     private static final CacheMap<Class<?>, Field[]> instanceFields = CacheMap.identity();
     private static final CacheMap<Class<?>, CacheMap<String, Field>> fieldsByName = CacheMap.identity();
 
-    public static final long modifiersOffset = offset(of(Field.class, "modifiers"));
-    public static final long overrideOffset = offset(of(AccessibleObject.class, "override"));
+    public static final Pointer modifiers = Pointer.of(Field.class, "modifiers");
+    public static final Pointer override = Pointer.of(AccessibleObject.class, "override");
 
     /**
      Compute the offset of a field from its (type or object) base.

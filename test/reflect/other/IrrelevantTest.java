@@ -3,7 +3,6 @@ package reflect.other;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Member;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.auoeke.reflect.Fields;
@@ -11,17 +10,15 @@ import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Reflect;
-import reflect.ReflectTest;
-import reflect.experimental.generics.Generics;
-import reflect.experimental.generics.TypeArgument;
-import reflect.generics.GenericTypeAware;
-import reflect.generics.GenericTypeAwareTest;
-import reflect.util.Logger;
-import reflect.util.Util;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import org.openjdk.jol.info.ClassData;
+import reflect.experimental.generics.Generics;
+import reflect.generics.GenericTypeAware;
+import reflect.generics.GenericTypeAwareTest;
+import reflect.util.Logger;
+import reflect.util.Util;
 
 @Disabled
 @Testable
@@ -36,25 +33,24 @@ public class IrrelevantTest {
 
     @Test
     public void accessFlags() {
-        Class<?> klass = ReflectTest.class;
-        ClassData data = ClassData.parseInstance(klass);
+        var data = ClassData.parseInstance(IrrelevantTest.class);
 
         Util.bp();
     }
 
     @Test
     public void genericMetadata() {
-        Type[] interfaces = GenericTypeAwareTest.class.getGenericInterfaces();
-        Type superclass = GenericTypeAwareTest.class.getGenericSuperclass();
+        var interfaces = GenericTypeAwareTest.class.getGenericInterfaces();
+        var superclass = GenericTypeAwareTest.class.getGenericSuperclass();
         Type[] parameters = GenericTypeAware.class.getTypeParameters();
-        List<TypeArgument> typeArguments = Generics.typeArguments(GenericTypeAwareTest.Sub.Sub1.class);
+        var typeArguments = Generics.typeArguments(GenericTypeAwareTest.Sub.Sub1.class);
 
         Util.bp();
     }
 
     @Test
     public void genericTypeAware() {
-        GenericTypeAwareTest typeAware = new GenericTypeAwareTest();
+        var typeAware = new GenericTypeAwareTest();
 
         Logger.log(typeAware.type);
     }
@@ -66,9 +62,9 @@ public class IrrelevantTest {
 
     @Test
     void visibilities() {
-        Consumer<Function<Class<?>, Member[]>> count = members -> {
-            int pub = 0;
-            int pri = 0;
+        var count = (Consumer<Function<Class<?>, Member[]>>) members -> {
+            var pub = 0;
+            var pri = 0;
 
             for (var type : Reflect.instrument().value().getAllLoadedClasses()) {
                 for (var method : members.apply(type)) {

@@ -1,33 +1,22 @@
-package reflect;
+package test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 import net.auoeke.reflect.Accessor;
-import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Methods;
-import net.auoeke.reflect.Pointer;
-import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import reflect.misc.A;
-import reflect.misc.B;
-import reflect.misc.C;
 import reflect.misc.TestObject;
-import reflect.util.Util;
 
-@SuppressWarnings("FieldMayBeFinal")
 @Testable
-public class ReflectTest {
+public class AccessorTests {
     @Test public void testCopy() {
         var one = new TestObject();
         var two = new TestObject();
-        var fields = Fields.instanceOf(ReflectTest.class).toList();
+        var fields = Fields.instanceOf(AccessorTests.class).toList();
 
         Methods.of(Accessor.class).map(Method::getName).filter(name -> name.startsWith("copy")).forEach(name -> {
             var typeName = name.substring(name.indexOf('y') + 1).toLowerCase();
