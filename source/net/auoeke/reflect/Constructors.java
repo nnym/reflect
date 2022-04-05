@@ -11,17 +11,14 @@ import net.gudenau.lib.unsafe.Unsafe;
  @since 1.4.0
  */
 public class Constructors {
-    private static final CacheMap<Class<?>, Constructor<?>[]> constructors = CacheMap.identity();
-
     /**
-     Return a stream of a type's all constructors.
-     The constructors are cached and shared between callers.
+     Return a stream of a type's constructors.
 
      @param type a type
-     @return a stream containing the type's all constructors
+     @return a stream containing the type's constructors
      */
     public static <T> Stream<Constructor<T>> of(Class<T> type) {
-        return Stream.of((Constructor<T>[]) constructors.computeIfAbsent(type, Class::getDeclaredConstructors));
+        return Stream.of((Constructor<T>[]) type.getDeclaredConstructors());
     }
 
     /**
