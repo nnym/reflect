@@ -34,6 +34,13 @@ public class Pointer implements Cloneable {
     public static final int REFERENCE = 8;
 
     /**
+     An address; a {@code long} that is 4 or 8 bytes long.
+
+     @since 5.0.0
+     */
+    public static final int ADDRESS = 9;
+
+    /**
      The object that will be used as the default base in lookups and mutations.
      */
     public final Object base;
@@ -78,7 +85,7 @@ public class Pointer implements Cloneable {
      @since 5.0.0
      */
     public static Pointer of(Object base, long offset, int type) {
-        if (type < UNKNOWN || type > REFERENCE) {
+        if (type < UNKNOWN || type > ADDRESS) {
             throw new IllegalArgumentException(Integer.toString(type));
         }
 
@@ -108,6 +115,41 @@ public class Pointer implements Cloneable {
      */
     public static Pointer of(Object base, long offset) {
         return new Pointer(base, offset, UNKNOWN);
+    }
+
+    /**
+     Construct a pointer to a target of an unknown type with an offset.
+
+     @param offset the target's {@link #offset}
+     @return a new pointer with the provided {@code offset}
+     @since 5.0.0
+     */
+    public static Pointer of(long offset) {
+        return new Pointer(null, offset, UNKNOWN);
+    }
+
+    /**
+     Construct a pointer to a target of a known type with an offset.
+
+     @param offset the target's {@link #offset}
+     @param type the target's {@link #type}
+     @return a new pointer with the provided {@code offset} and {@code type}
+     @since 5.0.0
+     */
+    public static Pointer of(long offset, int type) {
+        return of(null, offset, type);
+    }
+
+    /**
+     Construct a pointer to a target of a known type with an offset.
+
+     @param offset the target's {@link #offset}
+     @param type the target's {@link #type}
+     @return a new pointer with the provided {@code offset} and {@code type}
+     @since 5.0.0
+     */
+    public static Pointer of(long offset, Class<?> type) {
+        return of(null, offset, type);
     }
 
     private static Pointer of(Object instance, Field field) {
@@ -265,6 +307,7 @@ public class Pointer implements Cloneable {
             case FLOAT -> this.getFloat();
             case DOUBLE -> this.getDouble();
             case REFERENCE -> this.getReference();
+            case ADDRESS -> this.getAddress();
             default -> throw new IllegalStateException("type is not set");
         };
     }
@@ -288,6 +331,7 @@ public class Pointer implements Cloneable {
             case FLOAT -> this.getFloat(object);
             case DOUBLE -> this.getDouble(object);
             case REFERENCE -> this.getReference(object);
+            case ADDRESS -> this.getAddress(object);
             default -> throw new IllegalStateException("type is not set");
         };
     }
@@ -310,8 +354,9 @@ public class Pointer implements Cloneable {
             case FLOAT -> this.putFloat(this.base, (float) value);
             case DOUBLE -> this.putDouble(this.base, (double) value);
             case REFERENCE -> this.putReference(this.base, value);
+            case ADDRESS -> this.putAddress(this.base, (long) value);
             default -> throw new IllegalStateException("type is not set");
-        } ;
+        }
     }
 
     /**
@@ -333,8 +378,17 @@ public class Pointer implements Cloneable {
             case FLOAT -> this.putFloat(object, (float) value);
             case DOUBLE -> this.putDouble(object, (double) value);
             case REFERENCE -> this.putReference(object, value);
+            case ADDRESS -> this.putAddress(object, (long) value);
             default -> throw new IllegalStateException("type is not set");
-        } ;
+        }
+    }
+
+    public void copy(Object destination) {
+        this.put(destination, this.get());
+    }
+
+    public void copy(Object source, Object destination) {
+        this.put(destination, this.get(source));
     }
 
     public <T> T getT() {
@@ -361,6 +415,14 @@ public class Pointer implements Cloneable {
         Unsafe.putReference(this.base, this.offset, value);
     }
 
+    public void copyReference(Object destination) {
+        this.putReference(destination, this.getReference());
+    }
+
+    public void copyReference(Object source, Object destination) {
+        this.putReference(destination, this.getReference(source));
+    }
+
     public boolean getBoolean() {
         return Unsafe.getBoolean(this.base, this.offset);
     }
@@ -375,6 +437,14 @@ public class Pointer implements Cloneable {
 
     public void putBoolean(Object object, boolean value) {
         Unsafe.putBoolean(object, this.offset, value);
+    }
+
+    public void copyBoolean(Object destination) {
+        this.putBoolean(destination, this.getBoolean());
+    }
+
+    public void copyBoolean(Object source, Object destination) {
+        this.putBoolean(destination, this.getBoolean(source));
     }
 
     public byte getByte() {
@@ -393,6 +463,14 @@ public class Pointer implements Cloneable {
         Unsafe.putByte(this.base, this.offset, value);
     }
 
+    public void copyByte(Object destination) {
+        this.putByte(destination, this.getByte());
+    }
+
+    public void copyByte(Object source, Object destination) {
+        this.putByte(destination, this.getByte(source));
+    }
+
     public short getShort() {
         return Unsafe.getShort(this.base, this.offset);
     }
@@ -407,6 +485,14 @@ public class Pointer implements Cloneable {
 
     public void putShort(short value) {
         Unsafe.putShort(this.base, this.offset, value);
+    }
+
+    public void copyShort(Object destination) {
+        this.putShort(destination, this.getShort());
+    }
+
+    public void copyShort(Object source, Object destination) {
+        this.putShort(destination, this.getShort(source));
     }
 
     public char getChar() {
@@ -425,6 +511,14 @@ public class Pointer implements Cloneable {
         Unsafe.putChar(this.base, this.offset, value);
     }
 
+    public void copyChar(Object destination) {
+        this.putChar(destination, this.getChar());
+    }
+
+    public void copyChar(Object source, Object destination) {
+        this.putChar(destination, this.getChar(source));
+    }
+
     public int getInt() {
         return Unsafe.getInt(this.base, this.offset);
     }
@@ -439,6 +533,14 @@ public class Pointer implements Cloneable {
 
     public void putInt(int value) {
         Unsafe.putInt(this.base, this.offset, value);
+    }
+
+    public void copyInt(Object destination) {
+        this.putInt(destination, this.getInt());
+    }
+
+    public void copyInt(Object source, Object destination) {
+        this.putInt(destination, this.getInt(source));
     }
 
     public long getLong() {
@@ -457,6 +559,14 @@ public class Pointer implements Cloneable {
         Unsafe.putLong(this.base, this.offset, value);
     }
 
+    public void copyLong(Object destination) {
+        this.putLong(destination, this.getLong());
+    }
+
+    public void copyLong(Object source, Object destination) {
+        this.putLong(destination, this.getLong(source));
+    }
+
     public float getFloat() {
         return Unsafe.getFloat(this.base, this.offset);
     }
@@ -471,6 +581,14 @@ public class Pointer implements Cloneable {
 
     public void putFloat(float value) {
         Unsafe.putFloat(this.base, this.offset, value);
+    }
+
+    public void copyFloat(Object destination) {
+        this.putFloat(destination, this.getFloat());
+    }
+
+    public void copyFloat(Object source, Object destination) {
+        this.putFloat(destination, this.getFloat(source));
     }
 
     public double getDouble() {
@@ -489,19 +607,51 @@ public class Pointer implements Cloneable {
         Unsafe.putDouble(this.base, this.offset, value);
     }
 
-    public <T> T getVolatile() {
+    public void copyDouble(Object destination) {
+        this.putDouble(destination, this.getDouble());
+    }
+
+    public void copyDouble(Object source, Object destination) {
+        this.putDouble(destination, this.getDouble(source));
+    }
+
+    public long getAddress() {
+        return Unsafe.getAddress(this.base, this.offset);
+    }
+
+    public long getAddress(Object base) {
+        return Unsafe.getAddress(base, this.offset);
+    }
+
+    public void putAddress(long address) {
+        Unsafe.putAddress(this.base, this.offset, address);
+    }
+
+    public void putAddress(Object base, long address) {
+        Unsafe.putAddress(base, this.offset, address);
+    }
+
+    public void copyAddress(Object destination) {
+        this.putAddress(destination, this.getAddress());
+    }
+
+    public void copyAddress(Object source, Object destination) {
+        this.putAddress(destination, this.getAddress(source));
+    }
+
+    public <T> T getReferenceVolatile() {
         return Unsafe.getReferenceVolatile(this.base, this.offset);
     }
 
-    public <T> T getVolatile(Object object) {
+    public <T> T getReferenceVolatile(Object object) {
         return Unsafe.getReferenceVolatile(object, this.offset);
     }
 
-    public void putVolatile(Object object, Object value) {
+    public void putReferenceVolatile(Object object, Object value) {
         Unsafe.putReferenceVolatile(object, this.offset, value);
     }
 
-    public void putVolatile(Object value) {
+    public void putReferenceVolatile(Object value) {
         Unsafe.putReferenceVolatile(this.base, this.offset, value);
     }
 

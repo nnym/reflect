@@ -15,30 +15,19 @@ import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
- Utilities that deal mostly with class loading.
+ Utilities that deal mostly with class loading and object type manipulation.
 
  @since 0.6.0
  */
-@SuppressWarnings("unused")
 public class Classes {
-    public static final ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-
     public static final Class<?> ConstantPool = tryLoad("jdk.internal.reflect.ConstantPool", "sun.reflect.ConstantPool");
     public static final Class<?> JavaLangAccess = tryLoad("jdk.internal.access.JavaLangAccess", "jdk.internal.misc.JavaLangAccess", "sun.misc.JavaLangAccess");
     public static final Class<?> Reflection = tryLoad("jdk.internal.reflect.Reflection", "sun.reflect.Reflection");
     public static final Class<?> SharedSecrets = tryLoad("jdk.internal.access.SharedSecrets", "jdk.internal.misc.SharedSecrets", "sun.misc.SharedSecrets");
     public static final Class<?> URLClassPath = tryLoad("jdk.internal.loader.URLClassPath", "sun.misc.URLClassPath");
 
-    public static final Object systemClassPath = classPath(systemClassLoader);
-
-    public static final long classOffset;
-    public static final int fieldOffset = (int) Fields.offset(Fields.of(Integer.class, "value"));
-
-    public static final boolean x64 = switch (fieldOffset) {
-        case 8 -> false;
-        case 12, 16 -> true;
-        default -> throw new Error("unsupported field offset %d; report to https://git.auoeke.net/reflect/issues.".formatted(fieldOffset));
-    };
+    public static final Object systemClassPath = classPath(ClassLoader.getSystemClassLoader());
+    public static final Pointer klass;
 
     private static final MethodHandle findLoadedClass = Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class);
     private static final MethodHandle addURL = Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class);
@@ -76,7 +65,7 @@ public class Classes {
      @return {@code to}
      */
     public static <T> T reinterpret(Object to, T from) {
-        Accessor.copyAddress(to, from, classOffset);
+        klass.copy(to, from);
 
         return (T) to;
     }
@@ -90,7 +79,7 @@ public class Classes {
      @return {@code object}
      */
     public static <T> T reinterpret(Object object, long klass) {
-        Unsafe.putAddress(object, classOffset, klass);
+        Classes.klass.put(object, klass);
 
         return (T) object;
     }
@@ -112,7 +101,7 @@ public class Classes {
      @return the object's type's {@code Klass*}
      */
     public static long klass(Object object) {
-        return Unsafe.getAddress(object, classOffset);
+        return klass.getAddress(object);
     }
 
     /**
@@ -342,6 +331,6 @@ public class Classes {
             offset += 4;
         }
 
-        classOffset = offset;
+        klass = Pointer.of(offset, Pointer.ADDRESS);
     }
 }
