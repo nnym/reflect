@@ -14,7 +14,7 @@ public class GetMethod {
     }
 
     @Benchmark public Object byName() {
-        return Methods.of(A.class, "privateMethod");
+        return Methods.of(A.class, "privateMethod2");
     }
 
     @Benchmark public Object unreflect() {
@@ -26,14 +26,10 @@ public class GetMethod {
     }
 
     @Benchmark public Object findStatic() {
-        return Invoker.findStatic(A.class, "privateMethod", String.class);
+        return Invoker.findStatic(A.class, "privateMethod2", String.class, int.class);
     }
 
     @Benchmark public Object getDeclaredMethod() {
-        return A.class.getDeclaredMethod("privateMethod");
-    }
-
-    @Benchmark public Object getDeclaredMethodWithParameter() {
         return A.class.getDeclaredMethod("privateMethod2", int.class);
     }
 }
