@@ -14,6 +14,7 @@ public class Invoke {
     static final Random object = new Random();
     static final Method method = Methods.of(Object.class, NAME);
     static final MethodHandle handle = Invoker.findVirtual(Object.class, NAME, int.class);
+    static final MethodHandle special = Invoker.findSpecial(Object.class, NAME, int.class);
     static final MethodHandle bind = Invoker.bind(object, NAME, int.class);
     static final MethodHandle bindTo = handle.bindTo(object);
 
@@ -39,6 +40,11 @@ public class Invoke {
     @Benchmark public int invokeExact() {
         // same as direct
         return (int) handle.invokeExact((Object) object);
+    }
+
+    @Benchmark public int special() {
+        // like invoke
+        return (int) handle.invoke(object);
     }
 
     @Benchmark public int bind() {
