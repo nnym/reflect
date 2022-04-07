@@ -41,7 +41,7 @@ public class Classes {
      @return {@code object}
      */
     public static <T> T reinterpret(Object object, T... dummy) {
-        return (T) reinterpret(object, Unsafe.allocateInstance(dummy.getClass().getComponentType()));
+        return (T) reinterpret(Unsafe.allocateInstance(dummy.getClass().getComponentType()), object);
     }
 
     /**
@@ -53,21 +53,21 @@ public class Classes {
      @return {@code object}
      */
     public static <T> T reinterpret(Object object, Class<T> type) {
-        return reinterpret(object, Unsafe.allocateInstance(type));
+        return reinterpret(Unsafe.allocateInstance(type), object);
     }
 
     /**
      Change the type of an object. The target type should not be bigger than the object's type.
 
-     @param to the object whose type to change
-     @param from an instance of the target type
      @param <T> the target type type
+     @param source an instance of the target type
+     @param object the object whose type to change
      @return {@code to}
      */
-    public static <T> T reinterpret(Object to, T from) {
-        klass.copy(to, from);
+    public static <T> T reinterpret(T source, Object object) {
+        klass.copy(source, object);
 
-        return (T) to;
+        return (T) object;
     }
 
     /**

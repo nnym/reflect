@@ -32,7 +32,7 @@ public class ClassesTests extends Classes {
         var object = (Object) Classes.reinterpret(Unsafe.allocateInstance(Object.class), ClassesTests.class);
         assert object.getClass() == (object = Unsafe.allocateInstance(ClassesTests.class)).getClass();
         assert object.getClass() == Classes.reinterpret(object, ClassesTests.class).getClass();
-        assert Classes.reinterpret(Unsafe.allocateInstance(Object.class), new ClassesTests()).getClass() == ClassesTests.class;
+        assert Classes.reinterpret(new ClassesTests(), Unsafe.allocateInstance(Object.class)).getClass() == ClassesTests.class;
     }
 
     @Test void classes() {
