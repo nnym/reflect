@@ -5,6 +5,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Flags;
 import net.auoeke.reflect.Invoker;
@@ -19,6 +20,7 @@ import reflect.generics.GenericTypeAware;
 import reflect.generics.GenericTypeAwareTest;
 import reflect.util.Logger;
 import reflect.util.Util;
+import test.Assert;
 
 @Disabled
 @Testable
@@ -85,6 +87,26 @@ public class IrrelevantTest {
         System.out.println("methods");
         count.accept(Methods::direct);
     }
+
+    @SuppressWarnings("Convert2MethodRef") // class load must be in lambda
+    @Test void packagePrivateInnerClassInDifferentLoader() {
+        ClassDefiner.make().loader(null).classFile(IrrelevantTest.class.getName() + "$Inner").define();
+        Assert.exception(() -> Inner.class.getName());
+
+        // Inner must be loaded lazily
+        class Outer {
+            static class Inner {}
+
+            static void doAssert() {
+                Assert.exception(() -> Outer.Inner.class.getName());
+            }
+        }
+
+        ClassDefiner.make().loader(null).classFile(Outer.class.getName() + "$Inner").define();
+        Outer.doAssert();
+    }
+
+    static class Inner {}
 
     static {
         var(new Object() {

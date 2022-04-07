@@ -1,8 +1,13 @@
 package test;
 
+import java.lang.instrument.Instrumentation;
+import java.lang.invoke.MethodHandle;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.stream.Stream;
+import net.auoeke.reflect.ClassDefiner;
+import net.auoeke.reflect.Invoker;
+import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Reflect;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
@@ -11,38 +16,59 @@ import org.junit.platform.commons.annotation.Testable;
 public class ReflectTests extends Reflect {
     @Test public void instrumentationTest() {
         if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
-            var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new)) {
-                @Override protected Class<?> loadClass(String name, boolean resolve) {
-                    if (name.startsWith("java.")) {
-                        return ClassLoader.getSystemClassLoader().loadClass(name);
-                    }
-
-                    var type = this.findLoadedClass(name);
-
-                    if (type == null) {
-                        var classFile = this.findResource(name.replace('.', '/') + ".class");
-
-                        if (classFile == null) {
-                            return ClassLoader.getSystemClassLoader().loadClass(name);
-                        }
-
-                        var bytes = classFile.openStream().readAllBytes();
-                        type = this.defineClass(null, bytes, 0, bytes.length);
-                    }
-
-                    if (resolve) {
-                        this.resolveClass(type);
-                    }
-
-                    return type;
-                }
-            };
-
-            var clone = loader.loadClass(ReflectTests.class.getName());
-            clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
-            loader.close();
+            try (var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new))) {
+                var clone = new GreedyClassLoader(loader).loadClass(ReflectTests.class.getName());
+                clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
+            }
         }
 
         assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
+    }
+
+    @Test void instrumentationAgentDefinedBySeparateLoader() {
+        var agent = Reflect.class.getPackageName().replace('.', '/') + "/Agent";
+        var loader = new GreedyClassLoader(new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new)) {
+            @Override public URL findResource(String name) {
+                return name.equals(agent + ".class") ? null : super.findResource(name);
+            }
+        });
+
+        ClassDefiner.make().loader(null).classFile(agent).define();
+
+        var instrumentation = (Instrumentation) Invoker.bind(Methods.of(loader.loadClass(Reflect.class.getName()), "instrument").invoke(null), "value", Object.class).invoke();
+        assert instrumentation.isRedefineClassesSupported() && instrumentation.isRetransformClassesSupported() && instrumentation.isNativeMethodPrefixSupported();
+    }
+
+    static class GreedyClassLoader extends ClassLoader {
+        final MethodHandle findResource;
+
+        public GreedyClassLoader(ClassLoader delegate) {
+            this.findResource = Invoker.bind(delegate, "findResource", URL.class, String.class);
+        }
+
+        @Override protected Class<?> loadClass(String name, boolean resolve) {
+            if (name.startsWith("java.")) {
+                return super.loadClass(name, resolve);
+            }
+
+            var type = this.findLoadedClass(name);
+
+            if (type == null) {
+                var classFile = (URL) this.findResource.invoke(name.replace('.', '/') + ".class");
+
+                if (classFile == null) {
+                    return super.loadClass(name, resolve);
+                }
+
+                var bytes = classFile.openStream().readAllBytes();
+                type = this.defineClass(null, bytes, 0, bytes.length);
+            }
+
+            if (resolve) {
+                this.resolveClass(type);
+            }
+
+            return type;
+        }
     }
 }

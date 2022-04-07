@@ -42,13 +42,14 @@ public class Reflect {
             result.map(() -> {
                 result.andSuppress(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
                 result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
-                result.andSuppress(() -> Accessor.putBoolean(Classes.initialize(Class.forName("sun.tools.attach.HotSpotVirtualMachine")), "ALLOW_ATTACH_SELF", true));
+                result.andSuppress(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true));
 
+                var agentClass = Class.forName(Reflect.class.getPackageName() + ".Agent");
                 var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
                 try {
                     var source = Stream.concat(
-                            Optional.ofNullable(result.andSuppress(() -> Agent.class.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
+                            Optional.ofNullable(result.andSuppress(() -> agentClass.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
                                 if (url.openConnection() instanceof JarURLConnection jar) {
                                     var manifest = jar.getManifest();
                                     return manifest == null ? null : Map.entry(path(jar), manifest);
@@ -64,7 +65,7 @@ public class Reflect {
                                     return Map.entry("", new Manifest(input));
                                 }
                             }).stream(),
-                            Agent.class.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
+                            agentClass.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
                                 var connection = url.openConnection();
 
                                 if (connection instanceof JarURLConnection jar) {
@@ -76,9 +77,9 @@ public class Reflect {
                                 }
                             })
                         )
-                        .filter(entry -> entry != null && Agent.class.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
+                        .filter(entry -> entry != null && agentClass.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
                         .findFirst()
-                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: " + Agent.class.getName() + '"'));
+                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: " + agentClass.getName() + '"'));
                     var sourceString = source.getKey();
 
                     if (!sourceString.endsWith(".jar")) {
@@ -88,8 +89,8 @@ public class Reflect {
                         try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
                             jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
                             source.getValue().write(jar);
-                            jar.putNextEntry(new ZipEntry(Agent.class.getName().replace('.', '/') + ".class"));
-                            jar.write(Classes.classFile(Agent.class));
+                            jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
+                            jar.write(Classes.classFile(agentClass));
                         }
                     }
 
@@ -99,11 +100,15 @@ public class Reflect {
                         throw Exceptions.message(exception, message -> sourceString + ": " + message);
                     }
 
-                    if (Agent.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+                    if (agentClass.getClassLoader() != ClassLoader.getSystemClassLoader()) {
+                        return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
+                    }
+
+                    if (agentClass.getClassLoader() == Reflect.class.getClassLoader()) {
                         return Agent.instrumentation;
                     }
 
-                    return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(Agent.class.getName()), "instrumentation");
+                    return Accessor.getReference(agentClass, "instrumentation");
                 } finally {
                     vm.detach();
                 }
