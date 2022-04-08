@@ -40,5 +40,4 @@ dependencies {
 ### Developing
 [uncheck for IntelliJ IDEA](https://github.com/auoeke/uncheck#using-the-intellij-plugin) is recommended in order to suppress checked exception warnings.
 
-Relevant tests are in [`ReflectTest`](test/reflect/ReflectTest.java) and the [categorized test classes](test/test).
-Other tests are irrelevant but I keep them anyway for now.
+Relevant tests are in the [main test classes](test/test); everything else is irrelevant.
