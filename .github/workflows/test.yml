@@ -24,4 +24,4 @@ jobs:
       - name: build
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: build --refresh-dependencies
