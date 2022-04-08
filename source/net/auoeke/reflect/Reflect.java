@@ -100,15 +100,9 @@ public class Reflect {
                         throw Exceptions.message(exception, message -> sourceString + ": " + message);
                     }
 
-                    if (agentClass.getClassLoader() != ClassLoader.getSystemClassLoader()) {
-                        return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
-                    }
-
-                    if (agentClass.getClassLoader() == Reflect.class.getClassLoader()) {
-                        return Agent.instrumentation;
-                    }
-
-                    return Accessor.getReference(agentClass, "instrumentation");
+                    return agentClass.getClassLoader() != ClassLoader.getSystemClassLoader() ? Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation")
+                        : agentClass.getClassLoader() == Reflect.class.getClassLoader() ? Agent.instrumentation
+                        : Accessor.getReference(agentClass, "instrumentation");
                 } finally {
                     vm.detach();
                 }
