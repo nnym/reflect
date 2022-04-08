@@ -1,11 +1,8 @@
 .*
 !/.gitignore
-
+!/.github
 bin
 build
 out
 run
-
-plugin
-
 hs_err_pid*
