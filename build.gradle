@@ -32,12 +32,13 @@ dependencies {
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.ow2.asm:asm")
     testImplementation("org.ow2.asm:asm-tree")
     testImplementation("org.openjdk.jol:jol-core")
 }
 
 compileTestJava {
+    mustRunAfter(jar)
+
     options.release.set(JavaVersion.current().majorVersion as int)
     options.compilerArgs << "--enable-preview"
 }
