@@ -4,20 +4,24 @@ jobs:
   test:
     strategy:
       matrix:
-        java: [11, 12, 13, 14, 15, 16, 17, 18]
+        java: [17, 18]
         os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     steps:
       - name: checkout
         uses: actions/checkout@v2
       - name: validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: JDK
-        uses: actions/setup-java@v1
+      - name: test JDK
+        id: jdk
+        uses: actions/setup-java@v2
         with:
-          java-version: ${{ matrix.java }}
+          distribution: temurin
+          java-version: ${{matrix.java}}
       - name: chmod +x ./gradlew
         if: runner.os != 'Windows'
         run: chmod +x ./gradlew
       - name: build
-        run: ./gradlew build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
