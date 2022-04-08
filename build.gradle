@@ -64,14 +64,11 @@ jar {
 task testRelease(type: Test) {
     group(LifecycleBasePlugin.VERIFICATION_GROUP)
     dependsOn(cleanTestRelease, jar)
+    check.dependsOn(it)
 
     useJUnitPlatform()
     systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
     classpath = classpath - sourceSets.main.output + files(jar.archiveFile)
-}
-
-check {
-    dependsOn(testRelease)
 }
 
 publishing {
