@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.auoeke:reflect:4.+")
+    implementation("net.auoeke:reflect:5.+")
 }
 ```
 
