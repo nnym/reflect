@@ -120,6 +120,14 @@ public class Fields {
         return all(begin, Object.class);
     }
 
+    /**
+     Return a sequential stream of the instance fields declared by the type of {@code object} and all of its base types up to and excluding {@code end}.
+     The fields in the stream are in class hierarchy order starting with the most derived type.
+
+     @param object an object
+     @param end the exclusive upper bound of the types to search for fields
+     @return a stream of the instance fields declared by the type of {@code object} and its base types up to and excluding {@code end}
+     */
     public static Stream<Field> all(Object object, Class<?> end) {
         return Types.classes(object.getClass(), end).flatMap(Fields::instanceOf);
     }
