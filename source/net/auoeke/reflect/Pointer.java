@@ -6,9 +6,8 @@ import net.gudenau.lib.unsafe.Unsafe;
 /**
  An immutable reference to a datum at an offset from a type or an object.
  <p>
- A pointer can be constructed by one of {@link #of the factory methods} or the constructor.
- Pointers acquired directly from the constructor require configuration before use.
- All pointers can be configured by the methods {@link #bind}, {@link #offset(long)}, {@link #type(int)}, {@link #field}, {@link #instanceField}, {@link #staticField}.
+ A pointer can be constructed by one of {@link #of the factory methods}
+ and configured by the methods {@link #bind}, {@link #offset(long)}, {@link #type(Class)}, {@link #type(int)}, {@link #field}, {@link #instanceField}, {@link #staticField}.
 
  @since 0.15.0
  */
