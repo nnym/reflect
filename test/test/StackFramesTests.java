@@ -8,11 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.util.Box;
 
-@SuppressWarnings({"removal", "AccessStaticViaInstance"})
+@SuppressWarnings("AccessStaticViaInstance")
 @Testable
 public class StackFramesTests extends StackFrames {
-    @Test
-    void framesTest() {
+    @Test void framesTest() {
         var list = frameList(); var stream = frameStream().toList();
         Assert.equalBy(List::size, list, stream);
 
@@ -31,15 +30,13 @@ public class StackFramesTests extends StackFrames {
         }
     }
 
-    @Test
-    void frameTest() {
+    @Test void frameTest() {
         assert frame().getDeclaringClass() == this.getClass()
             && frame().getMethodName().equals("frameTest");
     }
 
     @SuppressWarnings("RedundantExplicitVariableType")
-    @Test
-    void callerTest() {
+    @Test void callerTest() {
         Supplier<Class<?>> lambda = StackFrames::caller;
 
         Assert.equal(
@@ -51,8 +48,7 @@ public class StackFramesTests extends StackFrames {
         );
     }
 
-    @Test
-    void traceTest() {
+    @Test void traceTest() {
         Assert.equal(trace()[0].getClassName(), this.getClass().getName())
             .equal(traceFrame().getMethodName(), "traceTest")
             .arraysEqual(trace(), trace(Thread.currentThread()), traceStream(Thread.currentThread()).toArray());
