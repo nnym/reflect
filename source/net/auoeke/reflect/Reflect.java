@@ -79,7 +79,7 @@ public class Reflect {
                         )
                         .filter(entry -> entry != null && agentClass.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
                         .findFirst()
-                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: " + agentClass.getName() + '"'));
+                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
                     var sourceString = source.getKey();
 
                     if (!sourceString.endsWith(".jar")) {
