@@ -12,7 +12,11 @@ import java.util.function.Consumer;
  */
 @FunctionalInterface
 public interface ClassTransformer extends ClassFileTransformer {
-    /** This method is intended as a "functional cast" for lambda expressions. */
+    /**
+     This method is intended as a "functional cast" for lambda expressions.
+
+     @since 5.1.0
+     */
     static ClassTransformer of(ClassTransformer transformer) {
         return transformer;
     }
