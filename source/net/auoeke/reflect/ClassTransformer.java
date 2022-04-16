@@ -35,7 +35,8 @@ public interface ClassTransformer extends ClassFileTransformer {
     }
 
     /**
-     Return a {@link ClassTransformer} that invokes this transformer only if {@code type} matches the {@code name} passed to {@link #transform} and otherwise returns {@code null}.
+     Return a {@link ClassTransformer} that invokes this transformer only if the provided type name matches the {@code name} passed to {@link #transform} and otherwise returns {@code null}.
+     All occurrences of {@code '.'} in {@code type} are replaced by {@code '/'} in order to match the internal form of the {@code name} passed to {@link #transform}.
 
      @param type the name of the new transformer's target types
      @return a new transformer that runs this transformer only for types named {@code type} and otherwise returns {@code null}
