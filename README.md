@@ -1,7 +1,6 @@
-reflect is a Java library whereby I try to overcome the restrictions on reflection and make it concise.
-
-It reduces the usual verbosity of reflection by providing concise methods for most reflective operations (and more).
-**None of these methods (unlike every standard reflective method ever) declares checked exceptions.**
+reflect is a Java library whose purpose is unfettering, condensing and streamlining reflection
+by providing for most common reflective operations (and more) powerful methods
+that don't obey access limitations or declare checked exceptions (unlike every standard reflective method ever).
 
 Supported Java versions are 17 and above.
 
@@ -38,6 +37,6 @@ dependencies {
 - `Types` deals with `Class`es in many ways including type conversion.
 
 ### Developing
-[uncheck for IntelliJ IDEA](https://github.com/auoeke/uncheck#using-the-intellij-plugin) is recommended in order to suppress checked exception warnings.
+Use [uncheck for IntelliJ IDEA](https://github.com/auoeke/uncheck#using-the-intellij-plugin) in order to suppress checked exception warnings.
 
 Relevant tests are in the [main test classes](test/test); everything else is irrelevant.
