@@ -44,6 +44,7 @@ public class Reflect {
                 result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
                 result.andSuppress(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true));
 
+                // Do not reference Agent directly because it might belong to a different loader.
                 var agentClass = Class.forName(Reflect.class.getPackageName() + ".Agent");
                 var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
@@ -80,20 +81,28 @@ public class Reflect {
                      .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
 
                     var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
+                    var source = Classes.location(agentClass);
 
-                    try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
-                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                        manifest.write(jar);
-                        jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
-                        jar.write(Classes.classFile(agentClass));
+                    if (source == null || !source.sameFile(agent.toUri().toURL())) {
+                        try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
+                            jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+                            manifest.write(jar);
+                            jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
+
+                            // If agentClass is from tmpdir, then its source is being overwritten and incomplete.
+                            // Thus, attempting to read it now will throw an EOFException.
+                            try (var stream = Reflect.class.getResourceAsStream(agentClass.getSimpleName() + ".class")) {
+                                jar.write(stream.readAllBytes());
+                            }
+                        }
                     }
 
-                    var sourceString = agent.toString();
+                    var agentString = agent.toString();
 
                     try {
-                        vm.loadAgent(sourceString);
+                        vm.loadAgent(agentString);
                     } catch (AgentLoadException exception) {
-                        throw Exceptions.message(exception, message -> sourceString + ": " + message);
+                        throw Exceptions.message(exception, message -> agentString + ": " + message);
                     }
 
                     return agentClass.getClassLoader() != ClassLoader.getSystemClassLoader() ? Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation")

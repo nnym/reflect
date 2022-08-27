@@ -299,6 +299,23 @@ public class Classes {
     }
 
     /**
+     Acquire a {@link Class}' {@link ProtectionDomain}'s {@link CodeSource}'s {@link CodeSource#getLocation() location}.
+
+     @param type a type
+     @return a {@link CodeSource#location} corresponding to the {@code type}; may be {@code null}
+     */
+    public static URL location(Class<?> type) {
+        var domain = type.getProtectionDomain();
+
+        if (domain == null) {
+            return null;
+        }
+
+        var source = domain.getCodeSource();
+        return source == null ? null : source.getLocation();
+    }
+
+    /**
      Generate a {@link CodeSource} for a {@link URL} with certificates if the URL points to a JAR.
 
      @return a {@link CodeSource} for {@code url}
