@@ -48,51 +48,47 @@ public class Reflect {
                 var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
                 try {
-                    var source = Stream.concat(
-                            Optional.ofNullable(result.andSuppress(() -> agentClass.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
-                                if (url.openConnection() instanceof JarURLConnection jar) {
-                                    var manifest = jar.getManifest();
-                                    return manifest == null ? null : Map.entry(path(jar), manifest);
-                                }
+                    var manifest = Stream.concat(
+                        Optional.ofNullable(result.andSuppress(() -> agentClass.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
+                            if (url.openConnection() instanceof JarURLConnection jar) {
+                                return jar.getManifest();
+                            }
 
-                                var manifest = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
+                            var path = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
 
-                                if (!Files.exists(manifest)) {
-                                    return null;
-                                }
+                            if (!Files.exists(path)) {
+                                return null;
+                            }
 
-                                try (var input = Files.newInputStream(manifest)) {
-                                    return Map.entry("", new Manifest(input));
-                                }
-                            }).stream(),
-                            agentClass.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
-                                var connection = url.openConnection();
+                            try (var input = Files.newInputStream(path)) {
+                                return new Manifest(input);
+                            }
+                        }).stream(),
+                        agentClass.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
+                            var connection = url.openConnection();
 
-                                if (connection instanceof JarURLConnection jar) {
-                                    return Map.entry(path(jar), jar.getManifest());
-                                }
+                            if (connection instanceof JarURLConnection jar) {
+                                return jar.getManifest();
+                            }
 
-                                try (var input = connection.getInputStream()) {
-                                    return Map.entry("", new Manifest(input));
-                                }
-                            })
-                        )
-                        .filter(entry -> entry != null && agentClass.getName().equals(entry.getValue().getMainAttributes().getValue("Agent-Class")))
-                        .findFirst()
-                        .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
-                    var sourceString = source.getKey();
+                            try (var input = connection.getInputStream()) {
+                                return new Manifest(input);
+                            }
+                        })
+                    ).filter(entry -> entry != null && agentClass.getName().equals(entry.getMainAttributes().getValue("Agent-Class")))
+                     .findFirst()
+                     .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
 
-                    if (!sourceString.endsWith(".jar")) {
-                        var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
-                        sourceString = agent.toString();
+                    var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
 
-                        try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
-                            jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                            source.getValue().write(jar);
-                            jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
-                            jar.write(Classes.classFile(agentClass));
-                        }
+                    try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
+                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+                        manifest.write(jar);
+                        jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
+                        jar.write(Classes.classFile(agentClass));
                     }
+
+                    var sourceString = agent.toString();
 
                     try {
                         vm.loadAgent(sourceString);
@@ -120,10 +116,5 @@ public class Reflect {
         } catch (Throwable throwable) {
             return null;
         }
-    }
-
-    private static String path(JarURLConnection jar) {
-        // Must not use URL::getPath because it prepends '/' on Windows.
-        return Path.of(jar.getJarFileURL().toURI()).toString();
     }
 }
