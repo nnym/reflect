@@ -303,6 +303,8 @@ public class Classes {
 
      @param type a type
      @return a {@link CodeSource#location} corresponding to the {@code type}; may be {@code null}
+
+     @since 5.2.0
      */
     public static URL location(Class<?> type) {
         var domain = type.getProtectionDomain();
