@@ -3,6 +3,7 @@ package net.auoeke.reflect;
 import java.io.FileNotFoundException;
 import java.lang.instrument.Instrumentation;
 import java.net.JarURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -49,8 +50,9 @@ public class Reflect {
                 var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
                 try {
+                    //@formatter:off
                     var manifest = Stream.concat(
-                        Optional.ofNullable(result.andSuppress(() -> agentClass.getProtectionDomain().getCodeSource().getLocation())).map(url -> {
+                        Optional.ofNullable(Classes.location(agentClass)).map(url -> {
                             if (url.openConnection() instanceof JarURLConnection jar) {
                                 return jar.getManifest();
                             }
@@ -79,21 +81,19 @@ public class Reflect {
                     ).filter(entry -> entry != null && agentClass.getName().equals(entry.getMainAttributes().getValue("Agent-Class")))
                      .findFirst()
                      .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
+                    //@formatter:on
 
                     var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
-                    var source = Classes.location(agentClass);
 
-                    if (source == null || !source.sameFile(agent.toUri().toURL())) {
-                        try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
-                            jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                            manifest.write(jar);
-                            jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
+                    try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
+                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+                        manifest.write(jar);
+                        jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
 
-                            // If agentClass is from tmpdir, then its source is being overwritten and incomplete.
-                            // Thus, attempting to read it now will throw an EOFException.
-                            try (var stream = Reflect.class.getResourceAsStream(agentClass.getSimpleName() + ".class")) {
-                                jar.write(stream.readAllBytes());
-                            }
+                        // If agentClass is from tmpdir, then its source is being overwritten and incomplete.
+                        // Thus, attempting to read it now will throw an EOFException.
+                        try (var stream = new URL(Reflect.class.getResource("Reflect.class").toString().replaceFirst("Reflect(?=\\.class$)", "Agent")).openStream()) {
+                            jar.write(stream.readAllBytes());
                         }
                     }
 
@@ -105,9 +105,7 @@ public class Reflect {
                         throw Exceptions.message(exception, message -> agentString + ": " + message);
                     }
 
-                    return agentClass.getClassLoader() != ClassLoader.getSystemClassLoader() ? Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation")
-                        : agentClass.getClassLoader() == Reflect.class.getClassLoader() ? Agent.instrumentation
-                        : Accessor.getReference(agentClass, "instrumentation");
+                    return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
                 } finally {
                     vm.detach();
                 }
