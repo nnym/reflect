@@ -50,9 +50,9 @@ public class ClassDefiner<T> {
     }
 
     /**
-     Set an expected name for the class for validation; completely optional and may be {@code null}.
+     Set an optional expected name for the class for validation.
 
-     @param name the expected name for the class
+     @param name the expected name for the class; it may not be {@code null}
      @return {@code this}
      */
     public ClassDefiner<T> name(String name) {
