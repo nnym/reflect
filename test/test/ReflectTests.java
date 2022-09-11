@@ -6,11 +6,16 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.stream.Stream;
 import net.auoeke.reflect.ClassDefiner;
+import net.auoeke.reflect.ClassTransformer;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Reflect;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
 
 @Testable
 public class ReflectTests extends Reflect {
@@ -23,6 +28,26 @@ public class ReflectTests extends Reflect {
         }
 
         assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
+
+        var string = "toString instrumented";
+        var transformer = ClassTransformer.of((module, loader, name, type, domain, classFile) -> {
+            var node = new ClassNode();
+            new ClassReader(classFile).accept(node, 0);
+
+            var toString = node.methods.stream().filter(a -> a.name.equals("toString")).findAny().get();
+            toString.instructions.clear();
+            toString.visitLdcInsn(string);
+            toString.visitInsn(Opcodes.ARETURN);
+
+            var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            node.accept(writer);
+            return writer.toByteArray();
+        }).ofType(Object.class).exceptionLogging();
+        instrument().value().addTransformer(transformer, true);
+        instrument().value().retransformClasses(Object.class);
+
+        //noinspection StringEquality
+        assert new Object().toString() == string;
     }
 
     @Test void instrumentationAgentDefinedBySeparateLoader() {
