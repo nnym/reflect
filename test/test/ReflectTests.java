@@ -30,7 +30,7 @@ public class ReflectTests extends Reflect {
         assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
 
         var string = "toString instrumented";
-        var transformer = ClassTransformer.of((module, loader, name, type, domain, classFile) -> {
+        instrument().value().addTransformer(ClassTransformer.of((module, loader, name, type, domain, classFile) -> {
             var node = new ClassNode();
             new ClassReader(classFile).accept(node, 0);
 
@@ -42,8 +42,7 @@ public class ReflectTests extends Reflect {
             var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
             node.accept(writer);
             return writer.toByteArray();
-        }).ofType(Object.class).exceptionLogging();
-        instrument().value().addTransformer(transformer, true);
+        }).ofType(Object.class).exceptionLogging().singleUse(instrument().value()), true);
         instrument().value().retransformClasses(Object.class);
 
         assert string.equals(new Object().toString());
