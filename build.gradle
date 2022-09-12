@@ -78,8 +78,8 @@ publishing {
         mavenLocal()
 
         maven("maven.auoeke.net") {
-            username(property("maven.username"))
-            password(property("maven.password"))
+            username(findProperty("maven.username"))
+            password(findProperty("maven.password"))
         }
     }
 }
