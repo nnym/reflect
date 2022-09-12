@@ -50,6 +50,8 @@ public interface ClassTransformer extends ClassFileTransformer {
     /**
      Return a {@link ClassTransformer} that wraps this transformer in a {@code try} block and handles exceptions by invoking {@code handler} and rethrowing.
 
+     The reason for this method's existence is that exceptions thrown by instrumentation transformers are ignored.
+
      @param handler an exception handler
      @return a new transformer that catches exceptions thrown by this transformer and handles them by invoking {@code handler} and rethrowing
      @since 5.1.0
@@ -67,6 +69,8 @@ public interface ClassTransformer extends ClassFileTransformer {
 
     /**
      Return a {@link ClassTransformer} that logs exceptions thrown by this transformer.
+
+     The reason for this method's existence is that exceptions thrown by instrumentation transformers are ignored.
 
      @return a new transformer that logs exceptions thrown by this transformer
      @since 5.1.0
