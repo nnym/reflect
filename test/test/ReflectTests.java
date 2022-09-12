@@ -46,8 +46,7 @@ public class ReflectTests extends Reflect {
         instrument().value().addTransformer(transformer, true);
         instrument().value().retransformClasses(Object.class);
 
-        //noinspection StringEquality
-        assert new Object().toString() == string;
+        assert string.equals(new Object().toString());
     }
 
     @Test void instrumentationAgentDefinedBySeparateLoader() {
