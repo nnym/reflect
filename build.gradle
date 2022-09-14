@@ -8,7 +8,8 @@ plugins {
 
 group("net.auoeke")
 version("5.2.1")
-
+description("succinct and unrestricted reflection")
+url("https://github.com/auoeke/reflect")
 javaVersion(17)
 
 sourceSets {
@@ -21,6 +22,10 @@ configurations {
     [jmhAnnotationProcessor, testAnnotationProcessor]*.tap {
         extendsFrom(annotationProcessor)
     }
+}
+
+java {
+    withJavadocJar()
 }
 
 gronk {
@@ -60,6 +65,12 @@ test {
 
 jar {
     manifest.from("resources/META-INF/MANIFEST.MF")
+}
+
+javadoc {
+    options {
+        optionFiles(file("javadoc.options"))
+    }
 }
 
 // For Reflect::instrumentation.
