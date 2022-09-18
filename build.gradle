@@ -2,7 +2,7 @@ plugins {
     id("java-library")
     id("maven-publish")
     id("signing")
-    id("gronk").version("latest.release")
+    id("net.auoeke.gronk").version("latest.release")
     id("me.champeau.jmh").version("latest.release")
 }
 
@@ -30,7 +30,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven("maven.auoeke.net")
 }
 
 dependencies {
