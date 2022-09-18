@@ -91,9 +91,33 @@ publishing {
     repositories {
         mavenLocal()
 
-        maven("maven.auoeke.net") {
-            username(findProperty("maven.username"))
-            password(findProperty("maven.password"))
+        maven("s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            username(findProperty("ossrh.id"))
+            password(findProperty("ossrh.password"))
+        }
+    }
+
+    publications.withType(MavenPublication) {MavenPublication publication ->
+        publication.pom {
+            licenses {
+                license {
+                    name.set("LGPL-3.0")
+                    url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("auoeke")
+                    email.set("me@auoeke.net")
+                }
+            }
+
+            scm {
+                connection.set("scm:git:git://github.com/auoeke/reflect.git")
+                developerConnection.set("scm:git:git://github.com/auoeke/reflect.git")
+                url.set("https://github.com/auoeke/reflect/tree/master")
+            }
         }
     }
 }
