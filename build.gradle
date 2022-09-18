@@ -7,7 +7,7 @@ plugins {
 }
 
 group("net.auoeke")
-version("5.2.1")
+version("5.2.2")
 description("succinct and unrestricted reflection")
 url("https://github.com/auoeke/reflect")
 javaVersion(17)
