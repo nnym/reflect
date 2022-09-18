@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    ["annotationProcessor", "jmhAnnotationProcessor", "testAnnotationProcessor"].each {add(it, "net.auoeke:uncheck-all")}
+    annotationProcessor(jmhAnnotationProcessor(testAnnotationProcessor("net.auoeke:uncheck-all")))
     api("net.auoeke:unsafe")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
