@@ -72,7 +72,7 @@ jar {
 
 javadoc {
     options {
-        optionFiles(file("javadoc.options"))
+        addBooleanOption("Xdoclint:none", true)
     }
 }
 
