@@ -28,18 +28,21 @@ java {
     withJavadocJar()
 }
 
-gronk {
-    uncheck()
+repositories {
+    mavenCentral()
+    maven("maven.auoeke.net")
 }
 
 dependencies {
-    annotationProcessor(project(":lib"), project(path: ":lib", configuration: "shadow"))
+    ["annotationProcessor", "jmhAnnotationProcessor", "testAnnotationProcessor"].each {add(it, "net.auoeke:uncheck-all")}
     api("net.auoeke:unsafe")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.ow2.asm:asm-tree")
-    testImplementation("org.openjdk.jol:jol-core")
+    testImplementation(
+        "org.junit.jupiter:junit-jupiter-api",
+        "org.ow2.asm:asm-tree",
+        "org.openjdk.jol:jol-core"
+    )
 }
 
 compileTestJava {
