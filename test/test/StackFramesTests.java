@@ -35,7 +35,6 @@ public class StackFramesTests extends StackFrames {
             && frame().getMethodName().equals("frameTest");
     }
 
-    @SuppressWarnings("RedundantExplicitVariableType")
     @Test void callerTest() {
         Supplier<Class<?>> lambda = StackFrames::caller;
 
@@ -51,7 +50,8 @@ public class StackFramesTests extends StackFrames {
     @Test void traceTest() {
         Assert.equal(trace()[0].getClassName(), this.getClass().getName())
             .equal(traceFrame().getMethodName(), "traceTest")
-            .arraysEqual(trace(), trace(Thread.currentThread()), traceStream(Thread.currentThread()).toArray());
+            .arraysEqual(trace(), trace(Thread.currentThread()), traceStream(Thread.currentThread()).toArray())
+	        .arraysEqual(trace(), traceStream(Thread.currentThread()).toArray());
 
         var box = new Box<StackTraceElement[]>();
         var thread = new Thread("traceTest") {
@@ -70,14 +70,13 @@ public class StackFramesTests extends StackFrames {
             thread.wait();
 
             var trace = trace(thread);
-            assert trace[0].getMethodName().equals("wait");
-            trace = traceStream(thread).dropWhile(e -> e.getMethodName().equals("wait")).toArray(StackTraceElement[]::new);
-            Assert.arraysEqual(trace(thread), traceStream(thread).toArray());
+	        trace = traceStream(thread).dropWhile(element -> !(element.getClassName().equals(thread.getClass().getName()) && element.getMethodName().equals("run"))).toArray(StackTraceElement[]::new);
             thread.notify();
-            thread.wait();
+	        thread.wait();
 
-            Assert.arraysEqual(trace, box.value);
-            Assert.arraysEqual(trace(thread), traceStream(thread).toArray());
+	        Assert.success(() -> trace[0])
+		        .arraysEqual(trace, box.value)
+	            .arraysEqual(trace(thread), traceStream(thread).toArray());
             thread.notify();
         }
     }

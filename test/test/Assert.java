@@ -8,13 +8,11 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("InstantiationOfUtilityClass")
 public class Assert {
-    private static final Assert instance = new Assert();
-
     public static Assert exception(String message, Runnable action) {
         try {
             action.run();
         } catch (Throwable throwable) {
-            return instance;
+            return null;
         }
 
         throw new AssertionError(message);
@@ -23,6 +21,27 @@ public class Assert {
     public static Assert exception(Runnable action) {
         return exception(null, action);
     }
+
+	public static Assert success(String message, Runnable action) {
+		try {
+			action.run();
+			return null;
+		} catch (Throwable trouble) {
+			throw new AssertionError(message, trouble);
+		}
+	}
+
+	public static Assert success(Runnable action) {
+		return success(null, action);
+	}
+
+	public static Assert success(String message, Supplier<?> action) {
+		return success(message, (Runnable) action::get);
+	}
+
+	public static Assert success(Supplier<?> action) {
+		return success(null, action);
+	}
 
     public static Assert equal(Object... objects) {
         return asert(objects.length < 2 || Stream.of(objects).allMatch(Predicate.isEqual(objects[0])), () -> Arrays.deepToString(objects));
@@ -46,11 +65,11 @@ public class Assert {
 
     private static Assert asert(boolean b) {
         assert b;
-        return instance;
+        return null;
     }
 
     private static Assert asert(boolean b, Supplier<String> message) {
         assert b : message.get();
-        return instance;
+        return null;
     }
 }
