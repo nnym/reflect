@@ -238,6 +238,18 @@ public class Types {
         return !type.isPrimitive() && unbox(type) != null;
     }
 
+	/**
+	 Determines whether {@code subtype} extends {@code supertype}.
+
+	 @param subtype the type to check as the subtype; may be null
+	 @param supertype the type to check as the supertype; may be null
+	 @return whether {@code subtype} extends {@code supertype}
+	 @since 5.3.0
+	 */
+	public static boolean isSubtype(Class<?> subtype, Class<?> supertype) {
+		return subtype != null && supertype != null && subtype != supertype && supertype.isAssignableFrom(subtype);
+	}
+
     /**
      Check whether an assignment is legal according to the given conversion flags.
      <p>
