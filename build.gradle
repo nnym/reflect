@@ -2,14 +2,13 @@ plugins {
     id("java-library")
     id("maven-publish")
     id("signing")
-    id("net.auoeke.gronk").version("latest.release")
+    id("net.auoeke.gronk").version("2.+")
     id("me.champeau.jmh").version("latest.release")
 }
 
 group("net.auoeke")
 version("5.3.0")
 description("succinct and unrestricted reflection")
-url("https://github.com/auoeke/reflect")
 javaVersion(17)
 
 sourceSets {
@@ -90,14 +89,16 @@ publishing {
     repositories {
         mavenLocal()
 
-        maven("s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            username(findProperty("ossrh.id"))
-            password(findProperty("ossrh.password"))
+        maven(findProperty("maven.repository")) {
+            username(findProperty("maven.username"))
+            password(findProperty("maven.password"))
         }
     }
 
-    publications.withType(MavenPublication) {MavenPublication publication ->
-        publication.pom {
+    publications.withType(MavenPublication) {
+        pom {
+	        url.set("https://github.com/auoeke/reflect")
+
             licenses {
                 license {
                     name.set("LGPL-3.0")
