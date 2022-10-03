@@ -133,6 +133,17 @@ public class Types {
         }).distinct();
     }
 
+	/**
+	 Returns a stream of {@code type}'s all base types.
+
+	 @param type a type
+	 @return {@code type}'s all base types
+	 @since 5.3.0
+	 */
+	public static Stream<Class<?>> baseTypes(Class<?> type) {
+		return supertypes(type).flatMap(Types::hierarchy).distinct();
+	}
+
     /**
      Count a type's class or interface depth. A class' interface depth is 1 greater than the greatest interface depth of any of its declared or inherited interfaces.
      If {@code type} is null, then return 0.
