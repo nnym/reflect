@@ -12,8 +12,7 @@ import reflect.util.Box;
 @Testable
 public class StackFramesTests extends StackFrames {
 	@Test void framesTest() {
-		var list = frameList();
-		var stream = frameStream().toList();
+		List<StackWalker.StackFrame> list = frameList(), stream = frameStream().toList();
 		Assert.equalBy(List::size, list, stream);
 
 		for (var index = 0; index < list.size(); index++) {
@@ -59,8 +58,9 @@ public class StackFramesTests extends StackFrames {
 			@Override public void run() {
 				synchronized (this) {
 					this.notify();
-					this.wait();
-					box.set(Thread.currentThread().getStackTrace()).set(trace -> Arrays.copyOfRange(trace, 1, trace.length));
+					// @formatter:off
+					this.wait(); box.set(Thread.currentThread().getStackTrace()).set(trace -> Arrays.copyOfRange(trace, 1, trace.length));
+					// @formatter:on
 					this.notify();
 					this.wait();
 				}
