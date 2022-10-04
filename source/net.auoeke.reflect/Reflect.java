@@ -92,9 +92,7 @@ public class Reflect {
 
 						// If agentClass is from tmpdir, then its source is being overwritten and incomplete.
 						// Thus, attempting to read it now will throw an EOFException.
-						try (var stream = new URL(Reflect.class.getResource("Reflect.class").toString().replaceFirst("Reflect(?=\\.class$)", "Agent")).openStream()) {
-							jar.write(stream.readAllBytes());
-						}
+						jar.write(Classes.read(new URL(Reflect.class.getResource("Reflect.class").toString().replaceFirst("Reflect(?=\\.class$)", "Agent")).openStream()));
 					}
 
 					var agentString = agent.toString();

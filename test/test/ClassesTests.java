@@ -114,10 +114,8 @@ public class ClassesTests extends Classes {
 		var resources = resources(null, "java/lang/Object.class").toList();
 		Assert.equal(1, resources.size());
 
-		try (var stream = resources.get(0).openStream()) {
-			var node = new ClassNode2().reader(stream.readAllBytes()).read();
-			Assert.equal(node.name, "java/lang/Object");
-		}
+		var node = new ClassNode2().reader(read(resources.get(0).openStream())).read();
+		Assert.equal(node.name, "java/lang/Object");
 	}
 
 	@Test void readTest() {

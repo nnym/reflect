@@ -7,6 +7,7 @@ import java.net.URLClassLoader;
 import java.util.stream.Stream;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.ClassTransformer;
+import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Reflect;
@@ -83,7 +84,7 @@ public class ReflectTests extends Reflect {
 					return super.loadClass(name, resolve);
 				}
 
-				var bytes = classFile.openStream().readAllBytes();
+				var bytes = Classes.read(classFile.openStream());
 				type = this.defineClass(null, bytes, 0, bytes.length);
 			}
 

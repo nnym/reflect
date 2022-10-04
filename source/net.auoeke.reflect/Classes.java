@@ -260,10 +260,8 @@ public class Classes {
 	 */
 	public static byte[] classFile(ClassLoader loader, String type) {
 		type = type.replace('.', '/') + ".class";
-
-		try (var stream = loader == null ? Object.class.getResourceAsStream('/' + type) : loader.getResourceAsStream(type)) {
-			return stream == null ? null : stream.readAllBytes();
-		}
+		var stream = loader == null ? Object.class.getResourceAsStream('/' + type) : loader.getResourceAsStream(type);
+		return stream == null ? null : read(stream);
 	}
 
 	/**
@@ -288,9 +286,8 @@ public class Classes {
 			throw new IllegalArgumentException("type must be user-defined");
 		}
 
-		try (var stream = type.getResourceAsStream('/' + type.getName().replace('.', '/') + ".class")) {
-			return stream == null ? null : stream.readAllBytes();
-		}
+		var stream = type.getResourceAsStream('/' + type.getName().replace('.', '/') + ".class");
+		return stream == null ? null : read(stream);
 	}
 
 	/**
