@@ -60,6 +60,10 @@ public class Assert {
 		return truth(object == null);
 	}
 
+	public static Assert notNull(Object object) {
+		return truth(object != null);
+	}
+
 	public static Assert arraysEqual(Object[]... arrays) {
 		return truth(arrays.length < 2 || Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
 	}
