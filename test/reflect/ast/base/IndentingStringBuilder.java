@@ -1,52 +1,52 @@
 package reflect.ast.base;
 
 public class IndentingStringBuilder {
-    protected final StringBuilder builder = new StringBuilder();
+	protected final StringBuilder builder = new StringBuilder();
 
-    protected String indentation = "";
+	protected String indentation = "";
 
-    public IndentingStringBuilder(String string) {
-        this.builder.append(string);
-    }
+	public IndentingStringBuilder(String string) {
+		this.builder.append(string);
+	}
 
-    public IndentingStringBuilder() {}
+	public IndentingStringBuilder() {}
 
-    public IndentingStringBuilder append(String string) {
-        this.builder.append(string);
+	public IndentingStringBuilder append(String string) {
+		this.builder.append(string);
 
-        return this;
-    }
+		return this;
+	}
 
-    public IndentingStringBuilder append(char character) {
-        this.builder.append(character);
+	public IndentingStringBuilder append(char character) {
+		this.builder.append(character);
 
-        return this;
-    }
+		return this;
+	}
 
-    public IndentingStringBuilder descend() {
-        this.indentation += "    ";
+	public IndentingStringBuilder descend() {
+		this.indentation += "    ";
 
-        return this;
-    }
+		return this;
+	}
 
-    public IndentingStringBuilder ascend() {
-        this.indentation = this.indentation.substring(4);
+	public IndentingStringBuilder ascend() {
+		this.indentation = this.indentation.substring(4);
 
-        return this;
-    }
+		return this;
+	}
 
-    public IndentingStringBuilder newline() {
-        this.builder.append(this.newlineString());
+	public IndentingStringBuilder newline() {
+		this.builder.append(this.newlineString());
 
-        return this;
-    }
+		return this;
+	}
 
-    public String newlineString() {
-        return '\n' + this.indentation;
-    }
+	public String newlineString() {
+		return '\n' + this.indentation;
+	}
 
-    @Override
-    public String toString() {
-        return this.builder.toString();
-    }
+	@Override
+	public String toString() {
+		return this.builder.toString();
+	}
 }

@@ -9,55 +9,55 @@ import reflect.ast.base.util.Union;
 import reflect.util.Util;
 
 public class GetField implements Expression {
-    protected final Union<Node, ConcreteType, Expression> owner = new Union<>(ConcreteType.class, Expression.class);
-    protected String name;
+	protected final Union<Node, ConcreteType, Expression> owner = new Union<>(ConcreteType.class, Expression.class);
+	protected String name;
 
-    protected boolean instance;
+	protected boolean instance;
 
-    public GetField() {}
+	public GetField() {}
 
-    public GetField(Field field) {
-        this.of(field.getDeclaringClass()).name(field.getName());
-    }
+	public GetField(Field field) {
+		this.of(field.getDeclaringClass()).name(field.getName());
+	}
 
-    public GetField of(Class<?> type) {
-        return this.of(new ConcreteType(type));
-    }
+	public GetField of(Class<?> type) {
+		return this.of(new ConcreteType(type));
+	}
 
-    public GetField of(ConcreteType type) {
-        this.owner.set(type);
+	public GetField of(ConcreteType type) {
+		this.owner.set(type);
 
-        return this;
-    }
+		return this;
+	}
 
-    public GetField of(Expression object) {
-        this.instance = true;
-        this.owner.set(object);
+	public GetField of(Expression object) {
+		this.instance = true;
+		this.owner.set(object);
 
-        return this;
-    }
+		return this;
+	}
 
-    public GetField name(String name) {
-        this.name = name;
+	public GetField name(String name) {
+		this.name = name;
 
-        return this;
-    }
+		return this;
+	}
 
-    @Override
-    public Stream<ConcreteType> referencedTypes() {
-        return this.owner.get().referencedTypes();
-    }
+	@Override
+	public Stream<ConcreteType> referencedTypes() {
+		return this.owner.get().referencedTypes();
+	}
 
-    @Override
-    public String toString() {
-        return Util.buildString(string -> {
-            if (this.instance) {
-                string.append(Objects.requireNonNullElse(this.owner.get(), "this")).append('.');
-            } else if (this.owner.present()) {
-                string.append(this.owner.get()).append('.');
-            }
+	@Override
+	public String toString() {
+		return Util.buildString(string -> {
+			if (this.instance) {
+				string.append(Objects.requireNonNullElse(this.owner.get(), "this")).append('.');
+			} else if (this.owner.present()) {
+				string.append(this.owner.get()).append('.');
+			}
 
-            string.append(this.name);
-        });
-    }
+			string.append(this.name);
+		});
+	}
 }

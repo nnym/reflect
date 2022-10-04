@@ -25,98 +25,98 @@ import test.Assert;
 @Disabled
 @Testable
 public class IrrelevantTest {
-    public static <T, R> R var(T object, Function<T, R> function) {
-        return function.apply(object);
-    }
+	public static <T, R> R var(T object, Function<T, R> function) {
+		return function.apply(object);
+	}
 
-    public static <T> void var(T object, Consumer<T> consumer) {
-        consumer.accept(object);
-    }
+	public static <T> void var(T object, Consumer<T> consumer) {
+		consumer.accept(object);
+	}
 
-    @Test
-    public void accessFlags() {
-        var data = ClassData.parseInstance(IrrelevantTest.class);
+	@Test
+	public void accessFlags() {
+		var data = ClassData.parseInstance(IrrelevantTest.class);
 
-        Util.bp();
-    }
+		Util.bp();
+	}
 
-    @Test
-    public void genericMetadata() {
-        var interfaces = GenericTypeAwareTest.class.getGenericInterfaces();
-        var superclass = GenericTypeAwareTest.class.getGenericSuperclass();
-        Type[] parameters = GenericTypeAware.class.getTypeParameters();
-        var typeArguments = Generics.typeArguments(GenericTypeAwareTest.Sub.Sub1.class);
+	@Test
+	public void genericMetadata() {
+		var interfaces = GenericTypeAwareTest.class.getGenericInterfaces();
+		var superclass = GenericTypeAwareTest.class.getGenericSuperclass();
+		Type[] parameters = GenericTypeAware.class.getTypeParameters();
+		var typeArguments = Generics.typeArguments(GenericTypeAwareTest.Sub.Sub1.class);
 
-        Util.bp();
-    }
+		Util.bp();
+	}
 
-    @Test
-    public void genericTypeAware() {
-        var typeAware = new GenericTypeAwareTest();
+	@Test
+	public void genericTypeAware() {
+		var typeAware = new GenericTypeAwareTest();
 
-        Logger.log(typeAware.type);
-    }
+		Logger.log(typeAware.type);
+	}
 
-    @Test
-    void enumMethodHandle() {
-        Invoker.findConstructor(RetentionPolicy.class, String.class, int.class).invoke(null, 1);
-    }
+	@Test
+	void enumMethodHandle() {
+		Invoker.findConstructor(RetentionPolicy.class, String.class, int.class).invoke(null, 1);
+	}
 
-    @Test
-    void visibilities() {
-        var count = (Consumer<Function<Class<?>, Member[]>>) members -> {
-            var pub = 0;
-            var pri = 0;
+	@Test
+	void visibilities() {
+		var count = (Consumer<Function<Class<?>, Member[]>>) members -> {
+			var pub = 0;
+			var pri = 0;
 
-            for (var type : Reflect.instrument().value().getAllLoadedClasses()) {
-                for (var method : members.apply(type)) {
-                    if (Flags.isPublic(method)) {
-                        ++pub;
-                    } else if (Flags.isPrivate(method)) {
-                        ++pri;
-                    }
-                }
-            }
+			for (var type : Reflect.instrument().value().getAllLoadedClasses()) {
+				for (var method : members.apply(type)) {
+					if (Flags.isPublic(method)) {
+						++pub;
+					} else if (Flags.isPrivate(method)) {
+						++pri;
+					}
+				}
+			}
 
-            System.out.printf("private: %d;%npublic: %d;%n%f%% private%n%n", pri, pub, pri / (float) (pub + pri) * 100);
-        };
+			System.out.printf("private: %d;%npublic: %d;%n%f%% private%n%n", pri, pub, pri / (float) (pub + pri) * 100);
+		};
 
-        System.out.println("fields");
-        count.accept(Fields::direct);
+		System.out.println("fields");
+		count.accept(Fields::direct);
 
-        System.out.println("methods");
-        count.accept(Methods::direct);
-    }
+		System.out.println("methods");
+		count.accept(Methods::direct);
+	}
 
-    @SuppressWarnings("Convert2MethodRef") // class load must be in lambda
-    @Test void packagePrivateInnerClassInDifferentLoader() {
-        ClassDefiner.make().loader(null).classFile(IrrelevantTest.class.getName() + "$Inner").define();
-        Assert.exception(() -> Inner.class.getName());
+	@SuppressWarnings("Convert2MethodRef") // class load must be in lambda
+	@Test void packagePrivateInnerClassInDifferentLoader() {
+		ClassDefiner.make().loader(null).classFile(IrrelevantTest.class.getName() + "$Inner").define();
+		Assert.exception(() -> Inner.class.getName());
 
-        // Inner must be loaded lazily
-        class Outer {
-            static class Inner {}
+		// Inner must be loaded lazily
+		class Outer {
+			static class Inner {}
 
-            static void doAssert() {
-                Assert.exception(() -> Outer.Inner.class.getName());
-            }
-        }
+			static void doAssert() {
+				Assert.exception(() -> Outer.Inner.class.getName());
+			}
+		}
 
-        ClassDefiner.make().loader(null).classFile(Outer.class.getName() + "$Inner").define();
-        Outer.doAssert();
-    }
+		ClassDefiner.make().loader(null).classFile(Outer.class.getName() + "$Inner").define();
+		Outer.doAssert();
+	}
 
-    static class Inner {}
+	static class Inner {}
 
-    static {
-        var(new Object() {
-            Object field0 = "field0";
-            Object field1 = "field1";
-        }, Object -> {
-            Object.field0 = "new0";
-            Object.field1 = "new1";
-        });
+	static {
+		var(new Object() {
+			Object field0 = "field0";
+			Object field1 = "field1";
+		}, Object -> {
+			Object.field0 = "new0";
+			Object.field1 = "new1";
+		});
 
-        System.setProperty("jol.tryWithSudo", "true");
-    }
+		System.setProperty("jol.tryWithSudo", "true");
+	}
 }

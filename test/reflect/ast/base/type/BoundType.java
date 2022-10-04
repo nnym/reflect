@@ -3,11 +3,11 @@ package reflect.ast.base.type;
 import java.util.Locale;
 
 public enum BoundType {
-    EXTENDS,
-    SUPER;
+	EXTENDS,
+	SUPER;
 
-    @Override
-    public String toString() {
-        return this.name().toLowerCase(Locale.ROOT);
-    }
+	@Override
+	public String toString() {
+		return this.name().toLowerCase(Locale.ROOT);
+	}
 }

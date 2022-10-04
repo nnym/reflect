@@ -1,9 +1,9 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
-    id("signing")
-    id("net.auoeke.gronk").version("2.+")
-    id("me.champeau.jmh").version("latest.release")
+	id("java-library")
+	id("maven-publish")
+	id("signing")
+	id("net.auoeke.gronk").version("2.+")
+	id("me.champeau.jmh").version("latest.release")
 }
 
 group("net.auoeke")
@@ -12,112 +12,112 @@ description("succinct and unrestricted reflection")
 javaVersion(17)
 
 sourceSets {
-    jmh {
-        java.srcDirs = ["benchmark"]
-    }
+	jmh {
+		java.srcDirs = ["benchmark"]
+	}
 }
 
 configurations {
-    [jmhAnnotationProcessor, testAnnotationProcessor]*.tap {
-        extendsFrom(annotationProcessor)
-    }
+	[jmhAnnotationProcessor, testAnnotationProcessor]*.tap {
+		extendsFrom(annotationProcessor)
+	}
 }
 
 java {
-    withJavadocJar()
+	withJavadocJar()
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    annotationProcessor(jmhAnnotationProcessor(testAnnotationProcessor("net.auoeke:uncheck-all")))
-    api("net.auoeke:unsafe")
+	annotationProcessor(jmhAnnotationProcessor(testAnnotationProcessor("net.auoeke:uncheck-all")))
+	api("net.auoeke:unsafe")
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation(
-        "org.junit.jupiter:junit-jupiter-api",
-        "org.ow2.asm:asm-tree",
-        "org.openjdk.jol:jol-core"
-    )
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+	testImplementation(
+		"org.junit.jupiter:junit-jupiter-api",
+		"org.ow2.asm:asm-tree",
+		"org.openjdk.jol:jol-core"
+	)
 }
 
 compileTestJava {
-    mustRunAfter(jar)
+	mustRunAfter(jar)
 
-    options.release.set(JavaVersion.current().majorVersion as int)
-    options.compilerArgs << "--enable-preview"
+	options.release.set(JavaVersion.current().majorVersion as int)
+	options.compilerArgs << "--enable-preview"
 }
 
 jmh {
-    fork = 1
-    warmup = "500ms"
-    timeOnIteration = "300ms"
+	fork = 1
+	warmup = "500ms"
+	timeOnIteration = "300ms"
 }
 
 test {
-    dependsOn(cleanTest)
+	dependsOn(cleanTest)
 
-    useJUnitPlatform()
-    systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
-    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-Xdump:none", "-XX:ErrorFile=${systemProperty("java.io.tmpdir")}/java_err_%p.log")
+	useJUnitPlatform()
+	systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
+	jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-Xdump:none", "-XX:ErrorFile=${systemProperty("java.io.tmpdir")}/java_err_%p.log")
 }
 
 jar {
-    manifest.from("resources/META-INF/MANIFEST.MF")
+	manifest.from("resources/META-INF/MANIFEST.MF")
 }
 
 javadoc {
-    options {
-        addBooleanOption("Xdoclint:none", true)
-    }
+	options {
+		addBooleanOption("Xdoclint:none", true)
+	}
 }
 
 // For Reflect::instrumentation.
 task testRelease(type: Test) {
-    group(LifecycleBasePlugin.VERIFICATION_GROUP)
-    dependsOn(cleanTestRelease, jar)
-    check.dependsOn(it)
+	group(LifecycleBasePlugin.VERIFICATION_GROUP)
+	dependsOn(cleanTestRelease, jar)
+	check.dependsOn(it)
 
-    useJUnitPlatform()
-    systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
-    classpath = classpath - sourceSets.main.output + files(jar.archiveFile)
+	useJUnitPlatform()
+	systemProperty("junit.jupiter.testclass.order.default", 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation')
+	classpath = classpath - sourceSets.main.output + files(jar.archiveFile)
 }
 
 publishing {
-    repositories {
-        mavenLocal()
+	repositories {
+		mavenLocal()
 
-        maven(findProperty("maven.repository")) {
-            username(findProperty("maven.username"))
-            password(findProperty("maven.password"))
-        }
-    }
+		maven(findProperty("maven.repository")) {
+			username(findProperty("maven.username"))
+			password(findProperty("maven.password"))
+		}
+	}
 
-    publications.withType(MavenPublication) {
-        pom {
-	        url.set("https://github.com/auoeke/reflect")
+	publications.withType(MavenPublication) {
+		pom {
+			url.set("https://github.com/auoeke/reflect")
 
-            licenses {
-                license {
-                    name.set("LGPL-3.0")
-                    url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
-                }
-            }
+			licenses {
+				license {
+					name.set("LGPL-3.0")
+					url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
+				}
+			}
 
-            developers {
-                developer {
-                    id.set("auoeke")
-                    email.set("me@auoeke.net")
-                }
-            }
+			developers {
+				developer {
+					id.set("auoeke")
+					email.set("me@auoeke.net")
+				}
+			}
 
-            scm {
-                connection.set("scm:git:git://github.com/auoeke/reflect.git")
-                developerConnection.set("scm:git:git://github.com/auoeke/reflect.git")
-                url.set("https://github.com/auoeke/reflect/tree/master")
-            }
-        }
-    }
+			scm {
+				connection.set("scm:git:git://github.com/auoeke/reflect.git")
+				developerConnection.set("scm:git:git://github.com/auoeke/reflect.git")
+				url.set("https://github.com/auoeke/reflect/tree/master")
+			}
+		}
+	}
 }

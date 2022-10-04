@@ -1,5 +1,5 @@
 package reflect.misc;
 
 public class Superclass {
-    public Superclass(String[] array) {}
+	public Superclass(String[] array) {}
 }

@@ -1,7 +1,7 @@
 package template;
 
 public @interface Name {
-    Class<?> type();
+	Class<?> type();
 
-    String name();
+	String name();
 }

@@ -12,132 +12,132 @@ import java.util.stream.Stream;
  @since 1.10.0
  */
 public class StackFrames {
-    public static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+	public static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-    /**
-     Return a sequential ordered stream of the current thread's stack frames.
+	/**
+	 Return a sequential ordered stream of the current thread's stack frames.
 
-     @return a stream of the current thread's stack frames
-     */
-    public static Stream<StackWalker.StackFrame> frameStream() {
-        return walker.walk(frames -> Stream.of(frames.toArray(StackWalker.StackFrame[]::new)).skip(1));
-    }
+	 @return a stream of the current thread's stack frames
+	 */
+	public static Stream<StackWalker.StackFrame> frameStream() {
+		return walker.walk(frames -> Stream.of(frames.toArray(StackWalker.StackFrame[]::new)).skip(1));
+	}
 
-    /**
-     Return a list of the current thread's stack frames.
+	/**
+	 Return a list of the current thread's stack frames.
 
-     @return a list of the current thread's stack frames
-     */
-    public static List<StackWalker.StackFrame> frameList() {
-        return walker.walk(frames -> frames.skip(1).toList());
-    }
+	 @return a list of the current thread's stack frames
+	 */
+	public static List<StackWalker.StackFrame> frameList() {
+		return walker.walk(frames -> frames.skip(1).toList());
+	}
 
-    /**
-     Find the first stack frame in the result of a transformation of the given stream of stack frames starting at this method's caller.
+	/**
+	 Find the first stack frame in the result of a transformation of the given stream of stack frames starting at this method's caller.
 
-     @param transformation the stack frame stream transformation
-     @return the first stack frame in the transformed stream
-     */
-    public static StackWalker.StackFrame first(UnaryOperator<Stream<StackWalker.StackFrame>> transformation) {
-        return walker.walk(frames -> transformation.apply(frames.skip(1)).findFirst().get());
-    }
+	 @param transformation the stack frame stream transformation
+	 @return the first stack frame in the transformed stream
+	 */
+	public static StackWalker.StackFrame first(UnaryOperator<Stream<StackWalker.StackFrame>> transformation) {
+		return walker.walk(frames -> transformation.apply(frames.skip(1)).findFirst().get());
+	}
 
-    /**
-     Find the stack frame at a given depth rooted at this method's caller.
+	/**
+	 Find the stack frame at a given depth rooted at this method's caller.
 
-     @param depth the depth of the target stack frame
-     @return the stack frame at the given depth
-     */
-    public static StackWalker.StackFrame frame(int depth) {
-        return first(frames -> frames.skip(depth + 1));
-    }
+	 @param depth the depth of the target stack frame
+	 @return the stack frame at the given depth
+	 */
+	public static StackWalker.StackFrame frame(int depth) {
+		return first(frames -> frames.skip(depth + 1));
+	}
 
-    /**
-     Find the first stack frame that matches a predicate starting at this method's caller.
+	/**
+	 Find the first stack frame that matches a predicate starting at this method's caller.
 
-     @param predicate the stack frame predicate
-     @return the first matching stack frame
-     */
-    public static StackWalker.StackFrame frame(Predicate<? super StackWalker.StackFrame> predicate) {
-        return first(frames -> frames.skip(1).filter(predicate));
-    }
+	 @param predicate the stack frame predicate
+	 @return the first matching stack frame
+	 */
+	public static StackWalker.StackFrame frame(Predicate<? super StackWalker.StackFrame> predicate) {
+		return first(frames -> frames.skip(1).filter(predicate));
+	}
 
-    /**
-     Find this method's caller's stack frame.
+	/**
+	 Find this method's caller's stack frame.
 
-     @return this method's caller's stack frame
-     */
-    public static StackWalker.StackFrame frame() {
-        return frame(1);
-    }
+	 @return this method's caller's stack frame
+	 */
+	public static StackWalker.StackFrame frame() {
+		return frame(1);
+	}
 
-    /**
-     Find the first calling class that matches a {@link StackWalker.StackFrame} predicate starting at this method's caller's caller.
+	/**
+	 Find the first calling class that matches a {@link StackWalker.StackFrame} predicate starting at this method's caller's caller.
 
-     @param predicate a stack frame predicate
-     @return the class associated with the first frame that satisfies the predicate
-     */
-    public static Class<?> caller(Predicate<? super StackWalker.StackFrame> predicate) {
-        return first(frames -> frames.skip(2).filter(predicate)).getDeclaringClass();
-    }
+	 @param predicate a stack frame predicate
+	 @return the class associated with the first frame that satisfies the predicate
+	 */
+	public static Class<?> caller(Predicate<? super StackWalker.StackFrame> predicate) {
+		return first(frames -> frames.skip(2).filter(predicate)).getDeclaringClass();
+	}
 
-    /**
-     Find the calling class at the specified depth rooted at this method's caller's caller.
+	/**
+	 Find the calling class at the specified depth rooted at this method's caller's caller.
 
-     @param depth the depth of the calling class
-     @return the calling class
-     */
-    public static Class<?> caller(int depth) {
-        return frame(depth + 2).getDeclaringClass();
-    }
+	 @param depth the depth of the calling class
+	 @return the calling class
+	 */
+	public static Class<?> caller(int depth) {
+		return frame(depth + 2).getDeclaringClass();
+	}
 
-    /**
-     Find the calling class of the method's caller's caller.
+	/**
+	 Find the calling class of the method's caller's caller.
 
-     @return the calling class
-     */
-    public static Class<?> caller() {
-        return caller(1);
-    }
+	 @return the calling class
+	 */
+	public static Class<?> caller() {
+		return caller(1);
+	}
 
-    /**
-     Return a sequential ordered stream of a thread's stack trace starting at this method's caller.
+	/**
+	 Return a sequential ordered stream of a thread's stack trace starting at this method's caller.
 
-     @param thread a thread
-     @return a stream of the thread's stack trace
-     */
-    public static Stream<StackTraceElement> traceStream(Thread thread) {
-        var trace = Stream.of(thread.getStackTrace());
-        return thread == Thread.currentThread() ? trace.skip(2) : trace;
-    }
+	 @param thread a thread
+	 @return a stream of the thread's stack trace
+	 */
+	public static Stream<StackTraceElement> traceStream(Thread thread) {
+		var trace = Stream.of(thread.getStackTrace());
+		return thread == Thread.currentThread() ? trace.skip(2) : trace;
+	}
 
-    /**
-     Return an array of a thread's stack trace starting at this method's caller.
+	/**
+	 Return an array of a thread's stack trace starting at this method's caller.
 
-     @param thread a thread
-     @return an array of the thread's stack trace
-     */
-    public static StackTraceElement[] trace(Thread thread) {
-        var trace = thread.getStackTrace();
-        return thread == Thread.currentThread() ? Arrays.copyOfRange(trace, 2, trace.length) : trace;
-    }
+	 @param thread a thread
+	 @return an array of the thread's stack trace
+	 */
+	public static StackTraceElement[] trace(Thread thread) {
+		var trace = thread.getStackTrace();
+		return thread == Thread.currentThread() ? Arrays.copyOfRange(trace, 2, trace.length) : trace;
+	}
 
-    /**
-     Return an array of the current thread's stack trace starting at this method's caller.
+	/**
+	 Return an array of the current thread's stack trace starting at this method's caller.
 
-     @return the current thread's stack trace
-     */
-    public static StackTraceElement[] trace() {
-        var trace = Thread.currentThread().getStackTrace();
-        return Arrays.copyOfRange(trace, 2, trace.length);
-    }
+	 @return the current thread's stack trace
+	 */
+	public static StackTraceElement[] trace() {
+		var trace = Thread.currentThread().getStackTrace();
+		return Arrays.copyOfRange(trace, 2, trace.length);
+	}
 
-    /**
-     Get this method's caller's stack trace element.
+	/**
+	 Get this method's caller's stack trace element.
 
-     @return this method's caller's stack trace element
-     */
-    public static StackTraceElement traceFrame() {
-        return trace()[1];
-    }
+	 @return this method's caller's stack trace element
+	 */
+	public static StackTraceElement traceFrame() {
+		return trace()[1];
+	}
 }

@@ -23,34 +23,34 @@ import com.sun.tools.attach.VirtualMachine;
  @since 0.0.0
  */
 public class Reflect {
-    private static Result<Instrumentation> instrumentation;
+	private static Result<Instrumentation> instrumentation;
 
-    /**
-     Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
-     <p><b>
-     Note that this method is not guaranteed to work with all JVM vendors.
-     <br>
-     Note that this method may stop working in the future; see the comments in {@link sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
-     </b>
+	/**
+	 Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
+	 <p><b>
+	 Note that this method is not guaranteed to work with all JVM vendors.
+	 <br>
+	 Note that this method may stop working in the future; see the comments in {@link sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
+	 </b>
 
-     @return a {@link Result} containing an {@link Instrumentation} instance if attachment was successful
-     @since 4.9.0
-     */
-    public static Result<Instrumentation> instrument() {
-        if (instrumentation == null) {
-            var result = new Result<Instrumentation>();
+	 @return a {@link Result} containing an {@link Instrumentation} instance if attachment was successful
+	 @since 4.9.0
+	 */
+	public static Result<Instrumentation> instrument() {
+		if (instrumentation == null) {
+			var result = new Result<Instrumentation>();
 
-            result.map(() -> {
-                result.andSuppress(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
-                result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
-                result.andSuppress(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true));
+			result.map(() -> {
+				result.andSuppress(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"));
+				result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
+				result.andSuppress(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true));
 
-                // Do not reference Agent directly because it might belong to a different loader.
-                var agentClass = Class.forName(Reflect.class.getPackageName() + ".Agent");
-                var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
+				// Do not reference Agent directly because it might belong to a different loader.
+				var agentClass = Class.forName(Reflect.class.getPackageName() + ".Agent");
+				var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
-                try {
-                    //@formatter:off
+				try {
+					//@formatter:off
                     var manifest = Stream.concat(
                         Optional.ofNullable(Classes.location(agentClass)).map(url -> {
                             if (url.openConnection() instanceof JarURLConnection jar) {
@@ -83,45 +83,45 @@ public class Reflect {
                      .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
                     //@formatter:on
 
-                    var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
+					var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
 
-                    try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
-                        jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-                        manifest.write(jar);
-                        jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
+					try (var jar = new JarOutputStream(Files.newOutputStream(agent))) {
+						jar.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+						manifest.write(jar);
+						jar.putNextEntry(new ZipEntry(agentClass.getName().replace('.', '/') + ".class"));
 
-                        // If agentClass is from tmpdir, then its source is being overwritten and incomplete.
-                        // Thus, attempting to read it now will throw an EOFException.
-                        try (var stream = new URL(Reflect.class.getResource("Reflect.class").toString().replaceFirst("Reflect(?=\\.class$)", "Agent")).openStream()) {
-                            jar.write(stream.readAllBytes());
-                        }
-                    }
+						// If agentClass is from tmpdir, then its source is being overwritten and incomplete.
+						// Thus, attempting to read it now will throw an EOFException.
+						try (var stream = new URL(Reflect.class.getResource("Reflect.class").toString().replaceFirst("Reflect(?=\\.class$)", "Agent")).openStream()) {
+							jar.write(stream.readAllBytes());
+						}
+					}
 
-                    var agentString = agent.toString();
+					var agentString = agent.toString();
 
-                    try {
-                        vm.loadAgent(agentString);
-                    } catch (AgentLoadException exception) {
-                        throw Exceptions.message(exception, message -> agentString + ": " + message);
-                    }
+					try {
+						vm.loadAgent(agentString);
+					} catch (AgentLoadException exception) {
+						throw Exceptions.message(exception, message -> agentString + ": " + message);
+					}
 
-                    return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
-                } finally {
-                    vm.detach();
-                }
-            });
+					return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
+				} finally {
+					vm.detach();
+				}
+			});
 
-            instrumentation = result;
-        }
+			instrumentation = result;
+		}
 
-        return instrumentation;
-    }
+		return instrumentation;
+	}
 
-    static <T> T runNull(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable throwable) {
-            return null;
-        }
-    }
+	static <T> T runNull(Supplier<T> supplier) {
+		try {
+			return supplier.get();
+		} catch (Throwable throwable) {
+			return null;
+		}
+	}
 }

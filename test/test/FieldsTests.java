@@ -12,11 +12,11 @@ import reflect.misc.C;
 
 @Testable
 public class FieldsTests extends Fields {
-    @Test void directTest() {
-        assert Fields.of(Class.forName("jdk.internal.reflect.Reflection")).findAny().isPresent();
-    }
+	@Test void directTest() {
+		assert Fields.of(Class.forName("jdk.internal.reflect.Reflection")).findAny().isPresent();
+	}
 
-    @Test void allFields() {
-        assert Stream.of(A.class, B.class, C.class).allMatch(Fields.all(C.class).collect(HashMap::new, (map, field) -> map.computeIfAbsent(field.getDeclaringClass(), type -> new HashMap<>()), Map::putAll)::containsKey);
-    }
+	@Test void allFields() {
+		assert Stream.of(A.class, B.class, C.class).allMatch(Fields.all(C.class).collect(HashMap::new, (map, field) -> map.computeIfAbsent(field.getDeclaringClass(), type -> new HashMap<>()), Map::putAll)::containsKey);
+	}
 }

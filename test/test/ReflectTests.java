@@ -19,79 +19,79 @@ import org.objectweb.asm.tree.ClassNode;
 
 @Testable
 public class ReflectTests extends Reflect {
-    @Test public void instrumentationTest() {
-        if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
-            try (var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new))) {
-                var clone = new GreedyClassLoader(loader).loadClass(ReflectTests.class.getName());
-                clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
-            }
-        }
+	@Test public void instrumentationTest() {
+		if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+			try (var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new))) {
+				var clone = new GreedyClassLoader(loader).loadClass(ReflectTests.class.getName());
+				clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
+			}
+		}
 
-        assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
+		assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
 
-        var string = "toString instrumented";
-        instrument().value().addTransformer(ClassTransformer.of((module, loader, name, type, domain, classFile) -> {
-            var node = new ClassNode();
-            new ClassReader(classFile).accept(node, 0);
+		var string = "toString instrumented";
+		instrument().value().addTransformer(ClassTransformer.of((module, loader, name, type, domain, classFile) -> {
+			var node = new ClassNode();
+			new ClassReader(classFile).accept(node, 0);
 
-            var toString = node.methods.stream().filter(a -> a.name.equals("toString")).findAny().get();
-            toString.instructions.clear();
-            toString.visitLdcInsn(string);
-            toString.visitInsn(Opcodes.ARETURN);
+			var toString = node.methods.stream().filter(a -> a.name.equals("toString")).findAny().get();
+			toString.instructions.clear();
+			toString.visitLdcInsn(string);
+			toString.visitInsn(Opcodes.ARETURN);
 
-            var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-            node.accept(writer);
-            return writer.toByteArray();
-        }).ofType(Object.class).exceptionLogging().singleUse(instrument().value()), true);
-        instrument().value().retransformClasses(Object.class);
+			var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+			node.accept(writer);
+			return writer.toByteArray();
+		}).ofType(Object.class).exceptionLogging().singleUse(instrument().value()), true);
+		instrument().value().retransformClasses(Object.class);
 
-        assert string.equals(new Object().toString());
-    }
+		assert string.equals(new Object().toString());
+	}
 
-    @Test void instrumentationAgentDefinedBySeparateLoader() {
-        var agent = Reflect.class.getPackageName().replace('.', '/') + "/Agent";
-        var loader = new GreedyClassLoader(new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new)) {
-            @Override public URL findResource(String name) {
-                return name.equals(agent + ".class") ? null : super.findResource(name);
-            }
-        });
+	@Test void instrumentationAgentDefinedBySeparateLoader() {
+		var agent = Reflect.class.getPackageName().replace('.', '/') + "/Agent";
+		var loader = new GreedyClassLoader(new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new)) {
+			@Override public URL findResource(String name) {
+				return name.equals(agent + ".class") ? null : super.findResource(name);
+			}
+		});
 
-        ClassDefiner.make().loader(null).classFile(agent).define();
+		ClassDefiner.make().loader(null).classFile(agent).define();
 
-        var instrumentation = (Instrumentation) Invoker.bind(Methods.of(loader.loadClass(Reflect.class.getName()), "instrument").invoke(null), "value", Object.class).invoke();
-        assert instrumentation.isRedefineClassesSupported() && instrumentation.isRetransformClassesSupported() && instrumentation.isNativeMethodPrefixSupported();
-    }
+		var instrumentation = (Instrumentation) Invoker.bind(Methods.of(loader.loadClass(Reflect.class.getName()), "instrument").invoke(null), "value", Object.class).invoke();
+		assert instrumentation.isRedefineClassesSupported() && instrumentation.isRetransformClassesSupported() && instrumentation.isNativeMethodPrefixSupported();
+	}
 
-    static class GreedyClassLoader extends ClassLoader {
-        final MethodHandle findResource;
+	static class GreedyClassLoader extends ClassLoader {
+		final MethodHandle findResource;
 
-        public GreedyClassLoader(ClassLoader delegate) {
-            this.findResource = Invoker.bind(delegate, "findResource", URL.class, String.class);
-        }
+		public GreedyClassLoader(ClassLoader delegate) {
+			this.findResource = Invoker.bind(delegate, "findResource", URL.class, String.class);
+		}
 
-        @Override protected Class<?> loadClass(String name, boolean resolve) {
-            if (name.startsWith("java.")) {
-                return super.loadClass(name, resolve);
-            }
+		@Override protected Class<?> loadClass(String name, boolean resolve) {
+			if (name.startsWith("java.")) {
+				return super.loadClass(name, resolve);
+			}
 
-            var type = this.findLoadedClass(name);
+			var type = this.findLoadedClass(name);
 
-            if (type == null) {
-                var classFile = (URL) this.findResource.invoke(name.replace('.', '/') + ".class");
+			if (type == null) {
+				var classFile = (URL) this.findResource.invoke(name.replace('.', '/') + ".class");
 
-                if (classFile == null) {
-                    return super.loadClass(name, resolve);
-                }
+				if (classFile == null) {
+					return super.loadClass(name, resolve);
+				}
 
-                var bytes = classFile.openStream().readAllBytes();
-                type = this.defineClass(null, bytes, 0, bytes.length);
-            }
+				var bytes = classFile.openStream().readAllBytes();
+				type = this.defineClass(null, bytes, 0, bytes.length);
+			}
 
-            if (resolve) {
-                this.resolveClass(type);
-            }
+			if (resolve) {
+				this.resolveClass(type);
+			}
 
-            return type;
-        }
-    }
+			return type;
+		}
+	}
 }

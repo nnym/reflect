@@ -15,26 +15,26 @@ import reflect.ast.base.method.expression.Invocation;
 @Testable
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class UnsafeBuilder extends TestBuilder {
-    public UnsafeBuilder() {
-        super("net.auoeke.unsafe.Unsafe");
+	public UnsafeBuilder() {
+		super("net.auoeke.unsafe.Unsafe");
 
-        this.public$();
-    }
+		this.public$();
+	}
 
-    @Test
-    void generate() {
-        Methods.of(Class.forName("jdk.internal.misc.Unsafe")).filter(method -> Flags.isPublic(method) && Flags.isInstance(method)).forEach(unsafeMethod -> {
-            this.method(method -> method.inherit(unsafeMethod));
+	@Test
+	void generate() {
+		Methods.of(Class.forName("jdk.internal.misc.Unsafe")).filter(method -> Flags.isPublic(method) && Flags.isInstance(method)).forEach(unsafeMethod -> {
+			this.method(method -> method.inherit(unsafeMethod));
 
-            MethodHandle handle = Invoker.unreflectSpecial(unsafeMethod);
+			MethodHandle handle = Invoker.unreflectSpecial(unsafeMethod);
 
-            this.field(field -> field.type(MethodHandle.class).name(unsafeMethod.getName()).initialize(new Invocation(Invoker.class, "bind")));
-        });
-    }
+			this.field(field -> field.type(MethodHandle.class).name(unsafeMethod.getName()).initialize(new Invocation(Invoker.class, "bind")));
+		});
+	}
 
-    @Override
-    @AfterEach
-    protected void tearDown() {
-        super.tearDown();
-    }
+	@Override
+	@AfterEach
+	protected void tearDown() {
+		super.tearDown();
+	}
 }

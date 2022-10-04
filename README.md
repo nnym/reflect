@@ -7,17 +7,19 @@ Supported Java versions are 17 and above.
 I try to keep this library mostly stable; although occasionally (with prior notice or otherwise) I may break things.
 
 reflect depends on [unsafe](https://github.com/auoeke/unsafe) and is hosted at Central as `net.auoeke:reflect`.
+
 ```groovy
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    implementation("net.auoeke:reflect:5.+")
+	implementation("net.auoeke:reflect:5.+")
 }
 ```
 
 ### A brief summary
+
 - `Accessor` reads, mutates and copies fields.
 - `Classes` loads and deals with classes. It can also change object types like `reinterpret_cast` in C++.
 - `ClassDefiner` defines classes.
@@ -36,6 +38,7 @@ dependencies {
 - `Types` deals with `Class`es in many ways including type conversion.
 
 ### Developing
+
 Use [uncheck for IntelliJ IDEA](https://github.com/auoeke/uncheck#using-the-intellij-plugin) in order to suppress checked exception warnings.
 
 Relevant tests are in the [main test classes](test/test); everything else is irrelevant.

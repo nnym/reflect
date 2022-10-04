@@ -12,12 +12,12 @@ import org.junit.platform.commons.annotation.Testable;
 @Testable
 @Order(0)
 public class Warmup {
-    @Test
-    void load() {
-        var path = Path.of(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+	@Test
+	void load() {
+		var path = Path.of(Reflect.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
-        try (var list = Files.list((Files.isDirectory(path) ? path : FileSystems.newFileSystem(path).getPath("/")).resolve("net/auoeke/reflect"))) {
-            list.forEach(type -> Class.forName("net.auoeke.reflect." + type.getFileName().toString().replace(".class", "")));
-        }
-    }
+		try (var list = Files.list((Files.isDirectory(path) ? path : FileSystems.newFileSystem(path).getPath("/")).resolve("net/auoeke/reflect"))) {
+			list.forEach(type -> Class.forName("net.auoeke.reflect." + type.getFileName().toString().replace(".class", "")));
+		}
+	}
 }
