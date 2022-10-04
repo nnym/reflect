@@ -94,6 +94,6 @@ public class Block implements Statement {
 
 	@Override
 	public String toString() {
-		return this.statements.isEmpty() ? "{}" : this.statements.stream().flatMap(Statement::lines).map(line -> "\n    " + line).collect(Collectors.joining("", "{", "\n}"));
+		return this.statements.isEmpty() ? "{}" : this.statements.stream().flatMap(Statement::lines).map(line -> "\n	" + line).collect(Collectors.joining("", "{", "\n}"));
 	}
 }

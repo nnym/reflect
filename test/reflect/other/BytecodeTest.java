@@ -34,9 +34,9 @@ public class BytecodeTest implements Opcodes {
 	}
 
 	@Test void finalFieldMayHaveBeenAssigned() {
-		//        class A {final int a;
-		//            A() {this.a = 1;}
-		//            A(int b) {this(); this.a = b;}}
+		//		class A {final int a;
+		//			A() {this.a = 1;}
+		//			A(int b) {this(); this.a = b;}}
 		var klass = new ClassNode2(ACC_PUBLIC, "A");
 		klass.visitField(ACC_FINAL, "a", "I");
 

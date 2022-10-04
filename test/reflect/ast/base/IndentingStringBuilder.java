@@ -24,7 +24,7 @@ public class IndentingStringBuilder {
 	}
 
 	public IndentingStringBuilder descend() {
-		this.indentation += "    ";
+		this.indentation += "	";
 
 		return this;
 	}

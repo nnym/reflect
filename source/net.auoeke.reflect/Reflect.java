@@ -51,37 +51,37 @@ public class Reflect {
 
 				try {
 					//@formatter:off
-                    var manifest = Stream.concat(
-                        Optional.ofNullable(Classes.location(agentClass)).map(url -> {
-                            if (url.openConnection() instanceof JarURLConnection jar) {
-                                return jar.getManifest();
-                            }
+					var manifest = Stream.concat(
+						Optional.ofNullable(Classes.location(agentClass)).map(url -> {
+							if (url.openConnection() instanceof JarURLConnection jar) {
+								return jar.getManifest();
+							}
 
-                            var path = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
+							var path = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
 
-                            if (!Files.exists(path)) {
-                                return null;
-                            }
+							if (!Files.exists(path)) {
+								return null;
+							}
 
-                            try (var input = Files.newInputStream(path)) {
-                                return new Manifest(input);
-                            }
-                        }).stream(),
-                        agentClass.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
-                            var connection = url.openConnection();
+							try (var input = Files.newInputStream(path)) {
+								return new Manifest(input);
+							}
+						}).stream(),
+						agentClass.getClassLoader().resources(JarFile.MANIFEST_NAME).map(url -> {
+							var connection = url.openConnection();
 
-                            if (connection instanceof JarURLConnection jar) {
-                                return jar.getManifest();
-                            }
+							if (connection instanceof JarURLConnection jar) {
+								return jar.getManifest();
+							}
 
-                            try (var input = connection.getInputStream()) {
-                                return new Manifest(input);
-                            }
-                        })
-                    ).filter(entry -> entry != null && agentClass.getName().equals(entry.getMainAttributes().getValue("Agent-Class")))
-                     .findFirst()
-                     .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
-                    //@formatter:on
+							try (var input = connection.getInputStream()) {
+								return new Manifest(input);
+							}
+						})
+					).filter(entry -> entry != null && agentClass.getName().equals(entry.getMainAttributes().getValue("Agent-Class")))
+					 .findFirst()
+					 .orElseThrow(() -> new FileNotFoundException("no MANIFEST.MF with \"Agent-Class: %s\"".formatted(agentClass.getName())));
+					//@formatter:on
 
 					var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
 

@@ -13,26 +13,26 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class Types {
 	// @formatter:off
-    /**
-     Widen primitives according to the automatic widening in Java.
-     */
-    public static final long WIDEN  = 1;
+	/**
+	 Widen primitives according to the automatic widening in Java.
+	 */
+	public static final long WIDEN  = 1;
 
-    /**
-     Unbox primitive wrappers if they match the target primitive type.
-     */
-    public static final long UNBOX  = 1 << 1;
+	/**
+	 Unbox primitive wrappers if they match the target primitive type.
+	 */
+	public static final long UNBOX  = 1 << 1;
 
-    /**
-     Box primitives in order to match their wrappers.
-     */
-    public static final long BOX    = 1 << 2;
+	/**
+	 Box primitives in order to match their wrappers.
+	 */
+	public static final long BOX	= 1 << 2;
 
-    /**
-     Rewrap wrappers in wider types.
-     */
-    public static final long REWRAP = 1 << 3;
-    // @formatter:on
+	/**
+	 Rewrap wrappers in wider types.
+	 */
+	public static final long REWRAP = 1 << 3;
+	// @formatter:on
 
 	/**
 	 {@link #WIDEN Widen primitives} and {@link #UNBOX unbox wrappers}.
@@ -363,18 +363,18 @@ public class Types {
 	 */
 	public static <T> T[] box(Object array) {
 		// @formatter:off
-        return (T[]) (
-            array instanceof boolean[] b ? box(b)
-            : array instanceof byte[] b ? box(b)
-            : array instanceof char[] c ? box(c)
-            : array instanceof short[] s ? box(s)
-            : array instanceof int[] i ? box(i)
-            : array instanceof long[] l ? box(l)
-            : array instanceof float[] f ? box(f)
-            : array instanceof double[] d ? box(d)
-            : array
-        );
-        // @formatter:on
+		return (T[]) (
+			array instanceof boolean[] b ? box(b)
+			: array instanceof byte[] b ? box(b)
+			: array instanceof char[] c ? box(c)
+			: array instanceof short[] s ? box(s)
+			: array instanceof int[] i ? box(i)
+			: array instanceof long[] l ? box(l)
+			: array instanceof float[] f ? box(f)
+			: array instanceof double[] d ? box(d)
+			: array
+		);
+		// @formatter:on
 	}
 
 	/**
