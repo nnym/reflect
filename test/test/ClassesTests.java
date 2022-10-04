@@ -5,9 +5,11 @@ import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.security.SecureClassLoader;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import experimental.Classes2;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
@@ -16,6 +18,7 @@ import net.auoeke.reflect.Pointer;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import reflect.asm.ClassNode2;
 
 @SuppressWarnings("AccessStaticViaInstance")
 @Testable
@@ -88,6 +91,32 @@ public class ClassesTests extends Classes {
 		}
 
 		assert ClassesTests.class == Invoker.findStatic(ClassDefiner.make().loader(loader).classFile(classFile(Test.class)).define(), "load", Class.class, String.class).invoke(ClassesTests.class.getName());
+	}
+
+	@Test void streamTest() {
+		var enumeration = new Enumeration<URL>() {
+			int i = 3;
+
+			@Override public boolean hasMoreElements() {
+				return this.i != 0;
+			}
+
+			@Override public URL nextElement() {
+				return Path.of("file" + this.i--).toUri().toURL();
+			}
+		};
+
+		Assert.truth(Classes2.stream(enumeration).count() == 3);
+	}
+
+	@Test void resourcesTest() {
+		var resources = Classes2.resources(null, "java/lang/Object.class").toList();
+		Assert.equal(1, resources.size());
+
+		try (var stream = resources.get(0).openStream()) {
+			var node = new ClassNode2().reader(stream.readAllBytes()).read();
+			Assert.equal(node.name, "java/lang/Object");
+		}
 	}
 }
 
