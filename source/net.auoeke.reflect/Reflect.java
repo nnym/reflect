@@ -135,8 +135,12 @@ public class Reflect {
 		return Optional.ofNullable(Classes.location(type)).map(url -> {
 			var string = url.toString();
 
-			return string.endsWith(".jar") ? new URL("jar:" + string + "!/" + JarFile.MANIFEST_NAME)
-				: new URL(string.replaceFirst("/?$", "/" + JarFile.MANIFEST_NAME));
+			if (string.endsWith(".jar")) {
+				return new URL("jar:" + string + "!/" + JarFile.MANIFEST_NAME);
+			}
+
+			var path = Path.of(url.toURI()).resolve(JarFile.MANIFEST_NAME);
+			return Files.exists(path) ? path.toUri().toURL() : null;
 		}).stream();
 	}
 }
