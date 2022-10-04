@@ -9,7 +9,7 @@ import reflect.ast.base.Node;
 import reflect.ast.base.method.statement.InvocationStatement;
 import reflect.ast.base.method.statement.Statement;
 import reflect.ast.base.type.ConcreteType;
-import reflect.experimental.Copyable;
+import experimental.Copyable;
 import reflect.util.Util;
 
 public class Invocation implements StatementExpression, Copyable<Invocation> {

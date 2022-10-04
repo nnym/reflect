@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import org.openjdk.jol.info.ClassData;
-import reflect.experimental.generics.Generics;
+import experimental.generics.Generics;
 import reflect.generics.GenericTypeAware;
 import reflect.generics.GenericTypeAwareTest;
 import reflect.util.Logger;

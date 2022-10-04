@@ -6,7 +6,7 @@ import net.auoeke.reflect.Flags;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
-import reflect.experimental.ReflectionFactory;
+import experimental.ReflectionFactory;
 import reflect.util.Logger;
 import reflect.util.Retainable;
 import reflect.util.Util;

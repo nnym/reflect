@@ -1,7 +1,7 @@
 package reflect.misc;
 
 import java.util.Random;
-import reflect.experimental.Copyable;
+import experimental.Copyable;
 
 public class A implements Cloneable, Copyable<A> {
 	public static final String[] strings = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};

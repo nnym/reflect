@@ -1,4 +1,4 @@
-package reflect.experimental;
+package experimental;
 
 import java.lang.instrument.Instrumentation;
 import net.auoeke.reflect.ClassTransformer;

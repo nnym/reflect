@@ -1,4 +1,4 @@
-package reflect.experimental;
+package experimental;
 
 public class Flags2 {
 	public static int subfield(int field, int start, int end) {

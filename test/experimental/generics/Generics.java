@@ -1,4 +1,4 @@
-package reflect.experimental.generics;
+package experimental.generics;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

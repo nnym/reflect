@@ -1,4 +1,4 @@
-package reflect.experimental.generics;
+package experimental.generics;
 
 public class TypeArgument {
 	public final Class<?> declaringClass;

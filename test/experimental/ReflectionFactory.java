@@ -1,4 +1,4 @@
-package reflect.experimental;
+package experimental;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
