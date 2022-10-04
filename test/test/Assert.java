@@ -6,8 +6,17 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-@SuppressWarnings("InstantiationOfUtilityClass")
 public class Assert {
+	public static Assert truth(boolean boolea) {
+		assert boolea;
+		return null;
+	}
+
+	public static Assert truth(boolean boolea, Supplier<String> message) {
+		assert boolea : message.get();
+		return null;
+	}
+
     public static Assert exception(String message, Runnable action) {
         try {
             action.run();
@@ -44,32 +53,32 @@ public class Assert {
 	}
 
     public static Assert equal(Object... objects) {
-        return asert(objects.length < 2 || Stream.of(objects).allMatch(Predicate.isEqual(objects[0])), () -> Arrays.deepToString(objects));
+        return truth(objects.length < 2 || Stream.of(objects).allMatch(Predicate.isEqual(objects[0])), () -> Arrays.deepToString(objects));
     }
 
+	public static Assert nul(Object object) {
+		return truth(object == null);
+	}
+
     public static Assert arraysEqual(Object[]... arrays) {
-        return asert(arrays.length < 2 || Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
+        return truth(arrays.length < 2 || Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
     }
+
+	public static Assert elementsEquivalent(Stream<?>... streams) {
+		var lists = Stream.of(streams).map(Stream::toList).toList();
+		var first = lists.get(0);
+		return truth(lists.stream().allMatch(list -> list.size() == first.size() && list.containsAll(first)), lists::toString);
+	}
 
     public static <T> Assert equalBy(Function<T, Object> key, T... objects) {
         return equal(Stream.of(objects).map(key).toArray());
     }
 
     public static Assert distinct(Object... objects) {
-        return asert(Stream.of(objects).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
+        return truth(Stream.of(objects).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
     }
 
     public static <T> Assert distinctBy(Function<T, Object> key, T... objects) {
-        return asert(Stream.of(objects).map(key).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
-    }
-
-    private static Assert asert(boolean b) {
-        assert b;
-        return null;
-    }
-
-    private static Assert asert(boolean b, Supplier<String> message) {
-        assert b : message.get();
-        return null;
+        return truth(Stream.of(objects).map(key).distinct().count() == objects.length, () -> Arrays.deepToString(objects));
     }
 }
