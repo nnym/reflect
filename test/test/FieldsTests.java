@@ -27,7 +27,8 @@ public class FieldsTests extends Fields {
 		var copy = copy(field);
 		var copyCopy = copy(copy);
 
-		Assert.equal(copy, field, copyCopy)
+		Assert.nul(copy(null))
+			.equal(copy, field, copyCopy)
 			.equalBy(f -> Accessor.getInt(123, f), field, copy, copyCopy);
 	}
 }

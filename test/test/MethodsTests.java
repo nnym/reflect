@@ -98,7 +98,8 @@ public class MethodsTests extends Methods {
 		var copy = copy(method);
 		var copyCopy = copy(copy);
 
-		Assert.equal(method, copy, copyCopy)
+		Assert.nul(copy(null))
+			.equal(method, copy, copyCopy)
 			.equalBy(m -> m.invoke(123), method, copy, copyCopy);
 	}
 }

@@ -70,9 +70,11 @@ public class Constructors {
 	 @since 5.3.0
 	 */
 	public static Constructor copy(Constructor constructor) {
+		if (constructor == null) {
+			return null;
+		}
+
 		var root = AccessibleObjects.root(constructor);
-		return constructor == null ? null
-			: root == null ? (Constructor) copy.invokeExact(constructor)
-			: copy(root);
+		return root == null ? (Constructor) copy.invokeExact(constructor) : copy(root);
 	}
 }

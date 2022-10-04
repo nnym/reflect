@@ -36,7 +36,8 @@ public class ConstructorsTests extends Constructors {
 		var copy = copy(constructor);
 		var copyCopy = copy(copy);
 
-		Assert.equal(constructor, copy, copyCopy)
+		Assert.nul(copy(null))
+			.equal(constructor, copy, copyCopy)
 			.equalBy(Constructor::newInstance, constructor, copy, copyCopy);
 	}
 

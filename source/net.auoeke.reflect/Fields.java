@@ -171,9 +171,11 @@ public class Fields {
 	 @since 5.3.0
 	 */
 	public static Field copy(Field field) {
+		if (field == null) {
+			return null;
+		}
+
 		var root = AccessibleObjects.root(field);
-		return field == null ? null
-			: root == null ? (Field) copy.invokeExact(field)
-			: copy(root);
+		return root == null ? (Field) copy.invokeExact(field) : copy(root);
 	}
 }
