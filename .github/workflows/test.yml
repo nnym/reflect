@@ -6,7 +6,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         version: [17, 18, 19]
-        distribution: [temurin, zulu, liberica, microsoft, corretto]
+        distribution: [temurin, zulu, liberica, microsoft]
     runs-on: ${{matrix.os}}
     steps:
       - name: checkout
