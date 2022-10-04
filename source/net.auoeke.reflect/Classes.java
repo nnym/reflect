@@ -1,5 +1,6 @@
 package net.auoeke.reflect;
 
+import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -319,6 +320,20 @@ public class Classes {
 		return loader == null ? stream((Enumeration<URL>) findResources.invokeExact(name)) : loader.resources(name);
 	}
 
+	/**
+	 Reads a resource as a {@code byte[]}.
+	 This method always {@link InputStream#close closes} {@code resource}.
+
+	 @param resource an {@link InputStream} from a resource
+	 @return the contents of {@code resource} as a {@code byte[]}
+	 @throws NullPointerException if {@code resource} is {@code null}
+	 @since 5.3.0
+	 */
+	public static byte[] read(InputStream resource) {
+		try (var input = resource) {
+			return input.readAllBytes();
+		}
+	}
 
 	public static List<Type> genericSupertypes(Class<?> type) {
 		var supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));

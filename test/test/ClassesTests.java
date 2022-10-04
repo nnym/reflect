@@ -1,5 +1,6 @@
 package test;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
@@ -9,6 +10,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import mock.ClosableInputStream;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
@@ -115,6 +117,17 @@ public class ClassesTests extends Classes {
 		try (var stream = resources.get(0).openStream()) {
 			var node = new ClassNode2().reader(stream.readAllBytes()).read();
 			Assert.equal(node.name, "java/lang/Object");
+		}
+	}
+
+	@Test void readTest() {
+		var path = "/java/lang/Object.class";
+		var stream = new ClosableInputStream(Object.class.getResourceAsStream(path));
+		var contents = read(stream);
+		Assert.truth(stream.closed());
+
+		try (var s = Object.class.getResourceAsStream(path)) {
+			Assert.arraysEqual(contents, s.readAllBytes());
 		}
 	}
 }
