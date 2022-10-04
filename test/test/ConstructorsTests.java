@@ -1,9 +1,12 @@
 package test;
 
+import java.lang.reflect.Constructor;
+import mock.EmptyRecord;
 import net.auoeke.reflect.Constructors;
 import org.junit.jupiter.api.Test;
 import reflect.misc.Enumeration;
 
+@SuppressWarnings("AccessStaticViaInstance")
 public class ConstructorsTests extends Constructors {
 	@Test void test() {
 		Assert.arraysEqual(PrivateCtor.class.getDeclaredConstructors(), PrivateCtor.class.getDeclaredConstructors());
@@ -26,6 +29,16 @@ public class ConstructorsTests extends Constructors {
 		assert pc.floa == 1.5F;
 		assert pc.doubl == 3.5;
 		assert pc.o == null;
+	}
+
+	@Test void copyTest() {
+		var constructor = find(EmptyRecord.class);
+		var copy = copy(constructor);
+		var copyCopy = copy(copy);
+
+		Assert.nul(copy(null))
+			.equal(constructor, copy, copyCopy)
+			.equalBy(Constructor::newInstance, constructor, copy, copyCopy);
 	}
 
 	static class Base {

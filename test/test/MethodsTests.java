@@ -92,4 +92,14 @@ public class MethodsTests extends Methods {
 			.nul(sam(BigInterface.Impl.class))
 			.nul(sam(Object.class));
 	}
+
+	@Test void copyTest() {
+		var method = of(Integer.class, "toString", new Class<?>[0]);
+		var copy = copy(method);
+		var copyCopy = copy(copy);
+
+		Assert.nul(copy(null))
+			.equal(method, copy, copyCopy)
+			.equalBy(m -> m.invoke(123), method, copy, copyCopy);
+	}
 }

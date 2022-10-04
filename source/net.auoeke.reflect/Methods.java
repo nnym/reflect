@@ -25,6 +25,8 @@ public class Methods {
 		.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
 		.max(Comparator.comparing(method -> ((Method[]) method.invoke(Reflect.class)).length))
 		.get();
+	private static final MethodHandle rootCopy = Invoker.findSpecial(Method.class, "copy", Method.class);
+	private static final MethodHandle leafCopy = Invoker.findSpecial(Method.class, "leafCopy", Method.class);
 
 	private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
 	private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
@@ -146,6 +148,28 @@ public class Methods {
 
 	public static Method any(Object object, String name, Class<?>... parameterTypes) {
 		return Types.classes(object.getClass()).map(type -> of(type, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
+	}
+
+	public static Method rootCopy(Method method) {
+		return (Method) rootCopy.invokeExact(method);
+	}
+
+	public static Method leafCopy(Method method) {
+		return (Method) leafCopy.invokeExact(method);
+	}
+
+	/**
+	 Copies a method without its {@link AccessibleObject#setAccessible(boolean) accessibility} flag.
+	 If the method is {@code null}, then {@code null} is returned.
+
+	 @param method a method
+	 @return a copy of {@code method} with its accessibility flag not set
+	 @since 5.3.0
+	 */
+	public static Method copy(Method method) {
+		return method == null ? null
+			: AccessibleObjects.root(method) == null ? rootCopy(method)
+			: leafCopy(method);
 	}
 
 	/**
