@@ -13,16 +13,6 @@ import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
 
 public class Classes2 extends Classes {
-	private static final MethodHandle findResources = Invoker.findStatic(Class.forName("jdk.internal.loader.BootLoader"), "findResources", Enumeration.class, String.class);
-
-	public static <T> Stream<T> stream(Enumeration<T> enumeration) {
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(enumeration.asIterator(), Spliterator.NONNULL), false);
-	}
-
-	public static Stream<URL> resources(ClassLoader loader, String name) {
-		return loader == null ? stream((Enumeration<URL>) findResources.invokeExact(name)) : loader.resources(name);
-	}
-
 	public static byte[] stealBytecode(Instrumentation instrumentation, Class<?> type) {
 		var box = new byte[1][];
 

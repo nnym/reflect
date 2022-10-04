@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
-import experimental.Classes2;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
@@ -106,11 +105,11 @@ public class ClassesTests extends Classes {
 			}
 		};
 
-		Assert.truth(Classes2.stream(enumeration).count() == 3);
+		Assert.truth(stream(enumeration).count() == 3);
 	}
 
 	@Test void resourcesTest() {
-		var resources = Classes2.resources(null, "java/lang/Object.class").toList();
+		var resources = resources(null, "java/lang/Object.class").toList();
 		Assert.equal(1, resources.size());
 
 		try (var stream = resources.get(0).openStream()) {

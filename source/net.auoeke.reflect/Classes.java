@@ -9,9 +9,13 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
@@ -30,6 +34,7 @@ public class Classes {
 	public static final Pointer klass;
 
 	private static final MethodHandle findLoadedClass = Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class);
+	private static final MethodHandle findResources = Invoker.findStatic(Class.forName("jdk.internal.loader.BootLoader"), "findResources", Enumeration.class, String.class);
 	private static final MethodHandle addURL = Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class);
 	private static final MethodHandle getURLs = Invoker.findVirtual(URLClassPath, "getURLs", URL[].class);
 
@@ -286,6 +291,34 @@ public class Classes {
 			return stream == null ? null : stream.readAllBytes();
 		}
 	}
+
+	/**
+	 Converts an {@link Enumeration} into a {@link Stream}.
+	 This method's chief intended usage is converting enumerations of {@link URL}s;
+	 which some resource-related {@link ClassLoader} methods tend to return.
+
+	 @param enumeration an enumeration
+	 @param <T> the type of the elements in {@code enumeration}
+	 @return a stream containing the elements in {@code enumeration}
+	 @since 5.3.0
+	 */
+	public static <T> Stream<T> stream(Enumeration<T> enumeration) {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(enumeration.asIterator(), Spliterator.NONNULL), false);
+	}
+
+	/**
+	 Uses the given {@link ClassLoader loader} in order to find resources.
+	 If {@code loader == null}, then this method searches the bootstrap class path.
+
+	 @param loader a class loader
+	 @param name the name of the resources to fisd
+	 @return resources located by {@code loader}
+	 @since 5.3.0
+	 */
+	public static Stream<URL> resources(ClassLoader loader, String name) {
+		return loader == null ? stream((Enumeration<URL>) findResources.invokeExact(name)) : loader.resources(name);
+	}
+
 
 	public static List<Type> genericSupertypes(Class<?> type) {
 		var supertypes = new ArrayList<>(Arrays.asList(type.getGenericInterfaces()));
