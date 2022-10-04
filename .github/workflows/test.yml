@@ -7,6 +7,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         version: [17, 18, 19]
         distribution: [temurin, zulu, liberica, microsoft]
+        exclude:
+          - distribution: microsoft
+            version: 18
+          - distribution: microsoft
+            version: 19
     runs-on: ${{matrix.os}}
     steps:
       - name: checkout
