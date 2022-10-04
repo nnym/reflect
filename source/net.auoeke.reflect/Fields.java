@@ -162,8 +162,18 @@ public class Fields {
 		return all(type).filter(Flags::isStatic);
 	}
 
+	/**
+	 Copies a field without its {@link AccessibleObject#setAccessible(boolean) accessibility} flag.
+	 If the field is {@code null}, then {@code null} is returned.
+
+	 @param field a field
+	 @return a copy of {@code field} with its accessibility flag not set
+	 @since 5.3.0
+	 */
 	public static Field copy(Field field) {
 		var root = AccessibleObjects.root(field);
-		return root == null ? (Field) copy.invokeExact(field) : copy(root);
+		return field == null ? null
+			: root == null ? (Field) copy.invokeExact(field)
+			: copy(root);
 	}
 }
