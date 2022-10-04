@@ -3,11 +3,17 @@ package net.auoeke.reflect;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -23,7 +29,7 @@ public class Methods {
 
     private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
     private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
-    private static final CacheMap<MethodKey, Method> methodsBySignature = CacheMap.hash();
+    private static final CacheMap<CacheKey, Method> methodsBySignature = CacheMap.hash();
 
     public static <T extends Executable> T find(long flags, int offset, Stream<T> methods, Object... arguments) {
         return methods.filter(method -> Types.canCast(flags, offset, method.getParameterTypes(), arguments)).findAny().orElse(null);
@@ -91,7 +97,7 @@ public class Methods {
      */
     public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
         return methodsBySignature.computeIfAbsent(
-            new MethodKey(type, name, parameterTypes),
+            new CacheKey(type, name, parameterTypes),
             key -> of(key.owner()).filter(method -> method.getName().equals(key.name()) && Arrays.equals(method.getParameterTypes(), key.parameterTypes())).findFirst().orElse(null)
         );
     }
@@ -137,6 +143,17 @@ public class Methods {
         return Types.classes(object.getClass()).map(type -> of(type, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
     }
 
+	/**
+	 Returns a {@link MethodType} representing {@code method}'s type.
+
+	 @param method a method
+	 @return {@code method}'s type as a {@link MethodType}
+	 @since 5.3.0
+	 */
+	public static MethodType type(Method method) {
+		return MethodType.methodType(method.getReturnType(), method.getParameterTypes());
+	}
+
     /**
      Get an annotation interface's element's default value.
 
@@ -149,13 +166,129 @@ public class Methods {
         return (T) of(type, name).getDefaultValue();
     }
 
-    private record MethodKey(Class<?> owner, String name, Class<?>[] parameterTypes) {
+	/**
+	 Determines whether {@code implementation} overrides {@code base}.
+
+	 @param implementation the method to check as the implementation
+	 @param base the method to check as the base method
+	 @return whether {@code implementation} overrides {@code base}
+	 @since 5.3.0
+	 */
+	public static boolean overrides(Method implementation, Method base) {
+		if (Types.isSubtype(implementation.getDeclaringClass(), base.getDeclaringClass()) && implementation.getName().equals(base.getName())) {
+			return implementation.getReturnType() == base.getReturnType()
+				&& Arrays.equals(implementation.getParameterTypes(), base.getParameterTypes());
+			   /* || crossBridge
+				&& base.getReturnType().isAssignableFrom(implementation.getReturnType())
+				&& Types.canCast(implementation.getParameterTypes(), base.getParameterTypes()); */
+		}
+
+		return false;
+	}
+
+	/**
+	 Transforms a stream of methods to retain only its least derived methods:
+	 every method that overrides another method in the stream is excluded from the resulting stream.
+
+	 @param methods a stream of methods
+	 @return a stream of {@code methods}' least derived methods
+	 @throws NullPointerException if {@code methods} is {@code null}
+	 @since 5.3.0
+	 */
+	public static Stream<Method> filterBase(Stream<Method> methods) {
+		return filter(methods, false);
+	}
+
+	/**
+	 Transforms a stream of methods to retain only its most derived methods:
+	 every method for which an overriding method exists in the stream is excluded from the resulting stream.
+
+	 @param methods a stream of methods
+	 @return a stream of {@code methods}' most derived methods
+	 @throws NullPointerException if {@code methods} is {@code null}
+	 @since 5.3.0
+	 */
+	public static Stream<Method> filterOverriding(Stream<Method> methods) {
+		return filter(methods, true);
+	}
+
+	/**
+	 Finds methods overridden by a type. The methods may be overridden directly or indirectly any number of times.
+
+	 @param implementor a type
+	 @return the methods overridden by {@code implementor}
+	 @throws NullPointerException if {@code implementor} is {@code null}
+	 @since 5.3.0
+	 */
+	public static Stream<Method> overridden(Class<?> implementor) {
+		var methods = of(implementor).filter(Flags::isInstance).map(Descriptor::new).collect(Collectors.toSet());
+		return Types.baseTypes(implementor)
+			.flatMap(Methods::of)
+			.filter(base -> Flags.isInstance(base) && methods.contains(new Descriptor(base)));
+	}
+
+	/**
+	 Finds the least derived single abstract method implemented by a type.
+	 This method does not return methods that override.
+	 For example, given an {@code interface R extends Runnable} that overrides {@link Runnable#run run}
+	 and a lambda {@code l} of type {@code R}, {@code R::run} will be ignored and {@code sam(l.getClass())} will match {@link Runnable#run}.
+	 <p>
+	 If the number of abstract methods is 0 or greater than 1, then {@code null} is returned.
+
+	 @param implementor a type
+	 @return the single abstract method implemented by {@code implementor} if it exists or else {@code null}
+	 @throws NullPointerException if {@code implementor} is {@code null}
+	 @since 5.3.0
+	 */
+	public static Method sam(Class<?> implementor) {
+		var ams = filterBase(overridden(implementor).filter(Flags::isAbstract)).toArray();
+		return ams.length == 1 ? (Method) ams[0] : null;
+	}
+
+	private static Stream<Method> filter(Stream<Method> methods, boolean override) {
+		var types = new HashMap<Descriptor, List<Method>>();
+
+		methods.forEach(method -> {
+			var methodList = types.computeIfAbsent(new Descriptor(method), descriptor -> new ArrayList<>());
+
+			for (var iterator = methodList.listIterator(); iterator.hasNext();) {
+				var existingMethod = iterator.next();
+
+				if (override ? Types.isSubtype(method.getDeclaringClass(), existingMethod.getDeclaringClass()) : Types.isSubtype(existingMethod.getDeclaringClass(), method.getDeclaringClass())) {
+					iterator.set(method);
+					return;
+				} else if (override ? method.getDeclaringClass().isAssignableFrom(existingMethod.getDeclaringClass()) : existingMethod.getDeclaringClass().isAssignableFrom(method.getDeclaringClass())) {
+					return;
+				}
+			}
+
+			methodList.add(method);
+		});
+
+		return types.values().stream().flatMap(List::stream);
+	}
+
+    private record CacheKey(Class<?> owner, String name, Class<?>[] parameterTypes) {
         @Override public boolean equals(Object object) {
-            return object instanceof MethodKey key && this.owner == key.owner && this.name.equals(key.name) && Arrays.equals(this.parameterTypes, key.parameterTypes);
+            return object instanceof CacheKey key && this.owner == key.owner && this.name.equals(key.name) && Arrays.equals(this.parameterTypes, key.parameterTypes);
         }
 
         @Override public int hashCode() {
             return this.owner.hashCode() ^ this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes);
         }
     }
+
+	private record Descriptor(Class<?> returnType, String name, Class<?>[] parameterTypes) {
+		private Descriptor(Method method) {
+			this(method.getReturnType(), method.getName(), method.getParameterTypes());
+		}
+
+		@Override public boolean equals(Object object) {
+			return object instanceof Descriptor descriptor && this.returnType == descriptor.returnType && this.name.equals(descriptor.name) && Arrays.equals(this.parameterTypes, descriptor.parameterTypes);
+		}
+
+		@Override public int hashCode() {
+			return this.returnType.hashCode() ^ this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes);
+		}
+	}
 }
