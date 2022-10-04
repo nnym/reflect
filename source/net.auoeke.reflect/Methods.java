@@ -55,20 +55,22 @@ public class Methods {
 	}
 
 	/**
-	 Get a type's declared methods directly without {@link jdk.internal.reflect.Reflection#filterMethods filtering} or caching them or wrapping them in a stream.
+	 Returns a type's declared methods directly without {@link jdk.internal.reflect.Reflection#filterMethods filtering} or caching them or wrapping them in a stream.
 
 	 @param type a type
 	 @return the array containing the type's declared methods
+	 @since 4.0.0
 	 */
 	public static Method[] direct(Class<?> type) {
 		return (Method[]) getDeclaredMethods.invoke(type);
 	}
 
 	/**
-	 Get a type's declared methods without {@link jdk.internal.reflect.Reflection#filterMethods filtering}.
+	 Returns a type's declared methods without {@link jdk.internal.reflect.Reflection#filterMethods filtering}.
 
 	 @param type a type
 	 @return a stream containing the type's declared methods
+	 @since 4.0.0
 	 */
 	public static Stream<Method> of(Class<?> type) {
 		return Stream.of(methods.computeIfAbsent(type, Methods::direct));
@@ -80,6 +82,7 @@ public class Methods {
 	 @param type the type
 	 @param name the method's name
 	 @return the first method found with the given name; {@code null} if not found
+	 @since 4.0.0
 	 */
 	public static Method of(Class<?> type, String name) {
 		var methods = methodsByName.computeIfAbsent(type, t -> CacheMap.hash()).computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new));
@@ -93,6 +96,7 @@ public class Methods {
 	 @param name the method's name
 	 @param parameterTypes the method's parameter types
 	 @return the first method found with the given name and parameter types; {@code null} if not found
+	 @since 4.0.0
 	 */
 	public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
 		return methodsBySignature.computeIfAbsent(
@@ -102,21 +106,23 @@ public class Methods {
 	}
 
 	/**
-	 Get all methods declared by all classes in a hierarchy starting at a given class and ending at one of its base classes.
+	 Returns a stream of all methods declared by all classes in a hierarchy starting at a given class and ending exclusively at one of its base classes.
 
 	 @param start the starting class
 	 @param end the superclass at which to stop; may be null (exclusive)
 	 @return all methods is the hierarchy
+	 @since 4.0.0
 	 */
 	public static Stream<Method> all(Class<?> start, Class<?> end) {
 		return Types.classes(start, end).flatMap(Methods::of);
 	}
 
 	/**
-	 Get all methods declared by a type or any of its base classes.
+	 Returns a stream of all methods declared by {@code type} or any of its base classes.
 
-	 @param type the type
-	 @return all methods belonging to the type or any of its base classes
+	 @param type a type
+	 @return all methods belonging to {@code type} or any of its base classes
+	 @since 4.0.0
 	 */
 	public static Stream<Method> all(Class<?> type) {
 		return all(type, null);
@@ -147,6 +153,7 @@ public class Methods {
 
 	 @param method a method
 	 @return {@code method}'s type as a {@link MethodType}
+	 @throws NullPointerException if {@code method} is {@code null}
 	 @since 5.3.0
 	 */
 	public static MethodType type(Method method) {
@@ -154,12 +161,14 @@ public class Methods {
 	}
 
 	/**
-	 Get an annotation interface's element's default value.
+	 Returns an annotation interface's element's default value.
 
 	 @param type the annotation interface
 	 @param name the element's name
 	 @param <T> the type of the default value
 	 @return the default value of {@code type::name}
+	 @throws NullPointerException if {@code type} does not have an element with name {@code name}
+	 @since 4.0.0
 	 */
 	public static <T> T defaultValue(Class<? extends Annotation> type, String name) {
 		return (T) of(type, name).getDefaultValue();
