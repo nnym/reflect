@@ -4,6 +4,7 @@ import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import experimental.Methods2;
 import mock.AnnotationInterfaceWtihDefault;
 import mock.BigInterface;
 import net.auoeke.reflect.Methods;
@@ -91,5 +92,13 @@ public class MethodsTests extends Methods {
 		Assert.exception(() -> sam(null))
 			.nul(sam(BigInterface.Impl.class))
 			.nul(sam(Object.class));
+	}
+
+	@Test void copyTest() {
+		var method = of(Integer.class, "toString", new Class<?>[0]);
+		var copy = Methods2.copy(method);
+
+		Assert.equal(method, copy)
+			.equalBy(m -> m.invoke(123), method, copy);
 	}
 }
