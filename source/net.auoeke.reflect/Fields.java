@@ -18,11 +18,13 @@ public class Fields {
 		.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
 		.max(Comparator.comparing(method -> ((Field[]) method.invoke(Fields.class)).length))
 		.get();
+	private static final MethodHandle copy = Invoker.findSpecial(Field.class, "copy", Field.class);
 
 	private static final CacheMap<Class<?>, Field[]> fields = CacheMap.identity();
 	private static final CacheMap<Class<?>, Field[]> staticFields = CacheMap.identity();
 	private static final CacheMap<Class<?>, Field[]> instanceFields = CacheMap.identity();
 	private static final CacheMap<Class<?>, CacheMap<String, Field>> fieldsByName = CacheMap.identity();
+
 
 	public static final Pointer modifiers = Pointer.of(Field.class, "modifiers");
 	public static final Pointer override = Pointer.of(AccessibleObject.class, "override");
@@ -158,5 +160,10 @@ public class Fields {
 
 	public static Stream<Field> allStatic(Class<?> type) {
 		return all(type).filter(Flags::isStatic);
+	}
+
+	public static Field copy(Field field) {
+		var root = AccessibleObjects.root(field);
+		return root == null ? (Field) copy.invokeExact(field) : copy(root);
 	}
 }
