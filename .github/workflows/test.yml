@@ -4,8 +4,9 @@ jobs:
   test:
     strategy:
       matrix:
-        java: [17, 18, 19]
         os: [ubuntu-latest, windows-latest]
+        version: [17, 18, 19]
+        distribution: [temurin, zulu, liberica, microsoft, corretto]
     runs-on: ${{matrix.os}}
     steps:
       - name: checkout
@@ -15,8 +16,8 @@ jobs:
       - name: JDK
         uses: actions/setup-java@v2
         with:
-          distribution: temurin
-          java-version: ${{matrix.java}}
+          distribution: ${{matrix.distribution}}
+          java-version: ${{matrix.version}}
       - name: build
         uses: gradle/gradle-build-action@v2
         with:
