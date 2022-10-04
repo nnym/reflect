@@ -1,7 +1,6 @@
 package test;
 
 import java.lang.reflect.Constructor;
-import experimental.Constructors2;
 import mock.EmptyRecord;
 import net.auoeke.reflect.Constructors;
 import org.junit.jupiter.api.Test;
@@ -34,10 +33,11 @@ public class ConstructorsTests extends Constructors {
 
 	@Test void copyTest() {
 		var constructor = find(EmptyRecord.class);
-		var copy = Constructors2.copy(constructor);
+		var copy = copy(constructor);
+		var copyCopy = copy(copy);
 
-		Assert.equal(constructor, copy)
-			.equalBy(Constructor::newInstance, constructor, copy);
+		Assert.equal(constructor, copy, copyCopy)
+			.equalBy(Constructor::newInstance, constructor, copy, copyCopy);
 	}
 
 	static class Base {

@@ -3,7 +3,6 @@ package test;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import experimental.Fields2;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
 import org.junit.jupiter.api.Test;
@@ -25,9 +24,10 @@ public class FieldsTests extends Fields {
 
 	@Test void copyTest() {
 		var field = of(Integer.class, "value");
-		var copy = Fields2.copy(field);
+		var copy = copy(field);
+		var copyCopy = copy(copy);
 
-		Assert.equal(copy, field)
-			.equalBy(f -> Accessor.getInt(123, f), field, copy);
+		Assert.equal(copy, field, copyCopy)
+			.equalBy(f -> Accessor.getInt(123, f), field, copy, copyCopy);
 	}
 }
