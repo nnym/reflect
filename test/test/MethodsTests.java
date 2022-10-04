@@ -4,6 +4,7 @@ import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import mock.AnnotationInterfaceWtihDefault;
 import mock.BigInterface;
 import net.auoeke.reflect.Methods;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,11 @@ public class MethodsTests extends Methods {
 		Assert.equal(type(of(Object.class, "toString")), MethodType.methodType(String.class))
 			.equal(type(of(String.class, "substring", int.class, int.class)), MethodType.methodType(String.class, List.of(int.class, int.class)))
 			.equal(type(of(String.class, "toString")), type(of(Object.class, "toString")));
+	}
+
+	@Test void defaultValueTest() {
+		Assert.exception(() -> defaultValue(AnnotationInterfaceWtihDefault.class, "nope"))
+			.equal(defaultValue(AnnotationInterfaceWtihDefault.class, "value"), AnnotationInterfaceWtihDefault.DEFAULT_VALUE);
 	}
 
 	@Test void overridesTest() {
