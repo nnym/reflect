@@ -64,6 +64,10 @@ public class Assert {
 		return truth(arrays.length < 2 || Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
 	}
 
+	public static Assert arraysEqual(byte[]... arrays) {
+		return truth(Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
+	}
+
 	public static Assert elementsEquivalent(Stream<?>... streams) {
 		var lists = Stream.of(streams).map(Stream::toList).toList();
 		var first = lists.get(0);
