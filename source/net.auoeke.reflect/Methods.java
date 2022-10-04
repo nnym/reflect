@@ -158,8 +158,18 @@ public class Methods {
 		return (Method) leafCopy.invokeExact(method);
 	}
 
+	/**
+	 Copies a method without its {@link AccessibleObject#setAccessible(boolean) accessibility} flag.
+	 If the method is {@code null}, then {@code null} is returned.
+
+	 @param method a method
+	 @return a copy of {@code method} with its accessibility flag not set
+	 @since 5.3.0
+	 */
 	public static Method copy(Method method) {
-		return AccessibleObjects.root(method) == null ? rootCopy(method) : leafCopy(method);
+		return method == null ? null
+			: AccessibleObjects.root(method) == null ? rootCopy(method)
+			: leafCopy(method);
 	}
 
 	/**
