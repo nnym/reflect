@@ -66,7 +66,8 @@ public class Reflect {
 						 var connection = url.openConnection();
 
 						 if (connection instanceof JarURLConnection jar) {
-							 return new Candidate(jar.getJarFileURL().getPath(), jar.getManifest());
+							 url = jar.getJarFileURL();
+							 return new Candidate("file".equals(url.getProtocol()) ? Path.of(url.toURI()).toString() : url.getPath(), jar.getManifest());
 						 }
 
 						 try (var stream = connection.getInputStream()) {
