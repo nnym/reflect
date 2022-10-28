@@ -48,10 +48,10 @@ public class Reflect {
 				result.andSuppress(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"));
 				result.andSuppress(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true));
 
-				// Do not reference Agent directly because it might belong to a different loader.
 				var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
 				try {
+					// Do not reference Agent directly because it might belong to a different loader.
 					var agentClass = Class.forName(Reflect.class.getPackageName() + ".Agent");
 
 					// @formatter:off
