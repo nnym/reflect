@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 Specification-Title: reflect
+Automatic-Module-Name: reflect
 Agent-Class: net.auoeke.reflect.Agent
 Premain-Class: net.auoeke.reflect.Agent
 Can-Redefine-Classes: true
