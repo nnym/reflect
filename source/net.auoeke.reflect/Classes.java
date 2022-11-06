@@ -33,6 +33,7 @@ public class Classes {
 
 	public static final Object systemClassPath = classPath(ClassLoader.getSystemClassLoader());
 	public static final Pointer klass;
+	public static final Pointer firstField = Pointer.of(Fields.instanceOf(Integer.class).findAny().get());
 
 	private static final MethodHandle findLoadedClass = Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class);
 	private static final MethodHandle findResources = Invoker.findStatic(Class.forName("jdk.internal.loader.BootLoader"), "findResources", Enumeration.class, String.class);

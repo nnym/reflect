@@ -53,13 +53,13 @@ class InvokerTests extends Invoker {
 		assert Invoker.constructor(handle).equals(member);
 
 		handle = Invoker.findVirtual(Object.class, "toString", String.class);
-		member = Methods.of(Object.class, "toString");
+		member = Methods.firstOf(Object.class, "toString");
 		assert Invoker.member(handle).equals(member);
 		assert Invoker.executable(handle).equals(member);
 		assert Invoker.method(handle).equals(member);
 
 		handle = Invoker.findSpecial(String.class, "indexOfNonWhitespace", int.class);
-		member = Methods.of(String.class, "indexOfNonWhitespace");
+		member = Methods.firstOf(String.class, "indexOfNonWhitespace");
 		assert Invoker.member(handle).equals(member);
 		assert Invoker.executable(handle).equals(member);
 		assert Invoker.method(handle).equals(member);

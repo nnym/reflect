@@ -7,12 +7,14 @@ import java.util.List;
 import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.Fields;
 import net.auoeke.reflect.Methods;
+import net.auoeke.reflect.Reflect;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
+import org.openjdk.jol.vm.VM;
 import reflect.misc.TestObject;
 
 @Testable
-public class AccessorTests {
+public class AccessorTests extends Accessor {
 	@Test public void testCopy() {
 		var one = new TestObject();
 		var two = new TestObject();
@@ -25,23 +27,23 @@ public class AccessorTests {
 				var fieldTypeName = field.getType().getSimpleName().toLowerCase();
 
 				if (fieldTypeName.equals(typeName)) {
-					Accessor.copyObject(one, two, field);
+					copyObject(one, two, field);
 				} else if (fieldTypeName.endsWith("volatile")) {
-					Accessor.copyObjectVolatile(one, two, field);
+					copyObjectVolatile(one, two, field);
 				}
 			});
 		});
 	}
 
 	@Test void accessor() {
-		assert Accessor.getIntVolatile(0, "value") == 0 && Accessor.getInt(0, "value") == 0;
+		assert getIntVolatile(0, "value") == 0 && getInt(0, "value") == 0;
 
 		class A {
 			final byte end = 123;
 		}
 
-		assert Accessor.get(new A(), "end").equals((byte) 123);
-		assert Accessor.getVolatile(new A(), "end").equals((byte) 123);
+		assert get(new A(), "end").equals((byte) 123);
+		assert getVolatile(new A(), "end").equals((byte) 123);
 
 		var obj = new Object() {
 			int field = 22;
@@ -55,7 +57,7 @@ public class AccessorTests {
 		obj.object = null;
 		obj.things = new ArrayList<>();
 
-		var clone = Accessor.clone(obj);
+		var clone = clone(obj);
 		assert clone.field == 84;
 		assert "hjk".equals(clone.thing);
 		assert clone.object == null;

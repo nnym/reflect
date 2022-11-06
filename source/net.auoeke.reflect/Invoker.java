@@ -194,15 +194,15 @@ public class Invoker {
 	}
 
 	public static MethodHandle unreflect(Class<?> type, String name) {
-		return unreflect(Methods.of(type, name));
+		return unreflect(Methods.firstOf(type, name));
 	}
 
 	public static MethodHandle unreflect(Object object, String name, Class<?>... parameterTypes) {
-		return unreflect(Methods.any(object, name, parameterTypes)).bindTo(object);
+		return unreflect(Methods.any(object.getClass(), name, parameterTypes)).bindTo(object);
 	}
 
 	public static MethodHandle unreflect(Object object, String name) {
-		return unreflect(Methods.any(object, name)).bindTo(object);
+		return unreflect(Methods.any(object.getClass(), name)).bindTo(object);
 	}
 
 	public static MethodHandle unreflectConstructor(Constructor<?> constructor) {

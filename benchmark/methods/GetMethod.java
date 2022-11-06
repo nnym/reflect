@@ -7,14 +7,14 @@ import org.openjdk.jmh.annotations.Benchmark;
 import reflect.misc.A;
 
 public class GetMethod {
-	static final Method declaredMethod = Methods.of(A.class, "privateMethod2");
+	static final Method declaredMethod = Methods.firstOf(A.class, "privateMethod2");
 
 	@Benchmark public Object bySignature() {
 		return Methods.of(A.class, "privateMethod2", int.class);
 	}
 
 	@Benchmark public Object byName() {
-		return Methods.of(A.class, "privateMethod2");
+		return Methods.firstOf(A.class, "privateMethod2");
 	}
 
 	@Benchmark public Object unreflect() {

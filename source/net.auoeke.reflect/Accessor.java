@@ -8,6 +8,8 @@ import net.gudenau.lib.unsafe.Unsafe;
  */
 @SuppressWarnings("unused")
 public class Accessor {
+	private static final CacheMap<Class<?>, Pointer[]> pointers = CacheMap.identity();
+
 	public static boolean getBoolean(Field field) {
 		return Unsafe.getBoolean(field.getDeclaringClass(), Unsafe.staticFieldOffset(field));
 	}
@@ -1756,7 +1758,10 @@ public class Accessor {
 		}
 
 		var clone = (T) Unsafe.allocateInstance(object.getClass());
-		Fields.all(object).forEach(field -> Accessor.copy(clone, object, field));
+
+		for (var pointer : pointers.computeIfAbsent(object.getClass(), type -> Fields.allInstance(type).map(Pointer::of).toArray(Pointer[]::new))) {
+			pointer.put(clone, pointer.get(object));
+		}
 
 		return clone;
 	}

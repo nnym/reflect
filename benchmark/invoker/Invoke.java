@@ -12,7 +12,7 @@ public class Invoke {
 	static final String NAME = "hashCode";
 
 	static final Random object = new Random();
-	static final Method method = Methods.of(Object.class, NAME);
+	static final Method method = Methods.firstOf(Object.class, NAME);
 	static final MethodHandle handle = Invoker.findVirtual(Object.class, NAME, int.class);
 	static final MethodHandle special = Invoker.findSpecial(Object.class, NAME, int.class);
 	static final MethodHandle bind = Invoker.bind(object, NAME, int.class);

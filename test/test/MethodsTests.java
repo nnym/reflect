@@ -14,9 +14,9 @@ import org.junit.platform.commons.annotation.Testable;
 @Testable
 public class MethodsTests extends Methods {
 	@Test void typeTest() {
-		Assert.equal(type(of(Object.class, "toString")), MethodType.methodType(String.class))
+		Assert.equal(type(firstOf(Object.class, "toString")), MethodType.methodType(String.class))
 			.equal(type(of(String.class, "substring", int.class, int.class)), MethodType.methodType(String.class, List.of(int.class, int.class)))
-			.equal(type(of(String.class, "toString")), type(of(Object.class, "toString")));
+			.equal(type(firstOf(String.class, "toString")), type(firstOf(Object.class, "toString")));
 	}
 
 	@Test void defaultValueTest() {
@@ -25,23 +25,23 @@ public class MethodsTests extends Methods {
 	}
 
 	@Test void overridesTest() {
-		Assert.truth(overrides(of(String.class, "subSequence"), of(CharSequence.class, "subSequence")))
-			.truth(overrides(of(String.class, "toString"), of(CharSequence.class, "toString")))
-			.truth(overrides(of(String.class, "toString"), of(Object.class, "toString")))
-			.truth(overrides(of(CharSequence.class, "toString"), of(Object.class, "toString")));
+		Assert.truth(overrides(firstOf(String.class, "subSequence"), firstOf(CharSequence.class, "subSequence")))
+			.truth(overrides(firstOf(String.class, "toString"), firstOf(CharSequence.class, "toString")))
+			.truth(overrides(firstOf(String.class, "toString"), firstOf(Object.class, "toString")))
+			.truth(overrides(firstOf(CharSequence.class, "toString"), firstOf(Object.class, "toString")));
 	}
 
 	@Test void filterBaseTest() {
 		Assert.elementsEquivalent(
-			filterBase(Stream.of(of(String.class, "toString"), of(CharSequence.class, "toString"), of(Object.class, "toString"))),
-			Stream.of(of(Object.class, "toString"))
+			filterBase(Stream.of(firstOf(String.class, "toString"), firstOf(CharSequence.class, "toString"), firstOf(Object.class, "toString"))),
+			Stream.of(firstOf(Object.class, "toString"))
 		);
 	}
 
 	@Test void filterOverridingTest() {
 		Assert.elementsEquivalent(
-			filterOverriding(Stream.of(of(String.class, "toString"), of(CharSequence.class, "toString"), of(Object.class, "toString"))),
-			Stream.of(of(String.class, "toString"))
+			filterOverriding(Stream.of(firstOf(String.class, "toString"), firstOf(CharSequence.class, "toString"), firstOf(Object.class, "toString"))),
+			Stream.of(firstOf(String.class, "toString"))
 		);
 	}
 
@@ -51,7 +51,7 @@ public class MethodsTests extends Methods {
 			@Override public void run() {}
 		};
 
-		var run = of(Runnable.class, "run");
+		var run = firstOf(Runnable.class, "run");
 
 		Assert.exception(() -> overridden(null))
 			.elementsEquivalent(overridden(lambda.getClass()), Stream.of(run))
@@ -66,7 +66,7 @@ public class MethodsTests extends Methods {
 			}
 		};
 
-		var apply = of(Function.class, "apply");
+		var apply = firstOf(Function.class, "apply");
 
 		Assert.elementsEquivalent(overridden(lambda.getClass()), overridden(anonymous.getClass()), Stream.of(apply))
 			.equal(sam(lambda.getClass()), sam(anonymous.getClass()), apply);
@@ -79,8 +79,8 @@ public class MethodsTests extends Methods {
 
 		R lambda = () -> {};
 
-		Assert.elementsEquivalent(overridden(lambda.getClass()), Stream.of(of(Runnable.class, "run"), of(R.class, "run")))
-			.equal(sam(lambda.getClass()), of(Runnable.class, "run"));
+		Assert.elementsEquivalent(overridden(lambda.getClass()), Stream.of(firstOf(Runnable.class, "run"), firstOf(R.class, "run")))
+			.equal(sam(lambda.getClass()), firstOf(Runnable.class, "run"));
 	}
 
 	@Test void overriddenBigInterface() {

@@ -2,6 +2,8 @@ package accessor;
 
 import net.auoeke.reflect.Accessor;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
 import reflect.misc.A;
 
 public class Clone {
@@ -17,6 +19,11 @@ public class Clone {
 
 	@Benchmark public Object copy() {
 		return a.copy();
+	}
+
+	@BenchmarkMode(Mode.SingleShotTime)
+	@Benchmark public Object firstAccessorClone() {
+		return Accessor.clone(a);
 	}
 
 	@Benchmark public Object accessorClone() {

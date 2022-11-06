@@ -7,15 +7,15 @@ import net.gudenau.lib.unsafe.Unsafe;
  */
 enum TypeInfo {
 	VOID(void.class, Void.class, 0, 0),
-	BOOLEAN(boolean.class, Boolean.class, Byte.SIZE, 0),
-	BYTE(byte.class, Byte.class, Byte.SIZE, NumericTypes.INTEGER),
-	CHAR(char.class, Character.class, Character.SIZE, NumericTypes.INTEGER),
-	SHORT(short.class, Short.class, Short.SIZE, NumericTypes.INTEGER),
-	INT(int.class, Integer.class, Integer.SIZE, NumericTypes.INTEGER),
-	LONG(long.class, Long.class, Long.SIZE, NumericTypes.INTEGER),
-	FLOAT(float.class, Float.class, Float.SIZE, NumericTypes.FLOAT),
-	DOUBLE(double.class, Double.class, Double.SIZE, NumericTypes.FLOAT),
-	REFERENCE(null, Object.class, Unsafe.ADDRESS_SIZE * Byte.SIZE, 0);
+	BOOLEAN(boolean.class, Boolean.class, Byte.BYTES, 0),
+	BYTE(byte.class, Byte.class, Byte.BYTES, NumericTypes.INTEGER),
+	CHAR(char.class, Character.class, Character.BYTES, NumericTypes.INTEGER),
+	SHORT(short.class, Short.class, Short.BYTES, NumericTypes.INTEGER),
+	INT(int.class, Integer.class, Integer.BYTES, NumericTypes.INTEGER),
+	LONG(long.class, Long.class, Long.BYTES, NumericTypes.INTEGER),
+	FLOAT(float.class, Float.class, Float.BYTES, NumericTypes.FLOAT),
+	DOUBLE(double.class, Double.class, Double.BYTES, NumericTypes.FLOAT),
+	REFERENCE(null, Object.class, Unsafe.ADDRESS_SIZE, 0);
 
 	public final Class<?> primitive;
 	public final Class<?> reference;

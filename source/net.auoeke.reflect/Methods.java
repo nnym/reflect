@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -79,83 +80,66 @@ public class Methods {
 	}
 
 	/**
-	 Attempt to find a type's first method with a given name.
+	 Finds {@code type}'s methods by {@code name} and returns them as a sequential stream.
 
-	 @param type the type
-	 @param name the method's name
-	 @return the first method found with the given name; {@code null} if not found
-	 @since 4.0.0
+	 @param type a type
+	 @param name a method's name
+	 @return the methods found with the given name
+	 @since 6.0.0
 	 */
-	public static Method of(Class<?> type, String name) {
-		var methods = methodsByName.computeIfAbsent(type, t -> CacheMap.hash()).computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new));
-		return methods.length > 0 ? methods[0] : null;
+	public static Stream<Method> of(Class<?> type, String name) {
+		return Stream.of(methodsByName.computeIfAbsent(type, t -> CacheMap.hash()).computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new)));
 	}
 
 	/**
-	 Attempt to find a type's first method with given name and parameter types.
+	 Attempts to find a method in {@code type} by {@code name}.
+	 If {@code type::name} does not exist, then {@code null} is returned.
 
 	 @param type the type
+	 @param name a method's name
+	 @return the first method with the given name if found or else {@code null}
+	 @since 6.0.0
+	 */
+	public static Method firstOf(Class<?> type, String name) {
+		return of(type, name).findAny().orElse(null);
+	}
+
+	/**
+	 Attempts to find {@code type}'s first method by name and parameter types.
+	 If it does not exist, then {@code null} is returned.
+
+	 @param type a type
 	 @param name the method's name
 	 @param parameterTypes the method's parameter types
-	 @return the first method found with the given name and parameter types; {@code null} if not found
+	 @return the first method with the given name and parameter types if found or else {@code null}
 	 @since 4.0.0
 	 */
 	public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
 		return methodsBySignature.computeIfAbsent(
 			new CacheKey(type, name, parameterTypes),
-			key -> of(key.owner()).filter(method -> method.getName().equals(key.name()) && Arrays.equals(method.getParameterTypes(), key.parameterTypes())).findFirst().orElse(null)
+			key -> of(key.owner())
+				.filter(method -> method.getName().equals(key.name()) && Arrays.equals(method.getParameterTypes(), key.parameterTypes()))
+				.findFirst()
+				.orElse(null)
 		);
 	}
 
-	/**
-	 Returns a stream of all methods declared by all classes in a hierarchy starting at a given class and ending exclusively at one of its base classes.
-
-	 @param start the starting class
-	 @param end the superclass at which to stop; may be null (exclusive)
-	 @return all methods is the hierarchy
-	 @since 4.0.0
-	 */
-	public static Stream<Method> all(Class<?> start, Class<?> end) {
-		return Types.classes(start, end).flatMap(Methods::of);
+	public static Method any(Class<?> type, String name) {
+		return Types.hierarchy(type).flatMap(Methods::of).filter(method -> method.getName().equals(name)).findAny().orElse(null);
 	}
 
 	/**
-	 Returns a stream of all methods declared by {@code type} or any of its base classes.
+	 Attempts to find {@code type}'s or its supertypes' first method by name and parameter types.
+	 If it does not exist, then {@code null} is returned.
 
 	 @param type a type
-	 @return all methods belonging to {@code type} or any of its base classes
-	 @since 4.0.0
+	 @param name the method's name
+	 @param parameterTypes the method's parameter types
+	 @return the first method with the given name and parameter types if found or else {@code null}
+	 @since 6.0.0
 	 */
-	public static Stream<Method> all(Class<?> type) {
-		return all(type, null);
-	}
-
-	public static Stream<Method> all(Object object, Class<?> end) {
-		return all(object.getClass(), end);
-	}
-
-	public static Stream<Method> all(Object object) {
-		return all(object.getClass(), null);
-	}
-
-	public static Method any(Class<?> type, String name) {
-		return all(type, null).filter(method -> method.getName().equals(name)).findAny().orElse(null);
-	}
-
-	public static Method any(Object object, String name) {
-		return any(object.getClass(), name);
-	}
-
-	public static Method any(Object object, String name, Class<?>... parameterTypes) {
-		return Types.classes(object.getClass()).map(type -> of(type, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
-	}
-
-	public static Method rootCopy(Method method) {
-		return (Method) rootCopy.invokeExact(method);
-	}
-
-	public static Method leafCopy(Method method) {
-		return (Method) leafCopy.invokeExact(method);
+	public static Method any(Class<?> type, String name, Class<?>... parameterTypes) {
+		return Types.hierarchy(type).map(t -> of(t, name, parameterTypes)).filter(Objects::nonNull).findAny().orElse(null);
 	}
 
 	/**
@@ -168,8 +152,8 @@ public class Methods {
 	 */
 	public static Method copy(Method method) {
 		return method == null ? null
-			: AccessibleObjects.root(method) == null ? rootCopy(method)
-			: leafCopy(method);
+			: AccessibleObjects.root(method) == null ? (Method) rootCopy.invokeExact(method)
+			: (Method) leafCopy.invokeExact(method);
 	}
 
 	/**
@@ -195,7 +179,7 @@ public class Methods {
 	 @since 4.0.0
 	 */
 	public static <T> T defaultValue(Class<? extends Annotation> type, String name) {
-		return (T) of(type, name).getDefaultValue();
+		return (T) firstOf(type, name).getDefaultValue();
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Types;
 import org.junit.jupiter.api.Test;
 import reflect.misc.A;
@@ -14,6 +15,7 @@ import reflect.misc.Interface2;
 import reflect.misc.Interface3;
 import sun.misc.Unsafe;
 
+@SuppressWarnings("AccessStaticViaInstance")
 class TypesTests extends Types {
 	@Test void classesTest() {
 		assert classes(C.class, A.class).count() == 2;
@@ -54,15 +56,17 @@ class TypesTests extends Types {
 	}
 
 	@Test void sizeTest() {
-		assert size(boolean.class) == Byte.SIZE;
-		assert size(byte.class) == Byte.SIZE;
-		assert size(short.class) == Short.SIZE;
-		assert size(char.class) == Character.SIZE;
-		assert size(int.class) == Integer.SIZE;
-		assert size(float.class) == Float.SIZE;
-		assert size(long.class) == Long.SIZE;
-		assert size(double.class) == Double.SIZE;
-		assert size(Object.class) == Unsafe.ADDRESS_SIZE * Byte.SIZE;
+		Assert.equal(stackSize(Object.class), stackSize(Integer.class), Unsafe.ADDRESS_SIZE)
+			.equal(size(Object.class), (int) Classes.firstField.offset)
+			.equal(size(void.class), stackSize(void.class), 0)
+			.equal(size(boolean.class), stackSize(boolean.class), Byte.BYTES)
+			.equal(size(byte.class), stackSize(byte.class), Byte.BYTES)
+			.equal(size(short.class), stackSize(short.class), Short.BYTES)
+			.equal(size(char.class), stackSize(char.class), Character.BYTES)
+			.equal(size(int.class), stackSize(int.class), Integer.BYTES)
+			.equal(size(float.class), stackSize(float.class), Float.BYTES)
+			.equal(size(long.class), stackSize(long.class), Long.BYTES)
+			.equal(size(double.class), stackSize(double.class), Double.BYTES);
 	}
 
 	@Test void unbox() {

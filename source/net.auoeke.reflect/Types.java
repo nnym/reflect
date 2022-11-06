@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import net.gudenau.lib.unsafe.Unsafe;
 
 /**
  Utilities that deal with types and type conversion.
@@ -41,18 +42,21 @@ public class Types {
 
 	private static final CacheMap<Class<?>, Integer> classDepths = CacheMap.identity();
 	private static final CacheMap<Class<?>, Integer> interfaceDepths = CacheMap.identity();
+	private static final CacheMap<Class<?>, Integer> sizes = CacheMap.identity();
 
 	/**
 	 @return a stream of the primitive field types.
+	 @since 6.0.0
 	 */
-	public static Stream<Class<?>> fieldPrimitives() {
+	public static Stream<Class<?>> stackPrimitives() {
 		return Stream.of(boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class);
 	}
 
 	/**
 	 @return a stream of the base field types (primitive types and {@link Object}).
+	 @since 6.0.0
 	 */
-	public static Stream<Class<?>> fieldBase() {
+	public static Stream<Class<?>> stackBase() {
 		return Stream.of(boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, Object.class);
 	}
 
@@ -121,7 +125,7 @@ public class Types {
 	}
 
 	/**
-	 Return a stream of a type and its every base type.
+	 Returns a sequential stream of a type and its every base type traversed inorder.
 
 	 @param type a type
 	 @param <T> {@code type}
@@ -200,13 +204,42 @@ public class Types {
 	}
 
 	/**
-	 Get the size of a value of a type. Primitive wrapper types are treated as ordinary reference types.
+	 Returns the size of an instance of {@code type} on the stack in bytes.
+
+	 <p>The stack size of {@code void} is 0.
+	 <br>The stack size of {@code boolean} is that of {@code byte}.
+	 <br>The stack size of every other primitive value is the value of field {@code BYTES} in its wrapper class.
+	 <br>The stack size of {@code type <: Object} is {@link sun.misc.Unsafe#addressSize the size of a reference}.
 
 	 @param type a type
-	 @return the size of its values
+	 @return the size of an instance of {@code type} on the stack
+	 @throws NullPointerException if {@code type == null}
+	 @since 6.0.0
+	 */
+	public static int stackSize(Class<?> type) {
+		return (type.isPrimitive() ? TypeInfo.of(type) : TypeInfo.REFERENCE).size;
+	}
+
+	/**
+	 Returns an estimate of the size of an instance of {@code type} in bytes.
+
+	 <p>The estimated size of {@code void} and every primitive value is its {@link #stackSize stack size}.
+	 <br>The estimated size of an array is the sum of its {@link sun.misc.Unsafe#arrayBaseOffset base offset} and its length multiplied by its {@link sun.misc.Unsafe#arrayIndexScale index scale}.
+	 <br>The estimated size of an instance {@code i} of {@code type <: Object} is the sum of its last {@link sun.misc.Unsafe#objectFieldOffset field's offset} and its {@link #stackSize stack size}.
+	 If {@code i} does not have fields, then its estimated size is the offset of an object's {@link Classes#firstField first field}.
+
+	 @param type a type
+	 @return an estimated size of an instance of {@code type}
+	 @throws NullPointerException if {@code type == null}
+	 @since 6.0.0
 	 */
 	public static int size(Class<?> type) {
-		return (type.isPrimitive() ? TypeInfo.of(type) : TypeInfo.REFERENCE).size;
+		return sizes.computeIfAbsent(type, t -> t.isArray() ? Unsafe.arrayBaseOffset(t) + Unsafe.arrayIndexScale(t) * Array.getLength(t)
+			: (int) classes(type).flatMap(Fields::instanceOf)
+			.mapToLong(field -> Unsafe.objectFieldOffset(field) + stackSize(field.getType()))
+			.max()
+			.orElse(Classes.firstField.offset)
+		);
 	}
 
 	/**
@@ -564,5 +597,17 @@ public class Types {
 		}
 
 		return box;
+	}
+
+	static {
+		sizes.put(void.class, 0);
+		sizes.put(boolean.class, Byte.BYTES);
+		sizes.put(byte.class, Byte.BYTES);
+		sizes.put(char.class, Character.BYTES);
+		sizes.put(short.class, Short.BYTES);
+		sizes.put(int.class, Integer.BYTES);
+		sizes.put(float.class, Float.BYTES);
+		sizes.put(long.class, Long.BYTES);
+		sizes.put(double.class, Double.BYTES);
 	}
 }

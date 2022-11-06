@@ -59,7 +59,7 @@ public class ReflectTests extends Reflect {
 
 		ClassDefiner.make().loader(null).classFile(agent).define();
 
-		var instrumentation = (Instrumentation) Invoker.bind(Methods.of(loader.loadClass(Reflect.class.getName()), "instrument").invoke(null), "value", Object.class).invoke();
+		var instrumentation = (Instrumentation) Invoker.bind(Methods.firstOf(loader.loadClass(Reflect.class.getName()), "instrument").invoke(null), "value", Object.class).invoke();
 		assert instrumentation.isRedefineClassesSupported() && instrumentation.isRetransformClassesSupported() && instrumentation.isNativeMethodPrefixSupported();
 	}
 

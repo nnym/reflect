@@ -84,7 +84,7 @@ public class Fields {
 	 @return the field declared by {@code type} and named by {@code name} if found or else {@code null}
 	 */
 	public static Field of(Class<?> type, String name) {
-		return fieldsByName.computeIfAbsent(type, type1 -> of(type1).collect(CacheMap::hash, (map, field) -> map.put(field.getName(), field), CacheMap::putAll)).get(name);
+		return fieldsByName.computeIfAbsent(type, t -> of(t).collect(CacheMap::hash, (map, field) -> map.put(field.getName(), field), CacheMap::putAll)).get(name);
 	}
 
 	/**
@@ -100,18 +100,6 @@ public class Fields {
 	}
 
 	/**
-	 Return a sequential stream of all fields declared by {@code begin} and its base classes until {@code end} (exclusive).
-	 The fields in the stream are in class hierarchy order starting with the most derived class {@code begin}.
-
-	 @param begin the first class wherefrom to begin searching
-	 @param end the superclass of the last class to be searched for fields; may be {@code null}
-	 @return a sequential stream of all fields declared by {@code begin} and its base classes until {@code end}
-	 */
-	public static Stream<Field> all(Class<?> begin, Class<?> end) {
-		return Types.classes(begin, end).flatMap(Fields::of);
-	}
-
-	/**
 	 Return a sequential stream of all fields declared by {@code begin} and its base classes.
 	 The fields in the stream are in class hierarchy order starting with the most derived class {@code begin}.
 
@@ -119,23 +107,7 @@ public class Fields {
 	 @return a sequential stream of all fields declared by {@code begin} and its base classes
 	 */
 	public static Stream<Field> all(Class<?> begin) {
-		return all(begin, Object.class);
-	}
-
-	/**
-	 Return a sequential stream of the instance fields declared by the type of {@code object} and all of its base types up to and excluding {@code end}.
-	 The fields in the stream are in class hierarchy order starting with the most derived type.
-
-	 @param object an object
-	 @param end the exclusive upper bound of the types to search for fields
-	 @return a stream of the instance fields declared by the type of {@code object} and its base types up to and excluding {@code end}
-	 */
-	public static Stream<Field> all(Object object, Class<?> end) {
-		return Types.classes(object.getClass(), end).flatMap(Fields::instanceOf);
-	}
-
-	public static Stream<Field> all(Object object) {
-		return all(object, Object.class);
+		return Types.classes(begin, Object.class).flatMap(Fields::of);
 	}
 
 	public static Field any(Class<?> type, String name) {
@@ -143,23 +115,19 @@ public class Fields {
 	}
 
 	public static Stream<Field> staticOf(Class<?> type) {
-		return Stream.of(staticFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isStatic).toArray(Field[]::new)));
+		return Stream.of(staticFields.computeIfAbsent(type, t -> of(t).filter(Flags::isStatic).toArray(Field[]::new)));
 	}
 
 	public static Stream<Field> instanceOf(Class<?> type) {
-		return Stream.of(instanceFields.computeIfAbsent(type, type1 -> of(type1).filter(Flags::isInstance).toArray(Field[]::new)));
-	}
-
-	public static Stream<Field> allInstance(Class<?> begin, Class<?> end) {
-		return all(begin, end).filter(Flags::isInstance);
+		return Stream.of(instanceFields.computeIfAbsent(type, t -> of(t).filter(Flags::isInstance).toArray(Field[]::new)));
 	}
 
 	public static Stream<Field> allInstance(Class<?> type) {
-		return allInstance(type, Object.class);
+		return Types.classes(type, Object.class).flatMap(Fields::of).filter(Flags::isInstance);
 	}
 
 	public static Stream<Field> allStatic(Class<?> type) {
-		return all(type).filter(Flags::isStatic);
+		return Types.classes(type, Object.class).flatMap(Fields::of).filter(Flags::isStatic);
 	}
 
 	/**
