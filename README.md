@@ -7,7 +7,7 @@ Supported Java versions are 17 and above.
 I try to keep this library mostly stable; although occasionally (with prior notice or otherwise) I may break things.
 
 reflect depends on [unsafe](https://github.com/auoeke/unsafe) and [result](https://github.com/auoeke/result) and is hosted at Central as `net.auoeke:reflect`.
-Its size is ~78 KiB.
+Its shallow size is ~78 KiB.
 
 ```groovy
 repositories {
