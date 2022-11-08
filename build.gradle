@@ -7,7 +7,7 @@ plugins {
 }
 
 group("net.auoeke")
-version("6.0.0")
+version("6.0.1")
 description("succinct and unrestricted reflection")
 javaVersion(17)
 
@@ -55,6 +55,7 @@ jmh {
 	fork = 1
 	warmup = "500ms"
 	timeOnIteration = "300ms"
+	includes = ["Address"]
 }
 
 test {

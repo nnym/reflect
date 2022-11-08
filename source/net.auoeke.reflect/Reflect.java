@@ -46,7 +46,7 @@ public class Reflect {
 				.flatOr(() -> Result.ofVoid(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"))
 					.and(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true))
 				)
-				.supply(() -> {
+				.replace(() -> {
 					var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
 					try {
@@ -104,9 +104,12 @@ public class Reflect {
 							}
 						}
 
-						return Result.ofVoid(() -> vm.loadAgent(agentString))
-							.ifFailure(AgentLoadException.class, exception -> Exceptions.message(exception, message -> agentString + ": " + message))
-							.map(v -> Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation"));
+						try {
+							vm.loadAgent(agentString);
+							return Accessor.getReference(ClassLoader.getSystemClassLoader().loadClass(agentClass.getName()), "instrumentation");
+						} catch (AgentLoadException exception) {
+							throw Exceptions.message(exception, message -> agentString + ": " + message);
+						}
 					} finally {
 						vm.detach();
 					}
