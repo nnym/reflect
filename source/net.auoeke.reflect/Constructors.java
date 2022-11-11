@@ -30,7 +30,9 @@ public class Constructors {
 	 @throws InstantiationException if {@code type} is abstract
 	 */
 	public static <T> T instantiate(Class<T> type) {
-		return (T) Result.of(() -> Invoker.findConstructor(type).invoke()).or(() -> Unsafe.allocateInstance(type));
+		return Result.of(() -> (T) Invoker.findConstructor(type).invoke())
+			.or(() -> Unsafe.allocateInstance(type))
+			.value();
 	}
 
 	public static <T> T construct(Class<T> type, Object... arguments) {
