@@ -1,10 +1,13 @@
 package test;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import reflect.util.Logger;
 
 public class Assert {
 	public static Assert truth(boolean boolea) {
@@ -72,6 +75,7 @@ public class Assert {
 		return truth(Stream.of(arrays).allMatch(array -> Arrays.equals(arrays[0], array)), () -> Arrays.deepToString(arrays));
 	}
 
+	@SuppressWarnings("SuspiciousMethodCalls")
 	public static Assert elementsEquivalent(Stream<?>... streams) {
 		var lists = Stream.of(streams).map(Stream::toList).toList();
 		var first = lists.get(0);
@@ -80,6 +84,14 @@ public class Assert {
 
 	public static <T> Assert equalBy(Function<T, Object> key, T... objects) {
 		return equal(Stream.of(objects).map(key).toArray());
+	}
+
+	public static <K, V, T, U> Assert entriesEqualBy(Function<K, T> key, Function<V, U> value, Map<K, V> map) {
+		return truth(map.entrySet().stream().allMatch(entry -> Objects.equals(key.apply(entry.getKey()), value.apply(entry.getValue()))), map::toString);
+	}
+
+	public static <K, V, T> Assert entriesEqualBy(Function<K, T> key, Map<K, V> map) {
+		return entriesEqualBy(key, Function.identity(), map);
 	}
 
 	public static Assert distinct(Object... objects) {

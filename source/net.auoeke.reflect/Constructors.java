@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.util.stream.Stream;
+import net.auoeke.result.Result;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
@@ -29,8 +30,7 @@ public class Constructors {
 	 @throws InstantiationException if {@code type} is abstract
 	 */
 	public static <T> T instantiate(Class<T> type) {
-		var constructor = Reflect.runNull(() -> Invoker.findConstructor(type));
-		return constructor == null ? Unsafe.allocateInstance(type) : (T) constructor.invoke();
+		return (T) Result.of(() -> Invoker.findConstructor(type).invoke()).or(() -> Unsafe.allocateInstance(type));
 	}
 
 	public static <T> T construct(Class<T> type, Object... arguments) {

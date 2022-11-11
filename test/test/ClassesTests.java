@@ -1,14 +1,19 @@
 package test;
 
-import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.security.SecureClassLoader;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 import mock.ClosableInputStream;
 import net.auoeke.reflect.Accessor;
@@ -16,10 +21,14 @@ import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Pointer;
+import net.auoeke.reflect.Reflect;
+import net.auoeke.reflect.Types;
 import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.asm.ClassNode2;
+import reflect.util.Logger;
+import util.Util;
 
 @SuppressWarnings("AccessStaticViaInstance")
 @Testable
@@ -127,6 +136,108 @@ public class ClassesTests extends Classes {
 		try (var s = Object.class.getResourceAsStream(path)) {
 			Assert.arraysEqual(contents, s.readAllBytes());
 		}
+	}
+
+	@Test void internalNameTest() {
+		this.arrayException(Classes::internalName);
+
+		Assert.entriesEqualBy(Classes::internalName, Map.of(
+			Unsafe.class, "net/gudenau/lib/unsafe/Unsafe",
+			Util.TopLevel, "TopLevel",
+			Object.class, "java/lang/Object",
+			MethodHandles.Lookup.class, "java/lang/invoke/MethodHandles$Lookup",
+			HttpClient.Builder.class, "java/net/http/HttpClient$Builder"
+		));
+	}
+
+	@Test void localNameTest() {
+		Types.returnPrimitives().forEach(type -> Assert.equal(type.getName(), localName(type)));
+
+		Assert.entriesEqualBy(Classes::localName, Map.of(
+			Unsafe.class, "Unsafe",
+			Util.TopLevel, "TopLevel",
+			Object.class, "Object",
+			MethodHandles.Lookup.class, "MethodHandles$Lookup",
+			HttpClient.Builder.class, "HttpClient$Builder",
+			int[].class, "[int",
+			Unsafe[].class, "[Unsafe",
+			Object[].class, "[Object"
+		));
+	}
+
+	@Test void pathTest() {
+		this.arrayException(Classes::path);
+
+		Assert.entriesEqualBy(Classes::path, Map.of(
+			Unsafe.class, "net/gudenau/lib/unsafe/Unsafe.class",
+			Util.TopLevel, "TopLevel.class",
+			Object.class, "java/lang/Object.class",
+			MethodHandles.Lookup.class, "java/lang/invoke/MethodHandles$Lookup.class",
+			HttpClient.Builder.class, "java/net/http/HttpClient$Builder.class"
+		));
+	}
+
+	@Test void filenameTest() {
+		this.arrayException(Classes::filename);
+
+		Assert.entriesEqualBy(Classes::filename, Map.of(
+			Unsafe.class, "Unsafe.class",
+			Util.TopLevel, "TopLevel.class",
+			Object.class, "Object.class",
+			MethodHandles.Lookup.class, "MethodHandles$Lookup.class",
+			HttpClient.Builder.class, "HttpClient$Builder.class"
+		));
+	}
+
+	@Test void sourceResourceTest() {
+		Assert.notNull(read(sourceResource(Reflect.class, path(Reflect.class)).openStream()))
+			.notNull(sourceResource(Reflect.class, ""))
+			.notNull(sourceResource(Unsafe.class, JarFile.MANIFEST_NAME))
+			.notNull(sourceResource(Util.TopLevel, path(ClassesTests.class)))
+			.notNull(sourceResource(Object.class, path(Integer.class)))
+			.nul(sourceResource(Reflect.class, internalName(Reflect.class)));
+	}
+
+	@Test void findResourceTest() {
+		Assert.notNull(read(findResource(Reflect.class, path(Reflect.class)).openStream()))
+			.notNull(findResource(Reflect.class, ""))
+			.notNull(findResource(Unsafe.class, JarFile.MANIFEST_NAME))
+			.notNull(findResource(Util.TopLevel, path(ClassesTests.class)))
+			.notNull(findResource(Object.class, path(Integer.class)))
+			.nul(findResource(Reflect.class, internalName(Reflect.class)));
+	}
+
+	@Test void findSourceTest() {
+		Assert.notNull(findSource(Reflect.class))
+			.notNull(findSource(Object.class));
+	}
+
+	@Test void findRootTest() {
+		Assert.notNull(findRoot(Reflect.class))
+			.notNull(findRoot(Object.class));
+	}
+
+	@Test void findRootPathTest() {
+		Assert.notNull(findRootPath(Reflect.class))
+			.notNull(findRootPath(Object.class))
+			.equal("/", findRootPath(Unsafe.class).toString());
+	}
+
+	@Test void miscResourceTest() {
+		Assert.equal(sourceResource(Reflect.class, ""), findResource(Reflect.class, ""), findRoot(Reflect.class));
+		Assert.equalBy(Objects::isNull, sourceResource(Reflect.class, JarFile.MANIFEST_NAME), findResource(Reflect.class, JarFile.MANIFEST_NAME));
+	}
+
+	private void arrayException(Consumer<Class<?>> test) {
+		var types = Stream.concat(
+			Types.stackPrimitives(),
+			Stream.of(Object.class, MethodHandles.Lookup.class, HttpClient.Builder.class)
+		).map(Class::arrayType).toList();
+
+		Consumer<Class<?>> assertion = type -> Assert.exception(() -> test.accept(type));
+		Types.returnPrimitives().forEach(assertion);
+		types.forEach(assertion);
+		types.stream().map(Class::arrayType).forEach(assertion);
 	}
 }
 

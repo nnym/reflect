@@ -5,12 +5,14 @@ import java.lang.invoke.MethodHandle;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.stream.Stream;
+import net.auoeke.reflect.Accessor;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.ClassTransformer;
 import net.auoeke.reflect.Classes;
 import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Reflect;
+import net.auoeke.result.Result;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import org.objectweb.asm.ClassReader;
@@ -21,12 +23,8 @@ import org.objectweb.asm.tree.ClassNode;
 @Testable
 public class ReflectTests extends Reflect {
 	@Test public void instrumentationTest() {
-		if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
-			try (var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new))) {
-				var clone = new GreedyClassLoader(loader).loadClass(ReflectTests.class.getName());
-				clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
-			}
-		}
+		Result.of(() -> ClassLoader.getSystemClassLoader().loadClass("net.auoeke.reflect.Agent")).and(agent -> Accessor.putReference(agent, "instrumentation", null));
+		Accessor.putReference(Reflect.class, "instrumentation", null);
 
 		assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
 
@@ -46,7 +44,18 @@ public class ReflectTests extends Reflect {
 		}).ofType(Object.class).exceptionLogging().singleUse(instrument().value()), true);
 		instrument().value().retransformClasses(Object.class);
 
-		assert string.equals(new Object().toString());
+		Assert.equal(string, new Object().toString());
+	}
+
+	@Test public void reflectDefinedByNonSystemLoader() {
+		if (Reflect.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+			try (var loader = new URLClassLoader(Stream.of(Reflect.class, ReflectTests.class).map(c -> c.getProtectionDomain().getCodeSource().getLocation()).toArray(URL[]::new))) {
+				var clone = new GreedyClassLoader(loader).loadClass(ReflectTests.class.getName());
+				clone.getDeclaredMethod("instrumentationTest").invoke(clone.getDeclaredConstructor().newInstance());
+			}
+		}
+
+		this.instrumentationTest();
 	}
 
 	@Test void instrumentationAgentDefinedBySeparateLoader() {

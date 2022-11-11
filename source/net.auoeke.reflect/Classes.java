@@ -4,19 +4,26 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import net.auoeke.result.Result;
 import net.gudenau.lib.unsafe.Unsafe;
 
 /**
@@ -174,7 +181,7 @@ public class Classes {
 	 @return a reference to the class if it was loaded successfully or else {@code null}
 	 */
 	public static <T> Class<T> load(ClassLoader loader, boolean initialize, String name) {
-		return Reflect.runNull(() -> (Class<T>) Class.forName(name, initialize, loader));
+		return (Class<T>) Result.of(() -> Class.forName(name, initialize, loader)).valueOrNull();
 	}
 
 	/**
@@ -283,12 +290,23 @@ public class Classes {
 	 @since 4.6.0
 	 */
 	public static byte[] classFile(Class<?> type) {
-		if (type.isArray() || type.isPrimitive()) {
-			throw new IllegalArgumentException("type must be user-defined");
-		}
-
-		var stream = type.getResourceAsStream('/' + type.getName().replace('.', '/') + ".class");
+		var stream = checkUserDefined(type).getResourceAsStream('/' + path(type));
 		return stream == null ? null : read(stream);
+	}
+
+	/**
+	 Reads a resource as a {@code byte[]}.
+	 This method always {@link InputStream#close closes} {@code resource}.
+
+	 @param resource an {@link InputStream} from a resource
+	 @return the contents of {@code resource} as a {@code byte[]}
+	 @throws NullPointerException if {@code resource} is {@code null}
+	 @since 5.3.0
+	 */
+	public static byte[] read(InputStream resource) {
+		try (var input = resource) {
+			return input.readAllBytes();
+		}
 	}
 
 	/**
@@ -319,18 +337,203 @@ public class Classes {
 	}
 
 	/**
-	 Reads a resource as a {@code byte[]}.
-	 This method always {@link InputStream#close closes} {@code resource}.
+	 Returns the internal name of {@code type}.
+	 The internal name of a type is its {@link Class#getName binary name} with all occurrences of {@code '.'} replaced by {@code '/'}.
 
-	 @param resource an {@link InputStream} from a resource
-	 @return the contents of {@code resource} as a {@code byte[]}
-	 @throws NullPointerException if {@code resource} is {@code null}
-	 @since 5.3.0
+	 @param type a type
+	 @return {@code type}'s internal name
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @since 6.1.0
 	 */
-	public static byte[] read(InputStream resource) {
-		try (var input = resource) {
-			return input.readAllBytes();
+	public static String internalName(Class<?> type) {
+		return checkUserDefined(type).getName().replace('.', '/');
+	}
+
+	/**
+	 Returns {@code type}'s {@link Class#getName name} without its package.
+	 <p>
+	 If {@code type} is an array type, then {@code '['} is prepended as by {@link Class#getName}.
+	 <p>
+	 Unlike {@link Class#getSimpleName}, if {@code type} is nested,
+	 this method will retain its enclosing type's name prefix.
+
+	 @param type a type
+	 @return {@code type}'s local name
+	 @throws NullPointerException if {@code type == null}
+	 @since 6.1.0
+	 */
+	public static String localName(Class<?> type) {
+		if (type.isArray()) {
+			return '[' + localName(type.componentType());
 		}
+
+		var name = type.getName();
+		return name.substring(name.lastIndexOf('.') + 1);
+	}
+
+	/**
+	 Returns the path to {@code type}'s class file relative (without a leading {@code '/'}) to its source root
+	 such that {@code type.getClass().getClassLoader().getResource(Classes.path(type))}
+	 would conventionally return the location of its class file.
+
+	 @param type a type
+	 @return {@code type}'s class file's relative path
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static String path(Class<?> type) {
+		return internalName(checkUserDefined(type)) + ".class";
+	}
+
+	/**
+	 Returns the conventional filename of {@code type}'s class file.
+	 The filename is computed by appending {@code ".class"} to the longest
+	 substring of {@code type}'s {@link Class#getName name} that is not followed by {@code '.'}.
+
+	 @param type a type
+	 @return {@code type}'s class file's conventional filename
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static String filename(Class<?> type) {
+		return localName(checkUserDefined(type)) + ".class";
+	}
+
+	/**
+	 Uses {@link Class#getResource} in order to attempt to locate a resource at {@code path}
+	 relative to the source (for example JAR or directory) of {@code anchor}.
+	 If no resource can be located, then this method returns {@code null}.
+	 <p>
+	 If {@code path} is empty, then this method may not return {@code null}
+	 even if the URL does not represent an accessible resource.
+
+	 @param anchor a type to use in order to locate a source
+	 @param path a potentially empty path to a resource in the same source as {@code anchor}
+	 @return the location of the resource or {@code null} if {@code anchor}'s source cannot be located
+	 @throws NullPointerException if {@code anchor == null || path == null}
+	 @throws IllegalArgumentException if {@code anchor} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static URL sourceResource(Class<?> anchor, String path) {
+		Objects.requireNonNull(path, "path");
+
+		var anchorLocation = anchor.getResource(filename(anchor));
+		if (anchorLocation == null) return null;
+
+		var string = anchorLocation.toString();
+		var url = new URL(string.substring(0, string.lastIndexOf(path(anchor))) + path);
+
+		return path.isEmpty() ? url : realURLOrNull(url);
+	}
+
+	/**
+	 Attempts to locate a resource at {@code path} relative to the source of {@code anchor}.
+	 If no resource can be located, then this method returns {@code null}.
+	 <p>
+	 If {@code path} is empty, then this method may not return {@code null}
+	 even if the URL does not represent an accessible resource.
+	 <p>
+	 This method first considers {@code anchor}'s {@link #location}. If it is not {@code null}, then it appends
+	 {@code path} and returns the result. Otherwise, it delegates to {@link #sourceResource}.
+
+	 @param anchor a type whereby to locate the source against which to resolve {@code path}
+	 @param path a potentially empty path to a resource
+	 @return the location of the resource if it exists or else {@code null}
+	 @throws NullPointerException if {@code anchor == null || path == null}
+	 @throws IllegalArgumentException if {@code anchor} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static URL findResource(Class<?> anchor, String path) {
+		Objects.requireNonNull(path, "path");
+
+		var source = location(anchor);
+		if (source == null) return sourceResource(anchor, path);
+
+		var isJar = source.getPath().endsWith(".jar");
+		var url = !isJar && path.isEmpty() ? source
+			: new URL(isJar ? "jar:" + source + "!/" + path : source + "/" + path);
+		return path.isEmpty() ? url : realURLOrNull(url);
+	}
+
+	/**
+	 Attempts to locate {@code type}'s source.
+	 If it cannot be located, then this method returns {@code null}.
+	 <p>
+	 If the source is a JAR, then the returned URL will locate the JAR; not an entry in it.
+	 <p>
+	 This method first considers {@code type}'s {@link #location}. If it is not {@code null}, then it is returned.
+	 Otherwise, this method uses {@code type::getResource} in order to locate {@code type} and consequently its source.
+
+	 @param type the type whose source to locate
+	 @return the location of {@code type}'s source
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static URL findSource(Class<?> type) {
+		var location = location(type);
+		if (location != null) return location;
+
+		location = type.getResource(filename(type));
+		if (location == null) return null;
+
+		var string = location.toString();
+		string = string.substring(0, string.lastIndexOf(path(type)));
+
+		return new URL("jar".equals(location.getProtocol()) && string.endsWith("!/") ? string.substring(4, string.length() - 2) : string);
+	}
+
+	/**
+	 Attempts to locate the root of {@code type}'s source.
+	 If it cannot be located, then this method returns {@code null}.
+	 <p>
+	 If the source is a JAR, then the returned URL's protocol
+	 will be {@code "jar"} and it will end with {@code "!/"}.
+	 <p>
+	 This method first considers {@code type}'s {@link #location}. If it is not {@code null}, then it is returned.
+	 Otherwise, this method delegates to {@link #sourceResource} with an empty {@code path}.
+
+	 @param type the type whose source root to locate
+	 @return the location of {@code type}'s source root
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @since 6.1.0
+	 */
+	public static URL findRoot(Class<?> type) {
+		var location = location(type);
+		return location == null ? sourceResource(type, "")
+			: location.getPath().endsWith(".jar") ? new URL("jar:" + location + "!/")
+			: location;
+	}
+
+	/**
+	 Attempts to locate a path to the root of {@code type}'s source as acquired from {@link #findRoot}.
+	 If it cannot be located, then this method returns {@code null}.
+	 <p>
+	 If a {@link FileSystem} for the source does not exist, then this method will attempt to make one and
+	 should it succeed, the burden of {@link FileSystem#close closing} {@link Path#getFileSystem it}
+	 will be on the caller.
+
+	 @param type the type whose source root to locate
+	 @return a path to {@code type}'s source root
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is primitive or an array type
+	 @throws NoSuchElementException with a {@link Throwable#getCause cause}
+	 if an error occurred while converting the source root into a Path
+	 @since 6.1.0
+	 */
+	@SuppressWarnings("resource")
+	public static Path findRootPath(Class<?> type) {
+		var location = findRoot(type);
+		if (location == null) return null;
+
+		return Result.of(location::toURI)
+			.flatMap(root -> Result.of(() -> Path.of(root))
+				.or(() -> FileSystems.newFileSystem(root, Map.of()).getPath("/")))
+			.value();
 	}
 
 	public static List<Type> genericSupertypes(Class<?> type) {
@@ -384,6 +587,31 @@ public class Classes {
 
 	private static Class<?> tryLoad(String... classes) {
 		return Stream.of(classes).map(Classes::load).filter(Objects::nonNull).findFirst().orElse(null);
+	}
+
+	private static Class<?> checkUserDefined(Class<?> type) {
+		if (type.isPrimitive() || type.isArray()) {
+			throw new IllegalArgumentException("type must be user-defined");
+		}
+
+		return type;
+	}
+
+	private static URL realURLOrNull(URL url) {
+		return Result.success(url)
+			.filter(u -> {
+				var connection = u.openConnection();
+
+				if (connection instanceof HttpURLConnection http) {
+					http.setRequestMethod("HEAD");
+					return http.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST;
+				} else {
+					connection.getInputStream();
+				}
+
+				return true;
+			})
+			.valueOrNull();
 	}
 
 	static {
