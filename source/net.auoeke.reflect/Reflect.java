@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -65,7 +67,8 @@ public class Reflect {
 								.findFirst()
 								.orElseThrow(() -> new FileNotFoundException("MANIFEST.MF with \"Agent-Class: %s\"".formatted(AgentName)));
 
-							var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve("agent.jar");
+							var filename = "agent-%s.jar".formatted(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(manifest.toString().getBytes())));
+							var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve(filename);
 
 							if (!Files.exists(agent)) {
 								try (var jar = new JarOutputStream(Files.newOutputStream(agent), manifest)) {
