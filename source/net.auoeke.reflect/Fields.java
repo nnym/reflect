@@ -1,6 +1,5 @@
 package net.auoeke.reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -8,24 +7,12 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 0.6.0
  */
 public class Fields {
-	private static final MethodHandle getDeclaredFields = Methods.of(Class.class)
-		.filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class)
-		.map(Invoker::unreflectSpecial)
-		.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
-		.max(Comparator.comparing(method -> ((Field[]) method.invoke(Fields.class)).length))
-		.get();
-	private static final MethodHandle copy = Invoker.findSpecial(Field.class, "copy", Field.class);
-
-	private static final CacheMap<Class<?>, Field[]> fields = CacheMap.identity();
-	private static final CacheMap<Class<?>, Field[]> staticFields = CacheMap.identity();
-	private static final CacheMap<Class<?>, Field[]> instanceFields = CacheMap.identity();
-	private static final CacheMap<Class<?>, CacheMap<String, Field>> fieldsByName = CacheMap.identity();
-
-
 	public static final Pointer modifiers = Pointer.of(Field.class, "modifiers");
 	public static final Pointer override = Pointer.of(AccessibleObject.class, "override");
 
@@ -63,7 +50,13 @@ public class Fields {
 	 @return an array of {@code type}'s all fields
 	 */
 	public static Field[] direct(Class<?> type) {
-		return (Field[]) getDeclaredFields.invokeExact(type);
+		return (Field[]) ldc(() -> Methods.of(Class.class)
+			.filter(method -> Flags.isNative(method) && method.getReturnType() == Field[].class)
+			.map(Invoker::unreflectSpecial)
+			.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
+			.max(Comparator.comparing(method -> ((Field[]) method.invoke(Fields.class)).length))
+			.get()
+		).invokeExact(type);
 	}
 
 	/**
@@ -73,7 +66,7 @@ public class Fields {
 	 @return a stream of {@code type}'s all fields
 	 */
 	public static Stream<Field> of(Class<?> type) {
-		return Stream.of(fields.computeIfAbsent(type, Fields::direct));
+		return Stream.of(ldc(CacheMap::<Class<?>, Field[]>identity).computeIfAbsent(type, Fields::direct));
 	}
 
 	/**
@@ -84,7 +77,9 @@ public class Fields {
 	 @return the field declared by {@code type} and named by {@code name} if found or else {@code null}
 	 */
 	public static Field of(Class<?> type, String name) {
-		return fieldsByName.computeIfAbsent(type, t -> of(t).collect(CacheMap::hash, (map, field) -> map.put(field.getName(), field), CacheMap::putAll)).get(name);
+		return ldc(CacheMap::<Class<?>, CacheMap<String, Field>>identity)
+			.computeIfAbsent(type, t -> of(t).collect(CacheMap::hash, (map, field) -> map.put(field.getName(), field), CacheMap::putAll))
+			.get(name);
 	}
 
 	/**
@@ -115,11 +110,15 @@ public class Fields {
 	}
 
 	public static Stream<Field> staticOf(Class<?> type) {
-		return Stream.of(staticFields.computeIfAbsent(type, t -> of(t).filter(Flags::isStatic).toArray(Field[]::new)));
+		return Stream.of(ldc(CacheMap::<Class<?>, Field[]>identity)
+			.computeIfAbsent(type, t -> of(t).filter(Flags::isStatic).toArray(Field[]::new))
+		);
 	}
 
 	public static Stream<Field> instanceOf(Class<?> type) {
-		return Stream.of(instanceFields.computeIfAbsent(type, t -> of(t).filter(Flags::isInstance).toArray(Field[]::new)));
+		return Stream.of(ldc(CacheMap::<Class<?>, Field[]>identity)
+			.computeIfAbsent(type, t -> of(t).filter(Flags::isInstance).toArray(Field[]::new))
+		);
 	}
 
 	public static Stream<Field> allInstance(Class<?> type) {
@@ -144,6 +143,6 @@ public class Fields {
 		}
 
 		var root = AccessibleObjects.root(field);
-		return root == null ? (Field) copy.invokeExact(field) : copy(root);
+		return root == null ? (Field) ldc(() -> Invoker.findSpecial(Field.class, "copy", Field.class)).invokeExact(field) : copy(root);
 	}
 }

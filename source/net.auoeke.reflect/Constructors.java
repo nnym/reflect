@@ -1,18 +1,17 @@
 package net.auoeke.reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.util.stream.Stream;
 import net.auoeke.result.Result;
 import net.gudenau.lib.unsafe.Unsafe;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 1.4.0
  */
 public class Constructors {
-	private static final MethodHandle copy = Invoker.findSpecial(Constructor.class, "copy", Constructor.class);
-
 	/**
 	 Return a stream of a type's constructors.
 
@@ -77,6 +76,6 @@ public class Constructors {
 		}
 
 		var root = AccessibleObjects.root(constructor);
-		return root == null ? (Constructor) copy.invokeExact(constructor) : copy(root);
+		return root == null ? (Constructor) ldc(() -> Invoker.findSpecial(Constructor.class, "copy", Constructor.class)).invokeExact(constructor) : copy(root);
 	}
 }

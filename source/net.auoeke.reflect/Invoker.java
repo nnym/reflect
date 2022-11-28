@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static net.gudenau.lib.unsafe.Unsafe.trustedLookup;
+import static net.auoeke.dycon.Dycon.*;
+import static net.gudenau.lib.unsafe.Unsafe.*;
 
 /**
  @since 0.6.0
@@ -24,8 +25,6 @@ public class Invoker {
 	 Discard input parameters that did not match any output parameter.
 	 */
 	public static final long DISCARD_UNUSED = 1L << 63;
-
-	private static final CacheMap<Method, MethodHandle> unreflectCache = CacheMap.identity();
 
 	/**
 	 {@link MethodHandles#reflectAs(Class, MethodHandle) Reflect} a method handle as a {@link Member}.
@@ -186,7 +185,7 @@ public class Invoker {
 	}
 
 	public static MethodHandle unreflect(Method method) {
-		return unreflectCache.computeIfAbsent(method, m -> trustedLookup.unreflect(m));
+		return ldc(CacheMap::<Method, MethodHandle>identity).computeIfAbsent(method, m -> trustedLookup.unreflect(m));
 	}
 
 	public static MethodHandle unreflect(Class<?> type, String name, Class<?>... parameterTypes) {

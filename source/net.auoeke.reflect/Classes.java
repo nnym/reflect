@@ -1,7 +1,6 @@
 package net.auoeke.reflect;
 
 import java.io.InputStream;
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
@@ -26,6 +25,8 @@ import java.util.stream.StreamSupport;
 import net.auoeke.result.Result;
 import net.gudenau.lib.unsafe.Unsafe;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  Utilities that deal mostly with class loading and object type manipulation.
 
@@ -41,11 +42,6 @@ public class Classes {
 	public static final Object systemClassPath = classPath(ClassLoader.getSystemClassLoader());
 	public static final Pointer klass;
 	public static final Pointer firstField = Pointer.of(Fields.instanceOf(Integer.class).findAny().get());
-
-	private static final MethodHandle findLoadedClass = Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class);
-	private static final MethodHandle findResources = Invoker.findStatic(Class.forName("jdk.internal.loader.BootLoader"), "findResources", Enumeration.class, String.class);
-	private static final MethodHandle addURL = Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class);
-	private static final MethodHandle getURLs = Invoker.findVirtual(URLClassPath, "getURLs", URL[].class);
 
 	/**
 	 Change the type of an object. The target type should not be abstract or bigger than the object's type.
@@ -126,7 +122,7 @@ public class Classes {
 	}
 
 	public static <T> Class<T> findLoadedClass(ClassLoader loader, String klass) {
-		return (Class<T>) findLoadedClass.invokeExact(loader, klass);
+		return (Class<T>) ldc(() -> Invoker.findVirtual(ClassLoader.class, "findLoadedClass", Class.class, String.class)).invokeExact(loader, klass);
 	}
 
 	public static URL[] urls(ClassLoader classLoader) {
@@ -134,7 +130,7 @@ public class Classes {
 	}
 
 	public static URL[] urls(Object classPath) {
-		return (URL[]) getURLs.invoke(classPath);
+		return (URL[]) ldc(() -> Invoker.findVirtual(URLClassPath, "getURLs", URL[].class)).invoke(classPath);
 	}
 
 	public static void addSystemURL(URL... url) {
@@ -160,7 +156,7 @@ public class Classes {
 	}
 
 	public static void addURL(Object classPath, URL url) {
-		addURL.invoke(classPath, url);
+		ldc(() -> Invoker.findVirtual(URLClassPath, "addURL", void.class, URL.class)).invoke(classPath, url);
 	}
 
 	public static Object classPath(ClassLoader classLoader) {
@@ -333,7 +329,7 @@ public class Classes {
 	 @since 5.3.0
 	 */
 	public static Stream<URL> resources(ClassLoader loader, String name) {
-		return loader == null ? stream((Enumeration<URL>) findResources.invokeExact(name)) : loader.resources(name);
+		return loader == null ? stream((Enumeration<URL>) ldc(() -> Invoker.findStatic(Class.forName("jdk.internal.loader.BootLoader"), "findResources", Enumeration.class, String.class)).invokeExact(name)) : loader.resources(name);
 	}
 
 	/**

@@ -30,8 +30,12 @@ sealed abstract class CacheMap<K, V> {
 		return this.map().put(key, value);
 	}
 
+	final void putAll(Map<? extends K, ? extends V> map) {
+		this.map().putAll(map);
+	}
+
 	final void putAll(CacheMap<? extends K, ? extends V> map) {
-		this.map().putAll(map.map());
+		this.putAll(map.map());
 	}
 
 	final <T extends K> V computeIfAbsent(T key, Function<? super T, ? extends V> computer) {

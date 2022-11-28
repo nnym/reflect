@@ -2,12 +2,12 @@ plugins {
 	id("java-library")
 	id("maven-publish")
 	id("signing")
-	id("net.auoeke.gronk").version("2.+")
+	id("net.auoeke.gronk").version("3.+")
 	id("me.champeau.jmh").version("latest.release")
 }
 
 group("net.auoeke")
-version("6.1.0")
+version("6.1.1")
 description("succinct and unrestricted reflection")
 javaVersion(17)
 
@@ -32,7 +32,8 @@ repositories {
 }
 
 dependencies {
-	annotationProcessor(jmhAnnotationProcessor(testAnnotationProcessor("net.auoeke:uncheck-all")))
+	annotationProcessor("net.auoeke:uncheck-all", "net.auoeke:dycon-javac-all")
+	compileOnly("net.auoeke:dycon")
 	api("net.auoeke:result")
 	api("net.auoeke:unsafe")
 

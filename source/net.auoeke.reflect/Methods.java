@@ -1,7 +1,6 @@
 package net.auoeke.reflect;
 
 import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.AccessibleObject;
@@ -16,23 +15,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 0.13.0
  */
 public class Methods {
-	private static final MethodHandle getDeclaredMethods = Stream.of(Class.class.getDeclaredMethods())
-		.filter(method -> Flags.isNative(method) && method.getReturnType() == Method[].class)
-		.map(Invoker::unreflectSpecial)
-		.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
-		.max(Comparator.comparing(method -> ((Method[]) method.invoke(Reflect.class)).length))
-		.get();
-	private static final MethodHandle rootCopy = Invoker.findSpecial(Method.class, "copy", Method.class);
-	private static final MethodHandle leafCopy = Invoker.findSpecial(Method.class, "leafCopy", Method.class);
-
-	private static final CacheMap<Class<?>, Method[]> methods = CacheMap.identity();
-	private static final CacheMap<Class<?>, CacheMap<String, Method[]>> methodsByName = CacheMap.identity();
-	private static final CacheMap<CacheKey, Method> methodsBySignature = CacheMap.hash();
-
 	public static <T extends Executable> T find(long flags, int offset, Stream<T> methods, Object... arguments) {
 		return methods.filter(method -> Types.canCast(flags, offset, method.getParameterTypes(), arguments)).findAny().orElse(null);
 	}
@@ -65,7 +53,13 @@ public class Methods {
 	 @since 4.0.0
 	 */
 	public static Method[] direct(Class<?> type) {
-		return (Method[]) getDeclaredMethods.invoke(type);
+		return (Method[]) ldc(() -> Stream.of(Class.class.getDeclaredMethods())
+			.filter(method -> Flags.isNative(method) && method.getReturnType() == Method[].class)
+			.map(Invoker::unreflectSpecial)
+			.map(method -> method.type().parameterCount() > 1 ? MethodHandles.insertArguments(method, 1, false) : method)
+			.max(Comparator.comparing(method -> ((Method[]) method.invoke(Reflect.class)).length))
+			.get()
+		).invoke(type);
 	}
 
 	/**
@@ -76,7 +70,7 @@ public class Methods {
 	 @since 4.0.0
 	 */
 	public static Stream<Method> of(Class<?> type) {
-		return Stream.of(methods.computeIfAbsent(type, Methods::direct));
+		return Stream.of(ldc(CacheMap::<Class<?>, Method[]>identity).computeIfAbsent(type, Methods::direct));
 	}
 
 	/**
@@ -88,7 +82,10 @@ public class Methods {
 	 @since 6.0.0
 	 */
 	public static Stream<Method> of(Class<?> type, String name) {
-		return Stream.of(methodsByName.computeIfAbsent(type, t -> CacheMap.hash()).computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new)));
+		return Stream.of(ldc(CacheMap::<Class<?>, CacheMap<String, Method[]>>identity)
+			.computeIfAbsent(type, t -> CacheMap.hash())
+			.computeIfAbsent(name, n -> of(type).filter(method -> method.getName().equals(n)).toArray(Method[]::new))
+		);
 	}
 
 	/**
@@ -115,7 +112,7 @@ public class Methods {
 	 @since 4.0.0
 	 */
 	public static Method of(Class<?> type, String name, Class<?>... parameterTypes) {
-		return methodsBySignature.computeIfAbsent(
+		return ldc(CacheMap::<CacheKey, Method>hash).computeIfAbsent(
 			new CacheKey(type, name, parameterTypes),
 			key -> of(key.owner())
 				.filter(method -> method.getName().equals(key.name()) && Arrays.equals(method.getParameterTypes(), key.parameterTypes()))
@@ -151,9 +148,11 @@ public class Methods {
 	 @since 5.3.0
 	 */
 	public static Method copy(Method method) {
+		var copy = ldc(() -> Invoker.findSpecial(Method.class, "copy", Method.class));
+		var leafCopy = ldc(() -> Invoker.findSpecial(Method.class, "leafCopy", Method.class));
+
 		return method == null ? null
-			: AccessibleObjects.root(method) == null ? (Method) rootCopy.invokeExact(method)
-			: (Method) leafCopy.invokeExact(method);
+			: (Method) (AccessibleObjects.root(method) == null ? copy : leafCopy).invokeExact(method);
 	}
 
 	/**

@@ -3,13 +3,13 @@ package net.auoeke.reflect;
 import java.lang.reflect.Field;
 import net.gudenau.lib.unsafe.Unsafe;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 0.5.0
  */
 @SuppressWarnings("unused")
 public class Accessor {
-	private static final CacheMap<Class<?>, Pointer[]> pointers = CacheMap.identity();
-
 	public static boolean getBoolean(Field field) {
 		return Unsafe.getBoolean(field.getDeclaringClass(), Unsafe.staticFieldOffset(field));
 	}
@@ -1759,7 +1759,7 @@ public class Accessor {
 
 		var clone = (T) Unsafe.allocateInstance(object.getClass());
 
-		for (var pointer : pointers.computeIfAbsent(object.getClass(), type -> Fields.allInstance(type).map(Pointer::of).toArray(Pointer[]::new))) {
+		for (var pointer : ldc(CacheMap::<Class<?>, Pointer[]>identity).computeIfAbsent(object.getClass(), type -> Fields.allInstance(type).map(Pointer::of).toArray(Pointer[]::new))) {
 			pointer.put(clone, pointer.get(object));
 		}
 

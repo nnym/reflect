@@ -2,16 +2,16 @@ package net.auoeke.reflect;
 
 import java.util.function.Function;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 4.9.0
  */
 class Exceptions {
-	private static final Pointer detailMessage = Pointer.of(Throwable.class, "detailMessage");
 	private static final Pointer stackTrace = Pointer.of(Throwable.class, "stackTrace");
-	private static final StackTraceElement[] defaultStackTrace = stackTrace.getT(new Throwable());
 
 	public static <T extends Throwable> T message(T trouble, String message) {
-		detailMessage.putReference(trouble, message);
+		ldc(() -> Pointer.of(Throwable.class, "detailMessage")).putReference(trouble, message);
 		return trouble;
 	}
 
@@ -25,7 +25,7 @@ class Exceptions {
 	}
 
 	public static <T extends Throwable> T clearStackTrace(T trouble) {
-		return stackTrace(trouble, defaultStackTrace);
+		return stackTrace(trouble, ldc(() -> stackTrace.getT(new Throwable())));
 	}
 
 	public static <T extends Throwable> T disableStackTrace(T trouble) {

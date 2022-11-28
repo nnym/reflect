@@ -1,12 +1,13 @@
 package net.auoeke.reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.nio.ByteBuffer;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.util.Objects;
 import net.gudenau.lib.unsafe.Unsafe;
+
+import static net.auoeke.dycon.Dycon.*;
 
 /**
  A class definition builder.
@@ -17,11 +18,6 @@ import net.gudenau.lib.unsafe.Unsafe;
  @since 4.6.0
  */
 public class ClassDefiner<T> {
-	private static final MethodHandle defineClass = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-	private static final MethodHandle bufferDefineClass = Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class);
-	private static final MethodHandle secureDefineClass = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, CodeSource.class);
-	private static final MethodHandle secureBufferDefineClass = Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, CodeSource.class);
-
 	private String name;
 	private ClassLoader loader;
 	private boolean secure;
@@ -271,15 +267,19 @@ public class ClassDefiner<T> {
 
 	private Class<?> secureDefine(boolean array) {
 		return (Class<?>) (array
-			? secureDefineClass.invoke(this.loader(), this.name, this.classFile, this.offset, this.length, this.source)
-			: secureBufferDefineClass.invoke(this.loader(), this.name, this.classFile, this.source)
+			? ldc(() -> Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, CodeSource.class))
+			.invoke(this.loader(), this.name, this.classFile, this.offset, this.length, this.source)
+			: ldc(() -> Invoker.findVirtual(SecureClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, CodeSource.class))
+			.invoke(this.loader(), this.name, this.classFile, this.source)
 		);
 	}
 
 	private Class<?> define(boolean array) {
 		return (Class<?>) (array
-			? defineClass.invoke(this.loader(), this.name, this.classFile, this.offset, this.length, this.domain)
-			: bufferDefineClass.invoke(this.loader(), this.name, this.classFile, this.domain)
+			? ldc(() -> Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class))
+			.invoke(this.loader(), this.name, this.classFile, this.offset, this.length, this.domain)
+			: ldc(() -> Invoker.findVirtual(ClassLoader.class, "defineClass", Class.class, String.class, ByteBuffer.class, ProtectionDomain.class))
+			.invoke(this.loader(), this.name, this.classFile, this.domain)
 		);
 	}
 }

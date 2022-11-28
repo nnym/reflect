@@ -2,9 +2,12 @@ package net.auoeke.reflect;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.gudenau.lib.unsafe.Unsafe;
+
+import static net.auoeke.dycon.Dycon.*;
 
 /**
  Utilities that deal with types and type conversion.
@@ -39,10 +42,6 @@ public class Types {
 	 {@link #WIDEN Widen primitives} and {@link #UNBOX unbox wrappers}.
 	 */
 	public static final long DEFAULT_CONVERSION = WIDEN | UNBOX | BOX;
-
-	private static final CacheMap<Class<?>, Integer> classDepths = CacheMap.identity();
-	private static final CacheMap<Class<?>, Integer> interfaceDepths = CacheMap.identity();
-	private static final CacheMap<Class<?>, Integer> sizes = CacheMap.identity();
 
 	/**
 	 @return a stream of the primitive field types.
@@ -159,8 +158,8 @@ public class Types {
 	 */
 	public static int depth(Class<?> type, boolean interfaces) {
 		return type == null ? 0
-			: interfaces ? 1 + interfaceDepths.computeIfAbsent(type, t -> allInterfaces(t).mapToInt(t1 -> depth(t1, true)).max().orElse(0))
-			: classDepths.computeIfAbsent(type, t -> (int) classes(t).count());
+			: interfaces ? 1 + ldc(CacheMap::<Class<?>, Integer>identity).computeIfAbsent(type, t -> allInterfaces(t).mapToInt(t1 -> depth(t1, true)).max().orElse(0))
+			: ldc(CacheMap::<Class<?>, Integer>identity).computeIfAbsent(type, t -> (int) classes(t).count());
 	}
 
 	/**
@@ -234,7 +233,22 @@ public class Types {
 	 @since 6.0.0
 	 */
 	public static int size(Class<?> type) {
-		return sizes.computeIfAbsent(type, t -> t.isArray() ? Unsafe.arrayBaseOffset(t) + Unsafe.arrayIndexScale(t) * Array.getLength(t)
+		return ldc(() -> {
+			var map = CacheMap.<Class<?>, Integer>identity();
+			map.putAll(Map.of(
+				void.class, 0,
+				boolean.class, Byte.BYTES,
+				byte.class, Byte.BYTES,
+				char.class, Character.BYTES,
+				short.class, Short.BYTES,
+				int.class, Integer.BYTES,
+				float.class, Float.BYTES,
+				long.class, Long.BYTES,
+				double.class, Double.BYTES
+			));
+
+			return map;
+		}).computeIfAbsent(type, t -> t.isArray() ? Unsafe.arrayBaseOffset(t) + Unsafe.arrayIndexScale(t) * Array.getLength(t)
 			: (int) classes(type).flatMap(Fields::instanceOf)
 			.mapToLong(field -> Unsafe.objectFieldOffset(field) + stackSize(field.getType()))
 			.max()
@@ -600,14 +614,5 @@ public class Types {
 	}
 
 	static {
-		sizes.put(void.class, 0);
-		sizes.put(boolean.class, Byte.BYTES);
-		sizes.put(byte.class, Byte.BYTES);
-		sizes.put(char.class, Character.BYTES);
-		sizes.put(short.class, Short.BYTES);
-		sizes.put(int.class, Integer.BYTES);
-		sizes.put(float.class, Float.BYTES);
-		sizes.put(long.class, Long.BYTES);
-		sizes.put(double.class, Double.BYTES);
 	}
 }

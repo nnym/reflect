@@ -5,17 +5,18 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import static net.auoeke.dycon.Dycon.*;
+
 /**
  @since 0.14.0
  */
 public class EnumConstructor<E extends Enum<E>> {
 	private static final int ENUM_VALUES = Flags.PRIVATE | Flags.STATIC | Flags.SYNTHETIC | Flags.FINAL;
 
+	private static final CacheMap<Class<?>, EnumConstructor<?>> constructors = ldc(CacheMap::identity);
 	private static final Pointer enumConstants;
 	private static final Pointer enumConstantDirectory;
 	private static final MethodHandle getEnumVars;
-	private static final CacheMap<Class<?>, Pointer> arrayFields = CacheMap.identity();
-	private static final CacheMap<Class<?>, EnumConstructor<?>> constructors = CacheMap.identity();
 
 	public final Class<E> type;
 	public final MethodHandle constructor;
@@ -103,7 +104,14 @@ public class EnumConstructor<E extends Enum<E>> {
 	}
 
 	public static Pointer enumArray(Class<?> type) {
-		return arrayFields.computeIfAbsent(type, t -> Fields.of(t).filter(EnumConstructor::isValueField).peek(field -> field.getDeclaringClass().getEnumConstants()).findFirst().map(Pointer::of).orElse(null));
+		return ldc(CacheMap::<Class<?>, Pointer>identity)
+			.computeIfAbsent(type, t -> Fields.of(t)
+				.filter(EnumConstructor::isValueField)
+				.peek(field -> field.getDeclaringClass().getEnumConstants())
+				.findFirst()
+				.map(Pointer::of)
+				.orElse(null)
+			);
 	}
 
 	public static boolean isValueField(Field field) {

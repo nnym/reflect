@@ -24,7 +24,6 @@ import org.objectweb.asm.tree.ClassNode;
 public class ReflectTests extends Reflect {
 	@Test public void instrumentationTest() {
 		Result.of(() -> ClassLoader.getSystemClassLoader().loadClass("net.auoeke.reflect.Agent")).and(agent -> Accessor.putReference(agent, "instrumentation", null));
-		Accessor.putReference(Reflect.class, "instrumentation", null);
 
 		assert instrument().value().isRedefineClassesSupported() && instrument().value().isRetransformClassesSupported() && instrument().value().isNativeMethodPrefixSupported();
 
