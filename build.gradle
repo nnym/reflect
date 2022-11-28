@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-	annotationProcessor("net.auoeke:uncheck-all", "net.auoeke:dycon-javac-all")
+	annotationProcessor("net.auoeke:dycon-javac-all", "net.auoeke:uncheck-all")
 	compileOnly("net.auoeke:dycon")
 	api("net.auoeke:result")
 	api("net.auoeke:unsafe")
