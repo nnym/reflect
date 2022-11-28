@@ -1,17 +1,13 @@
 package net.auoeke.reflect;
 
-import java.io.FileNotFoundException;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 import net.auoeke.result.Result;
@@ -56,24 +52,25 @@ public class Reflect {
 						var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
 
 						try {
-							var manifest = Stream.concat(Stream.ofNullable(Classes.findResource(Reflect.class, JarFile.MANIFEST_NAME)), Classes.resources(Reflect.class.getClassLoader(), JarFile.MANIFEST_NAME))
-								.distinct()
-								.map(url -> {
-									try (var stream = url.openConnection().getInputStream()) {
-										return new Manifest(stream);
-									}
-								})
-								.filter(m -> AgentName.equals(m.getMainAttributes().getValue("Agent-Class")))
-								.findFirst()
-								.orElseThrow(() -> new FileNotFoundException("MANIFEST.MF with \"Agent-Class: %s\"".formatted(AgentName)));
+							var manifest = """
+								Agent-Class: %s
+								Premain-Class: %1$s
+								Can-Redefine-Classes: true
+								Can-Retransform-Classes: true
+								Can-Set-Native-Method-Prefix: true
+								""".formatted(AgentName).getBytes();
 
-							var filename = "agent-%s.jar".formatted(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(manifest.toString().getBytes())));
+							var filename = "agent-%s.jar".formatted(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(manifest)));
 							var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve(filename);
 
 							if (!Files.exists(agent)) {
-								try (var jar = new JarOutputStream(Files.newOutputStream(agent), manifest)) {
-									jar.putNextEntry(new ZipEntry(AgentPath));
-									jar.write(Classes.read(Classes.findResource(Reflect.class, AgentPath).openStream()));
+								try (var jar = FileSystems.newFileSystem(agent, Map.of("create", "true"))) {
+									var manifestPath = jar.getPath(JarFile.MANIFEST_NAME);
+									var classPath = jar.getPath(AgentPath);
+									Files.createDirectories(manifestPath.getParent());
+									Files.createDirectories(classPath.getParent());
+									Files.write(manifestPath, manifest);
+									Files.write(classPath, Classes.read(Classes.findResource(Reflect.class, AgentPath).openStream()));
 								} catch (Throwable trouble) {
 									Files.deleteIfExists(agent);
 									throw trouble;
