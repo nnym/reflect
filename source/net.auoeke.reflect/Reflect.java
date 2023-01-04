@@ -8,8 +8,6 @@ import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.jar.JarFile;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.VirtualMachine;
 import net.auoeke.result.Result;
 
 import static net.auoeke.dycon.Dycon.*;
@@ -44,49 +42,40 @@ public class Reflect {
 			// not in Agent.
 			return Result.<Instrumentation>of(() -> Accessor.getReference(systemLoader.loadClass(AgentName), "instrumentation"))
 				.filterNotNull()
-				.flatOr(() -> Result.ofVoid(() -> Accessor.putReference(Class.forName("openj9.internal.tools.attach.target.AttachHandler"), "allowAttachSelf", "true"))
-					.flatOr(() -> Result.ofVoid(() -> Accessor.<Map<String, String>>getReference(Class.forName("jdk.internal.misc.VM"), "savedProps").put("jdk.attach.allowAttachSelf", "true"))
-						.multiply(() -> Accessor.putBoolean(Class.forName("sun.tools.attach.HotSpotVirtualMachine"), "ALLOW_ATTACH_SELF", true))
-					)
-					.thenResult(() -> {
-						var vm = VirtualMachine.attach(String.valueOf(ProcessHandle.current().pid()));
+				.or(() -> {
+					var manifest = """
+						Premain-Class: %s
+						Agent-Class: %1$s
+						Launcher-Agent-Class: %1$s
+						Can-Redefine-Classes: true
+						Can-Retransform-Classes: true
+						Can-Set-Native-Method-Prefix: true
+						""".formatted(AgentName).getBytes();
 
-						try {
-							var manifest = """
-								Agent-Class: %s
-								Premain-Class: %1$s
-								Can-Redefine-Classes: true
-								Can-Retransform-Classes: true
-								Can-Set-Native-Method-Prefix: true
-								""".formatted(AgentName).getBytes();
+					var filename = "agent-%s.jar".formatted(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(manifest)));
+					var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve(filename);
 
-							var filename = "agent-%s.jar".formatted(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(manifest)));
-							var agent = Files.createDirectories(Path.of(System.getProperty("java.io.tmpdir"), "net.auoeke/reflect")).resolve(filename);
-
-							if (!Files.exists(agent)) {
-								try (var jar = FileSystems.newFileSystem(agent, Map.of("create", "true"))) {
-									var manifestPath = jar.getPath(JarFile.MANIFEST_NAME);
-									var classPath = jar.getPath(AgentPath);
-									Files.createDirectories(manifestPath.getParent());
-									Files.createDirectories(classPath.getParent());
-									Files.write(manifestPath, manifest);
-									Files.write(classPath, Classes.read(Classes.findResource(Reflect.class, AgentPath).openStream()));
-								} catch (Throwable trouble) {
-									Files.deleteIfExists(agent);
-									throw trouble;
-								}
-							}
-
-							try {
-								vm.loadAgent(agent.toString());
-								return Accessor.getReference(systemLoader.loadClass(AgentName), "instrumentation");
-							} catch (AgentLoadException exception) {
-								throw Exceptions.message(exception, message -> agent + ": " + message);
-							}
-						} finally {
-							vm.detach();
+					if (!Files.exists(agent)) {
+						try (var jar = FileSystems.newFileSystem(agent, Map.of("create", "true"))) {
+							var manifestPath = jar.getPath(JarFile.MANIFEST_NAME);
+							var classPath = jar.getPath(AgentPath);
+							Files.createDirectories(manifestPath.getParent());
+							Files.createDirectories(classPath.getParent());
+							Files.write(manifestPath, manifest);
+							Files.write(classPath, Classes.read(Classes.findResource(Reflect.class, AgentPath).openStream()));
+						} catch (Throwable trouble) {
+							Files.deleteIfExists(agent);
+							throw trouble;
 						}
-					}));
+					}
+
+					try {
+						Invoker.findStatic(Class.forName("sun.instrument.InstrumentationImpl"), "loadAgent", void.class, String.class).invoke(agent.toString());
+						return Accessor.getReference(systemLoader.loadClass(AgentName), "instrumentation");
+					} catch (Throwable trouble) {
+						throw Exceptions.message(trouble, message -> agent + ": " + message);
+					}
+				});
 		});
 	}
 }
