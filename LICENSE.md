@@ -1,7 +1,7 @@
 Copyright auoeke \<tjmnkrajyej at gmail dot com>
 
 Everybody may use this software without restriction subject to the following term:
-  - the software shall not be used for Evil.
+- the software shall not be used for Evil.
 
 By providing a contribution that is incorporated into the software with your consent
 you assign all intellectual property rights in your contribution to the software's copyright holder
