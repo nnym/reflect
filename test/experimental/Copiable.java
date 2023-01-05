@@ -3,7 +3,7 @@ package experimental;
 import java.lang.invoke.MethodHandle;
 import net.auoeke.reflect.Invoker;
 
-public interface Copyable<T extends Copyable<T>> extends Cloneable {
+public interface Copiable<T extends Copiable<T>> extends Cloneable {
 	MethodHandle clone = Invoker.findSpecial(Object.class, "clone", Object.class);
 
 	default void copy(T copy) {}

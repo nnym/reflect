@@ -1,9 +1,9 @@
 package reflect.misc;
 
 import java.util.Random;
-import experimental.Copyable;
+import experimental.Copiable;
 
-public class A implements Cloneable, Copyable<A> {
+public class A implements Cloneable, Copiable<A> {
 	public static final String[] strings = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
 	public static final Random random = new Random();
 

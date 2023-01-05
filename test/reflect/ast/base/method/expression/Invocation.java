@@ -9,10 +9,10 @@ import reflect.ast.base.Node;
 import reflect.ast.base.method.statement.InvocationStatement;
 import reflect.ast.base.method.statement.Statement;
 import reflect.ast.base.type.ConcreteType;
-import experimental.Copyable;
+import experimental.Copiable;
 import reflect.util.Util;
 
-public class Invocation implements StatementExpression, Copyable<Invocation> {
+public class Invocation implements StatementExpression, Copiable<Invocation> {
 	protected boolean instance;
 	protected Expression object;
 	protected ConcreteType type;
