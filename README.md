@@ -34,7 +34,7 @@ dependencies {
 - `Methods` enumerates and finds class methods.
 - `Modules` gets and opens modules.
 - `Pointer` is a (primarily) field reference that is similar to `Field` but without access restrictions and for use with frequently accessed fields.
-- `Reflect` provides access to instrumentation for JDKs.
+- `Reflect` provides `Instrumentation` access.
 - `StackFrames` assists in getting stack frames and callers and supports `StackWalker` and the traditional `StackTraceElement[]`.
 - `Types` deals with `Class`es in many ways including type conversion.
 
