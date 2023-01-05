@@ -24,7 +24,7 @@ sourceSets {
 }
 
 configurations {
-	[jmhAnnotationProcessor, testAnnotationProcessor]*.tap {
+	configure([jmhAnnotationProcessor, testAnnotationProcessor]) {
 		extendsFrom(annotationProcessor)
 	}
 }
