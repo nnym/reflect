@@ -46,6 +46,14 @@ dependencies {
 	)
 }
 
+compileJava {
+	options.release = java.targetCompatibility.majorVersion as int
+
+	javaCompiler = javaToolchains.compilerFor {
+		languageVersion = JavaLanguageVersion.of(19)
+	}
+}
+
 compileTestJava {
 	mustRunAfter(jar)
 
