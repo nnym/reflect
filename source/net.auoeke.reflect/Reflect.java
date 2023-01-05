@@ -19,14 +19,10 @@ import static net.auoeke.dycon.Dycon.*;
  */
 public class Reflect {
 	/**
-	 Attach the current JVM to itself and acquire an {@link Instrumentation} instance that supports all optional operations.
-	 <p><b>
-	 Note that this method is not guaranteed to work with all JVM vendors.
-	 <br>
-	 Note that this method may stop working in the future; see the comments in {@link sun.tools.attach.HotSpotVirtualMachine#HotSpotVirtualMachine HotSpotVirtualMachine::new}.
-	 </b>
+	 Lazily generates and loads an agent in $TMPDIR/net.auoeke/reflect/
+	 and returns an {@link Instrumentation} that supports all optional operations.
 
-	 @return a {@link Result.Success} containing an {@link Instrumentation} instance if attachment was successful
+	 @return a {@link Result.Success} containing an {@link Instrumentation} if the agent was loaded successfully
 	 @since 4.9.0
 	 */
 	@SuppressWarnings("Java9ReflectionClassVisibility")
