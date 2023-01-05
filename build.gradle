@@ -91,9 +91,7 @@ javadoc {
 }
 
 // For Reflect::instrumentation.
-task testRelease(type: Test) {
-	group(LifecycleBasePlugin.VERIFICATION_GROUP)
-	dependsOn(cleanTestRelease, jar)
+task testRelease(type: Test, group: LifecycleBasePlugin.VERIFICATION_GROUP, dependsOn: ["cleanTestRelease", jar]) {
 	check.dependsOn(it)
 
 	useJUnitPlatform()
