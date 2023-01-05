@@ -3,17 +3,18 @@ by providing for most common reflective operations (and more) powerful methods
 that don't obey access limitations or declare checked exceptions (unlike every standard reflective method ever).
 
 Supported Java versions are 17 and above.
+See [the actions](https://github.com/auoeke/reflect/actions/runs/3844981923) for more information.
 
 I try to keep this library mostly stable; although occasionally (with prior notice or otherwise) I may break things.
 
-reflect depends on [unsafe](https://github.com/auoeke/unsafe) and [result](https://github.com/auoeke/result) and is hosted at Central as `net.auoeke:reflect`.
-Its shallow size is ~84 KiB.
+reflect depends on [unsafe](https://github.com/auoeke/unsafe) and [result](https://github.com/auoeke/result).
+Its shallow size is ~80 KiB.
+
+[![reflect is available from Central as net.auoeke:reflect.](
+https://img.shields.io/maven-central/v/net.auoeke/reflect?label=Central:%20net.auoeke:reflect
+)](https://repo1.maven.org/maven2/net/auoeke/reflect/)
 
 ```groovy
-repositories {
-	mavenCentral()
-}
-
 dependencies {
 	implementation("net.auoeke:reflect:6.+")
 }
