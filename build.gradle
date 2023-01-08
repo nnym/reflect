@@ -57,7 +57,7 @@ compileJava {
 compileTestJava {
 	mustRunAfter(jar)
 
-	options.release.set(JavaVersion.current().majorVersion as int)
+	options.release = JavaVersion.current().majorVersion as int
 	options.compilerArgs << "--enable-preview"
 }
 
