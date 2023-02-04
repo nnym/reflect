@@ -80,7 +80,6 @@ public class Types {
 	 Return a type's supertypes in declaration order.
 
 	 @param type a type
-	 @param <T> {@code type}
 	 @return {@code type}'s supertypes
 	 @throws NullPointerException if {@code type} is {@code null}
 	 */
