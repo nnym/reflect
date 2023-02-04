@@ -32,11 +32,12 @@ public class Reflect {
 			var AgentName = Reflect.class.getPackageName() + ".Agent";
 			var AgentPath = AgentName.replace('.', '/') + ".class";
 			var systemLoader = ClassLoader.getSystemClassLoader();
+			var Agent = Classes.load(systemLoader, AgentName);
 
 			// If Agent was loaded already and this Reflect is defined to a different loader
 			// from the one that loaded Agent, then instrumentation will be null here but
 			// not in Agent.
-			return Result.<Instrumentation>of(() -> Accessor.getReference(systemLoader.loadClass(AgentName), "instrumentation"))
+			return Result.<Instrumentation>of(() -> Accessor.getReference(Agent, "instrumentation"))
 				.filterNotNull()
 				.or(() -> {
 					var manifest = """
@@ -66,6 +67,10 @@ public class Reflect {
 					}
 
 					try {
+						if (Agent == null) {
+							Classes.addSystemURL(agent.toUri().toURL());
+						}
+
 						Invoker.findStatic(Class.forName("sun.instrument.InstrumentationImpl"), "loadAgent", void.class, String.class).invoke(agent.toString());
 						return Accessor.getReference(systemLoader.loadClass(AgentName), "instrumentation");
 					} catch (Throwable trouble) {
