@@ -1,12 +1,14 @@
 package net.auoeke.reflect;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Constructor;
-import java.util.stream.Stream;
 import net.auoeke.result.Result;
 import net.gudenau.lib.unsafe.Unsafe;
 
-import static net.auoeke.dycon.Dycon.*;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.RecordComponent;
+import java.util.stream.Stream;
+
+import static net.auoeke.dycon.Dycon.ldc;
 
 /**
  @since 1.4.0
@@ -20,6 +22,19 @@ public class Constructors {
 	 */
 	public static <T> Stream<Constructor<T>> of(Class<T> type) {
 		return Stream.of((Constructor<T>[]) type.getDeclaredConstructors());
+	}
+
+	/**
+	 Returns the canonical constructor of a record type.
+
+	 @param type a record type
+	 @param <T> {@code type}
+	 @return {@code type}'s canonical constructor
+	 @throws NullPointerException if {@code type} is {@code null} or not a record type
+	 @since 6.2.0
+	 */
+	public static <T extends Record> Constructor<T> canonical(Class<T> type) {
+		return find(type, Stream.of(type.getRecordComponents()).map(RecordComponent::getType).toArray(Class[]::new));
 	}
 
 	/**
