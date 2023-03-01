@@ -611,7 +611,4 @@ public class Types {
 
 		return box;
 	}
-
-	static {
-	}
 }
