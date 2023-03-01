@@ -11,7 +11,7 @@ javaVersion(17)
 
 gronk {
 	publish {
-		scm = "https://github.com/auoeke/reflect"
+		scm = "https://github.com/nnym/reflect"
 		license = ""
 		email = "tjmnkrajyej@gmail.com"
 	}
