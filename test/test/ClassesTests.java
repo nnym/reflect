@@ -27,7 +27,6 @@ import net.gudenau.lib.unsafe.Unsafe;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import reflect.asm.ClassNode2;
-import reflect.util.Logger;
 import util.Util;
 
 @SuppressWarnings("AccessStaticViaInstance")
@@ -116,7 +115,7 @@ public class ClassesTests extends Classes {
 			}
 		};
 
-		Assert.truth(stream(enumeration).count() == 3);
+		Assert.yes(stream(enumeration).count() == 3);
 	}
 
 	@Test void resourcesTest() {
@@ -131,7 +130,7 @@ public class ClassesTests extends Classes {
 		var path = "/java/lang/Object.class";
 		var stream = new ClosableInputStream(Object.class.getResourceAsStream(path));
 		var contents = read(stream);
-		Assert.truth(stream.closed());
+		Assert.yes(stream.closed());
 
 		try (var s = Object.class.getResourceAsStream(path)) {
 			Assert.arraysEqual(contents, s.readAllBytes());

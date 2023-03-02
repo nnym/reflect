@@ -25,10 +25,10 @@ public class MethodsTests extends Methods {
 	}
 
 	@Test void overridesTest() {
-		Assert.truth(overrides(firstOf(String.class, "subSequence"), firstOf(CharSequence.class, "subSequence")))
-			.truth(overrides(firstOf(String.class, "toString"), firstOf(CharSequence.class, "toString")))
-			.truth(overrides(firstOf(String.class, "toString"), firstOf(Object.class, "toString")))
-			.truth(overrides(firstOf(CharSequence.class, "toString"), firstOf(Object.class, "toString")));
+		Assert.yes(overrides(firstOf(String.class, "subSequence"), firstOf(CharSequence.class, "subSequence")))
+			.yes(overrides(firstOf(String.class, "toString"), firstOf(CharSequence.class, "toString")))
+			.yes(overrides(firstOf(String.class, "toString"), firstOf(Object.class, "toString")))
+			.yes(overrides(firstOf(CharSequence.class, "toString"), firstOf(Object.class, "toString")));
 	}
 
 	@Test void filterBaseTest() {
