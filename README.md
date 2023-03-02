@@ -5,8 +5,6 @@ that don't obey access limitations or declare checked exceptions (unlike every s
 Supported Java versions are 17 and above.
 See [the actions](https://github.com/auoeke/reflect/actions/runs/3844981923) for more information.
 
-I try to keep this library mostly stable; although occasionally (with prior notice or otherwise) I may break things.
-
 reflect depends on [unsafe](https://github.com/auoeke/unsafe) and [result](https://github.com/auoeke/result).
 Its shallow size is ~80 KiB.
 
