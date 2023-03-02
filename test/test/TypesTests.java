@@ -1,19 +1,21 @@
 package test;
 
+import net.auoeke.reflect.Classes;
+import net.auoeke.reflect.Methods;
+import net.auoeke.reflect.Types;
+import org.junit.jupiter.api.Test;
+import reflect.misc.*;
+import sun.misc.Unsafe;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.auoeke.reflect.Classes;
-import net.auoeke.reflect.Types;
-import org.junit.jupiter.api.Test;
-import reflect.misc.A;
-import reflect.misc.C;
-import reflect.misc.Interface1;
-import reflect.misc.Interface2;
-import reflect.misc.Interface3;
-import sun.misc.Unsafe;
 
 @SuppressWarnings("AccessStaticViaInstance")
 class TypesTests extends Types {
@@ -88,16 +90,16 @@ class TypesTests extends Types {
 	}
 
 	@Test void equalsTest() {
-		assert equals(int.class, Integer.class);
-		assert equals(byte.class, Byte.class);
-		assert equals(short.class, Short.class);
-		assert equals(Integer.class, int.class);
-		assert equals(Double.class, double.class);
-		assert !equals(Object.class, Integer.class);
-		assert !equals(Object.class, TypesTests.class);
-		assert !equals(Object.class, null);
-		assert equals(null, null);
-		assert equals(Object.class, Object.class);
+		assert similar(int.class, Integer.class);
+		assert similar(byte.class, Byte.class);
+		assert similar(short.class, Short.class);
+		assert similar(Integer.class, int.class);
+		assert similar(Double.class, double.class);
+		assert !similar(Object.class, Integer.class);
+		assert !similar(Object.class, TypesTests.class);
+		assert !similar(Object.class, null);
+		assert similar(null, null);
+		assert similar(Object.class, Object.class);
 	}
 
 	@Test void isWrapperTest() {
@@ -109,6 +111,67 @@ class TypesTests extends Types {
 		assert !isWrapper(TypesTests.class);
 		assert !isWrapper(Object.class);
 		assert !isWrapper(int.class);
+	}
+
+	@SuppressWarnings("CloneableClassWithoutClone")
+	@Test void isAssignableFromTest() {
+		//noinspection unused
+		class C<T extends U, U extends C<T, U> & Cloneable> {
+			<V extends T> void a(Consumer<? super V[]> consumer, Supplier<? extends V[]> supplier) {}
+		}
+
+		class D extends C implements Cloneable {}
+		class E extends D {}
+
+		var t = C.class.getTypeParameters()[0];
+		var a = Methods.firstOf(C.class, "a").getGenericParameterTypes();
+		var sv = ((ParameterizedType) a[0]).getActualTypeArguments()[0];
+		var ev = ((ParameterizedType) a[0]).getActualTypeArguments()[0];
+
+		returnPrimitives().forEach(typeA -> {
+			returnPrimitives().forEach(typeB -> {
+				if (typeA == typeB) {
+					Assert.yes(canAssign(typeA, typeB));
+				} else {
+					Assert.no(canAssign(typeA, typeB));
+				}
+			});
+		});
+
+		Assert.exception(IllegalArgumentException.class, () -> canAssign(Object.class, new Type() {}))
+			.yes(canAssign(null, null))
+			.no(canAssign(null, Object.class))
+			.no(canAssign(Object.class, null))
+			.yes(canAssign(Object.class, Types.class))
+			.no(canAssign(Types.class, Object.class))
+			.yes(canAssign(Number.class, Integer.class))
+			.no(canAssign(Integer.class, Number.class))
+			.yes(canAssign(Integer.class, Integer.class))
+			.no(canAssign(Integer.class, Double.class))
+			.yes(canAssign(Object[].class, Number[].class))
+			.no(canAssign(Number[].class, Object[].class))
+			.no(canAssign(t, C.class))
+			.yes(canAssign(t, D.class))
+			.no(canAssign(sv, Object.class))
+			.no(canAssign(sv, Cloneable[].class))
+			.no(canAssign(sv, C[].class))
+			.yes(canAssign(sv, D[].class))
+			.yes(canAssign(sv, E[].class))
+			.yes(canAssign(Object.class, sv))
+			.yes(canAssign(Cloneable[].class, sv))
+			.yes(canAssign(C[].class, sv))
+			.no(canAssign(D[].class, sv))
+			.no(canAssign(E[].class, sv))
+			.no(canAssign(ev, Object.class))
+			.no(canAssign(ev, Cloneable[].class))
+			.no(canAssign(ev, C[].class))
+			.yes(canAssign(ev, D[].class))
+			.yes(canAssign(ev, E[].class))
+			.yes(canAssign(Object.class, ev))
+			.yes(canAssign(Cloneable[].class, ev))
+			.yes(canAssign(C[].class, ev))
+			.no(canAssign(D[].class, ev))
+			.no(canAssign(E[].class, ev));
 	}
 
 	@Test void canCastTest() {

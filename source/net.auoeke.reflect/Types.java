@@ -1,13 +1,14 @@
 package net.auoeke.reflect;
 
-import java.lang.reflect.Array;
+import net.gudenau.lib.unsafe.Unsafe;
+
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.gudenau.lib.unsafe.Unsafe;
 
-import static net.auoeke.dycon.Dycon.*;
+import static net.auoeke.dycon.Dycon.ldc;
 
 /**
  Utilities that deal with types and type conversion.
@@ -276,14 +277,29 @@ public class Types {
 	}
 
 	/**
+	 Returns whether 2 given types are the same or {@code null}
+	 or if one of them is primitive and the other is its wrapper type.
+
+	 @param type a type
+	 @param other another type
+	 @return whether {@code type} and {@code other} are the same or one of them is a wrapper of the other
+	 @since 7.0.0
+	 */
+	public static boolean similar(Class<?> type, Class<?> other) {
+		return type == other || type != null && other != null && (unbox(type) == other || unbox(other) == type);
+	}
+
+	/**
 	 Check whether 2 types are the same or if one of them is a primitive and the other is its wrapper type.
 
 	 @param type a type
 	 @param other another type
 	 @return whether they are the some or one of them is a wrapper of the other
+	 @deprecated for removal in 7.0.0. This method's name is misleading; use {@link #similar}.
 	 */
+	@Deprecated(since = "6.3.0", forRemoval = true)
 	public static boolean equals(Class<?> type, Class<?> other) {
-		return type == other || type != null && other != null && (unbox(type) == other || unbox(other) == type);
+		return similar(type, other);
 	}
 
 	/**
@@ -306,6 +322,80 @@ public class Types {
 	 */
 	public static boolean isSubtype(Class<?> subtype, Class<?> supertype) {
 		return subtype != null && supertype != null && subtype != supertype && supertype.isAssignableFrom(subtype);
+	}
+
+	/**
+	 Returns the raw upper bounds of a type by recursively flattening {@code type}.
+	 The upper bound of a {@link Class} is itself.
+
+	 @param type a type
+	 @return {@code type}'s raw upper bounds
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is not a {@link Class}, {@link GenericArrayType}, {@link ParameterizedType}, {@link TypeVariable} or {@link WildcardType}.
+	 @since 6.3.0
+	 */
+	public static Stream<Class<?>> upperBounds(Type type) {
+		if (type instanceof Class<?> clas) return Stream.of(clas);
+		if (type instanceof WildcardType wildcard) return Stream.of(wildcard.getUpperBounds()).flatMap(Types::upperBounds);
+		if (type instanceof ParameterizedType parameterized) return upperBounds(parameterized.getRawType());
+		if (type instanceof TypeVariable<?> variable) return Stream.of(variable.getBounds()).flatMap(Types::upperBounds);
+		if (type instanceof GenericArrayType array) return upperBounds(array.getGenericComponentType()).map(Class::arrayType);
+
+		throw new IllegalArgumentException("%s %s".formatted(type.getClass().getSimpleName(), type));
+	}
+
+	/**
+	 Returns the raw lower bounds of a type by recursively flattening {@code type}.
+	 Final types are not considered as lower bounds.
+
+	 @param type a type
+	 @return {@code type}'s raw lower bounds
+	 @throws NullPointerException if {@code type == null}
+	 @throws IllegalArgumentException if {@code type} is not a {@link Class}, {@link GenericArrayType}, {@link ParameterizedType}, {@link TypeVariable} or {@link WildcardType}.
+	 @since 6.3.0
+	 */
+	public static Stream<Class<?>> lowerBounds(Type type) {
+		if (type instanceof Class<?> || type instanceof ParameterizedType || type instanceof TypeVariable<?>) return Stream.of();
+		if (type instanceof WildcardType wildcard) return deepLowerBounds(type);
+		if (type instanceof GenericArrayType array) return lowerBounds(array.getGenericComponentType()).map(Class::arrayType);
+
+		throw new IllegalArgumentException("%s %s".formatted(type.getClass().getSimpleName(), type));
+	}
+
+	/**
+	 Returns whether a {@link Type} {@code a} is assignable from another {@link Type} {@code b} by checking their raw
+	 {@link #upperBounds upper} and {@link #lowerBounds lower} bounds.
+	 {@code a} is assignable from {@code b} if a variable of type {@code a} can be assigned a value of type {@code b}.
+	 <p>
+	 This method is a generalization of {@link Class#isAssignableFrom} for the 5 standard {@link Type}s:
+	 {@link Class}, {@link GenericArrayType}, {@link ParameterizedType}, {@link TypeVariable} and {@link WildcardType}.
+	 Like {@link Class#isAssignableFrom}, this method returns {@code true} for primitive types {@code a} and {@code b}
+	 only if {@code a == b}.
+
+	 @param a a type on the left side of an assignment
+	 @param b a type on the right side of an assignment
+	 @return whether an assignment of {@code a} to {@code b} is valid
+	 @since 6.3.0
+	 */
+	public static boolean canAssign(Type a, Type b) {
+		if (a == null || b == null) return a == b;
+		if (a instanceof Class<?> ca && b instanceof Class<?> cb) return ca.isAssignableFrom(cb);
+
+		var bUpper = upperBounds(b).toList();
+		var bLower = lowerBounds(b).toList();
+
+		if (!lowerBounds(a).allMatch(al -> bUpper.stream().anyMatch(al::isAssignableFrom))) {
+			return false;
+		}
+
+		if (bLower.isEmpty()) {
+			return upperBounds(a).allMatch(au -> bUpper.stream().anyMatch(au::isAssignableFrom));
+		}
+
+		var aUpper = upperBounds(a).toList();
+
+		return aUpper.stream().allMatch(au -> bLower.stream().anyMatch(au::isAssignableFrom))
+			&& bUpper.stream().allMatch(bu -> aUpper.stream().anyMatch(bu::isAssignableFrom));
 	}
 
 	/**
@@ -610,5 +700,15 @@ public class Types {
 		}
 
 		return box;
+	}
+
+	private static Stream<Class<?>> deepLowerBounds(Type type) {
+		if (type instanceof Class<?> clas) return Stream.of(clas);
+		if (type instanceof WildcardType wildcard) return Stream.of(wildcard.getLowerBounds()).flatMap(Types::deepLowerBounds);
+		if (type instanceof ParameterizedType parameterized) return deepLowerBounds(parameterized.getRawType());
+		if (type instanceof TypeVariable<?> variable) return Stream.of(variable.getBounds()).flatMap(Types::deepLowerBounds);
+		if (type instanceof GenericArrayType array) return deepLowerBounds(array.getGenericComponentType()).map(Class::arrayType);
+
+		throw new IllegalArgumentException("%s %s".formatted(type.getClass().getSimpleName(), type));
 	}
 }
